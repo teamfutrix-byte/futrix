@@ -2,25 +2,27 @@ const https = require('https');
 
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
+    https.get(url, { headers: { 'User-Agent': 'NodeJS' } }, (res) => {
       let data = '';
       res.on('data', (chunk) => data += chunk);
-      res.on('end', () => resolve({ statusCode: res.statusCode, headers: res.headers, data: data.substring(0, 1000) }));
+      res.on('end', () => resolve({ statusCode: res.statusCode, data }));
     }).on('error', reject);
   });
 }
 
 async function run() {
   try {
-    console.log('Fetching student index...');
-    const indexRes = await fetchUrl('https://teamfutrix-byte.github.io/futrix/features/student/index.html');
-    console.log('Index Status:', indexRes.statusCode);
-
-    console.log('Fetching student login...');
-    const loginRes = await fetchUrl('https://teamfutrix-byte.github.io/futrix/features/auth/login.html');
-    console.log('Login Status:', loginRes.statusCode);
+    const res = await fetchUrl('https://teamfutrix-byte.github.io/futrix/features/auth/login.html?t=' + Date.now());
+    console.log('Status Code:', res.statusCode);
+    const startIdx = res.data.indexOf('Request Access');
+    if (startIdx !== -1) {
+      console.log('HTML around Request Access:');
+      console.log(res.data.substring(startIdx - 100, startIdx + 100));
+    } else {
+      console.log('Request Access text not found!');
+    }
   } catch (err) {
-    console.error('Fetch error:', err);
+    console.error(err);
   }
 }
 

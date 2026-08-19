@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
 const { Client } = require('pg');
-const { dbConfig } = require('./config/db');
+const { dbConfig } = require('../config/db');
 
 // Absolute path to current conversation artifacts directory
 const ARTIFACTS_DIR = 'C:\\Users\\L470\\.gemini\\antigravity-ide\\brain\\a21ae10a-0af8-4e09-86f2-ab18aaa5afd1';
@@ -65,16 +65,18 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log('Clicking Already have an account? Login Competitor link...');
+    await page.waitForSelector('.form-footer a', { visible: true, timeout: 8000 });
     await page.click('.form-footer a');
-    await page.waitForFunction((url) => window.location.href.includes('login.html'), { timeout: 8000 }, `${BASE_URL}/features/auth/login.html`);
+    await page.waitForFunction(() => window.location.href.includes('login.html'), { timeout: 8000 });
     console.log('Login page loaded successfully!');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_2_login_page.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // ── STEP 2: Testing Request Access Link ──
     console.log('Clicking Request Access link...');
+    await page.waitForSelector('.card-footer a', { visible: true, timeout: 8000 });
     await page.click('.card-footer a');
-    await page.waitForFunction((url) => window.location.href.includes('student/index.html'), { timeout: 8000 }, `${BASE_URL}/features/student/index.html`);
+    await page.waitForFunction(() => window.location.href.includes('student/index.html'), { timeout: 8000 });
     console.log('Registration page loaded back successfully!');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_3_register_page_returned.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -121,6 +123,7 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log('Clicking Start Your First Test...');
+    await page.waitForSelector('#successOverlay a', { visible: true, timeout: 8000 });
     await page.click('#successOverlay a'); // Clicks the first link in success modal
     await page.waitForFunction(() => window.location.href.includes('active-exams.html'), { timeout: 8000 });
     console.log('Active exams page loaded successfully!');
@@ -160,6 +163,7 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Logging in as pre-registered candidate ms71766@gmail.com...');
+    await page.waitForSelector('#loginEmail', { visible: true, timeout: 8000 });
     await page.type('#loginEmail', 'ms71766@gmail.com');
     await page.type('#loginPhone', '8707093973');
     await page.click('#loginBtn');
@@ -183,11 +187,18 @@ async function main() {
     console.log('Agreeing to rules and guidelines...');
     await page.evaluate(() => {
       const checkbox = document.getElementById('confirmCheck');
-      if (checkbox) checkbox.click();
+      if (checkbox) {
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     });
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     console.log('Clicking Start Test...');
+    await page.waitForFunction(() => {
+      const btn = document.getElementById('startTestBtn');
+      return btn && !btn.disabled;
+    }, { timeout: 8000 });
     await page.click('#startTestBtn');
     await page.waitForFunction(() => window.location.href.includes('exam.html'), { timeout: 8000 });
     console.log('exam.html loaded!');
@@ -195,18 +206,22 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Launching Secure Sandbox...');
+    await page.waitForSelector('#startFullscreenBtn', { visible: true, timeout: 8000 });
     await page.click('#startFullscreenBtn');
     await page.waitForSelector('#examLayout', { visible: true, timeout: 8000 });
     console.log('Exam layout loaded! Selecting answer option A on first question...');
+    await page.waitForSelector('.option-btn', { visible: true, timeout: 8000 });
     await page.click('.option-btn');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_13_exam_option_selected.png') });
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Clicking Save & Next...');
+    await page.waitForSelector('#btnNext', { visible: true, timeout: 8000 });
     await page.click('#btnNext');
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Submitting the test...');
+    await page.waitForSelector('#btnSubmit', { visible: true, timeout: 8000 });
     await page.click('#btnSubmit');
     await page.waitForSelector('#confirmSubmit', { visible: true, timeout: 4000 });
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_14_submit_confirmation.png') });
