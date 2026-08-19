@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Operations Center (SOC) | FUTRIX Control Console</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #030508;
+      --sidebar-bg: #05080c;
+      --surface: rgba(10, 15, 30, 0.6);
+      --surface-hi: rgba(20, 28, 52, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #ef4444; /* SOC Cyber Security red accent color */
+      --primary-glow: rgba(239, 68, 68, 0.4);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --accent: #22d3ee;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(34, 211, 238, 0.03) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--primary); }
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--primary);
+      border-color: rgba(239, 68, 68, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(3, 5, 8, 0.35);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .gateway-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--primary);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px var(--primary); }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(22, 28, 50, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.accent::before { background: var(--accent); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-textarea {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-submit:hover {
+      background: #f43f5e;
+      transform: translateY(-1px);
+    }
+
+    /* Table styling */
+    .models-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .models-table th, .models-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .models-table th {
+      background: rgba(255,255,255,0.02);
+      color: var(--text-muted);
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+    }
+    .status-badge.patched {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+
+    .split-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">FUTRIX<span>.</span></a>
+      <span class="logo-subtitle">SOC Console</span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-dashboard" class="active" onclick="switchTab('dashboard')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+          SOC Monitors
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-firewall" onclick="switchTab('firewall')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          WAF Firewall Rules
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-vulns" onclick="switchTab('vulns')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          CVE Vulnerabilities
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">Back to Admin Panel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">SOC Monitors</h2>
+      <div class="gateway-badge">
+        <span class="live-pulse"></span>
+        Threat Shield Active
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: SOC MONITORS -->
+      <div id="panel-dashboard" class="view-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card" id="kpi-threat-card">
+            <span class="kpi-label">Threat Level</span>
+            <span class="kpi-value" id="kpi-threat">Low</span>
+          </div>
+          <div class="kpi-card success">
+            <span class="kpi-label">Security Health Score</span>
+            <span class="kpi-value" id="kpi-score">100</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">Security Logs / Failed Logins</span>
+            <span class="kpi-value" id="kpi-events">0</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">Active Blocked IPs</span>
+            <span class="kpi-value" id="kpi-blocked">0</span>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Zero Trust DevSecOps Compliance</h3>
+          <div style="font-size:0.9rem; line-height:1.6;">
+            <p><strong>Database Encryption status:</strong> AES-256 Storage level Transparent Data Encryption (TDE) enabled</p>
+            <p><strong>TLS Transport:</strong> Enforced TLS 1.3 only on all Express API gateways</p>
+            <p><strong>Token Security:</strong> JWT signatures with HS256 algorithm and 15 minutes rotation expiration limits</p>
+            <p><strong>Jailbreak Filters:</strong> Prompt Injection Shield active at Enterprise AI Gateway adapter layer</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: WAF FIREWALL -->
+      <div id="panel-firewall" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Block Malicious IP Address</h3>
+            <form onsubmit="blockIp(event)">
+              <div class="form-group">
+                <label class="form-label">Attacker IP Address</label>
+                <input type="text" id="firewall-ip" class="form-input" placeholder="e.g. 203.0.113.88" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Block Violation Reason</label>
+                <input type="text" id="firewall-reason" class="form-input" placeholder="e.g. SQL Injection attacks detected in logs" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Block Expiration Duration</label>
+                <select id="firewall-duration" class="form-select">
+                  <option value="60">1 Hour Block</option>
+                  <option value="1440">24 Hour Block</option>
+                  <option value="10080">1 Week Block</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-submit" style="width:100%;">Apply Firewall Rule</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">WAF Request Signature Test Sandbox</h3>
+            <form onsubmit="testWafPayload(event)">
+              <div class="form-group">
+                <label class="form-label">Inspect Payload String</label>
+                <textarea id="waf-test-payload" class="form-textarea" rows="4" placeholder="Enter test SQL/XSS inputs e.g. ' UNION SELECT * FROM public.profiles--"></textarea>
+              </div>
+              <button type="submit" class="btn-submit" style="background:var(--accent); color:#030508; box-shadow:none;">Send Test Request</button>
+            </form>
+
+            <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:8px; padding:0.75rem; margin-top:1.2rem; font-size:0.88rem;" id="waf-sandbox-output">
+              <span style="color:var(--text-muted);">Inspection verdicts will print here...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Firewall Blocked IPs Ledger</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>IP Address</th>
+                  <th>Blocked Reason</th>
+                  <th>Blocked At</th>
+                  <th>Expires At</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="firewall-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: VULNERABILITIES -->
+      <div id="panel-vulns" class="view-panel">
+        <div class="glass-card">
+          <h3 class="panel-header">CVE Vulnerability Ledger</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>CVE ID</th>
+                  <th>Affected Component</th>
+                  <th>Severity</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="vulns-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Hotfix Patches Scheduler</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>Patch ID</th>
+                  <th>Patch Target Name</th>
+                  <th>Description Details</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="patches-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav-list button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    const displayTitles = {
+      dashboard: 'SOC Monitors',
+      firewall: 'WAF Firewall Rules',
+      vulns: 'CVE Vulnerabilities & Patches'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    if (tabId === 'dashboard') loadDashboardData();
+    else if (tabId === 'firewall') loadFirewallData();
+    else if (tabId === 'vulns') loadVulnerabilitiesData();
+  }
+
+  // TAB 1: Dashboard
+  async function loadDashboardData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/security/stats', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('kpi-threat').textContent = data.threatLevel;
+      document.getElementById('kpi-score').textContent = data.securityScore;
+      document.getElementById('kpi-events').textContent = data.securityEventsCount;
+      document.getElementById('kpi-blocked').textContent = data.blockedIpsCount;
+
+      const tCard = document.getElementById('kpi-threat-card');
+      tCard.className = 'kpi-card';
+      if (data.threatLevel === 'Critical') tCard.classList.add('danger');
+      else if (data.threatLevel === 'Elevated') tCard.classList.add('warning');
+      else tCard.classList.add('success');
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TAB 2: Firewall WAF
+  async function loadFirewallData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/security/firewall', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('firewall-table-body');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:3rem;">No active blocked IPs in firewall.</td></tr>';
+        return;
+      }
+
+      list.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color:var(--primary); font-family:monospace;">${f.ip_address}</strong></td>
+          <td>${f.blocked_reason}</td>
+          <td>${new Date(f.blocked_at).toLocaleString()}</td>
+          <td>${f.expires_at ? new Date(f.expires_at).toLocaleString() : 'Permanent'}</td>
+          <td>
+            <button class="btn-submit" style="font-size:0.7rem; padding:0.25rem 0.5rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:#fff;" onclick="unblockIp('${f.ip_address}')">Unblock</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function blockIp(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+    const payload = {
+      ipAddress: document.getElementById('firewall-ip').value,
+      reason: document.getElementById('firewall-reason').value,
+      durationMinutes: document.getElementById('firewall-duration').value
+    };
+
+    try {
+      const res = await fetch('/api/security/firewall/block', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Block execution failed');
+      alert('Firewall IP Block successfully active!');
+      loadFirewallData();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function unblockIp(ipAddress) {
+    const token = await getAuthToken();
+    try {
+      const res = await fetch('/api/security/firewall/unblock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ipAddress })
+      });
+      if (!res.ok) throw new Error('Unblock execution failed');
+      loadFirewallData();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function testWafPayload(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+    const payload = document.getElementById('waf-test-payload').value;
+    const outBox = document.getElementById('waf-sandbox-output');
+    outBox.innerHTML = '<span style="color:var(--accent);">WAF inspecting request streams...</span>';
+
+    try {
+      const res = await fetch('/api/security/firewall/test-waf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ testPayload: payload })
+      });
+      const data = await res.json();
+
+      if (data.blocked) {
+        outBox.innerHTML = `
+          <strong style="color:var(--primary);">❌ BLOCKED BY FIREWALL WAF</strong><br/>
+          <p style="margin-top:0.4rem;"><strong>Reason:</strong> ${data.reason}</p>
+        `;
+      } else {
+        outBox.innerHTML = `
+          <strong style="color:var(--success);">✓ REQUEST ALLOWED</strong><br/>
+          <p style="margin-top:0.4rem;">No threat signatures matched. Clean payload.</p>
+        `;
+      }
+    } catch (err) {
+      outBox.innerHTML = `<span style="color:var(--danger)">WAF Test failed: ${err.message}</span>`;
+    }
+  }
+
+  // TAB 3: Vulnerabilities & Patches
+  async function loadVulnerabilitiesData() {
+    try {
+      const token = await getAuthToken();
+      const resVal = await fetch('/api/security/vulnerabilities', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const listVal = await resVal.json();
+
+      const tbodyVal = document.getElementById('vulns-table-body');
+      tbodyVal.innerHTML = '';
+
+      listVal.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color:var(--primary);">${v.cve_id}</strong></td>
+          <td>${v.component_name}</td>
+          <td><span class="status-badge">${v.severity}</span></td>
+          <td>${v.description}</td>
+          <td><span class="status-badge ${v.status === 'Patched' ? 'patched' : ''}">${v.status}</span></td>
+        `;
+        tbodyVal.appendChild(tr);
+      });
+
+      loadPatchesData();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadPatchesData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/security/patches', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('patches-table-body');
+      tbody.innerHTML = '';
+
+      list.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span style="font-size:0.75rem; font-family:monospace; color:var(--text-muted);">${p.id.substring(0, 8)}...</span></td>
+          <td><strong>${p.patch_name}</strong></td>
+          <td>${p.description}</td>
+          <td><span class="status-badge ${p.status === 'Applied' ? 'patched' : ''}">${p.status}</span></td>
+          <td>
+            ${p.status === 'Pending' ? `<button class="btn-submit" style="font-size:0.7rem; padding:0.25rem 0.5rem; box-shadow:none; background:var(--success);" onclick="applyPatch('${p.id}')">Apply Hotfix</button>` : '<span style="color:var(--success); font-weight:700;">Applied</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function applyPatch(patchId) {
+    const token = await getAuthToken();
+    try {
+      const res = await fetch('/api/security/patches/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ patchId })
+      });
+      if (!res.ok) throw new Error('Apply patch failed');
+      alert('Security hotfix patch successfully applied!');
+      loadVulnerabilitiesData();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+  });
+</script>
+
+</body>
+</html>

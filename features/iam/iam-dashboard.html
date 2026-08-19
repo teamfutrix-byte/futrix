@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Identity & Access Management (IAM) | FUTRIX Admin Console</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #030508;
+      --sidebar-bg: #05080c;
+      --surface: rgba(10, 15, 30, 0.6);
+      --surface-hi: rgba(20, 28, 52, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #fb7185;
+      --primary-glow: rgba(251, 113, 133, 0.4);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --accent: #22d3ee;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(251, 113, 133, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(34, 211, 238, 0.03) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--primary); }
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(251, 113, 133, 0.12);
+      color: var(--primary);
+      border-color: rgba(251, 113, 133, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(3, 5, 8, 0.35);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .gateway-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px var(--success); }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(22, 28, 50, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.accent::before { background: var(--accent); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Fields */
+    .form-select {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.4rem 0.6rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-submit:hover {
+      background: #f43f5e;
+      transform: translateY(-1px);
+    }
+
+    /* Table styling */
+    .models-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .models-table th, .models-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .models-table th {
+      background: rgba(255,255,255,0.02);
+      color: var(--text-muted);
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+    .status-badge.locked {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+    }
+    .status-badge.suspended {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">FUTRIX<span>.</span></a>
+      <span class="logo-subtitle">IAM System</span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-dashboard" class="active" onclick="switchTab('dashboard')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          IAM Dashboard
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-directory" onclick="switchTab('directory')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          User Directory (RBAC)
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-sessions" onclick="switchTab('sessions')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+          Active Sessions
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-upgrades" onclick="switchTab('upgrades')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          Access Upgrade requests
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">Back to Admin Panel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">IAM Dashboard</h2>
+      <div class="gateway-badge">
+        <span class="live-pulse"></span>
+        Zero Trust Active
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: IAM DASHBOARD -->
+      <div id="panel-dashboard" class="view-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card success">
+            <span class="kpi-label">Registered Identities</span>
+            <span class="kpi-value" id="kpi-users">0</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">Locked Accounts</span>
+            <span class="kpi-value" id="kpi-locked">0</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">Active Sessions</span>
+            <span class="kpi-value" id="kpi-sessions">0</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">MFA Adoption Rate</span>
+            <span class="kpi-value" id="kpi-mfa">0%</span>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Security Architecture Configurations</h3>
+          <div style="font-size:0.9rem; line-height:1.6;">
+            <p><strong>Central Authentication Provider:</strong> Supabase GoTrue Service Integration</p>
+            <p><strong>Granular Authorization Module:</strong> Hierarchical Role-Based Access Controls (RBAC)</p>
+            <p><strong>Session Caps Policy:</strong> 5 Concurrent active sessions maximum limit per profile</p>
+            <p><strong>Jailbreak Lockout Policy:</strong> 5 failed attempts in 10 minutes locks account for 15 minutes</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: USER DIRECTORY -->
+      <div id="panel-directory" class="view-panel">
+        <div class="glass-card">
+          <h3 class="panel-header">Users Directory (RBAC Control Sheet)</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>System Role</th>
+                  <th>Failed Logins</th>
+                  <th>Account Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: ACTIVE SESSIONS -->
+      <div id="panel-sessions" class="view-panel">
+        <div class="glass-card">
+          <h3 class="panel-header">Active Devices Sessions</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>Session ID</th>
+                  <th>User Email</th>
+                  <th>OS / Platform</th>
+                  <th>Browser Footprint</th>
+                  <th>IP Address</th>
+                  <th>Login Time</th>
+                  <th>Status</th>
+                  <th>Revocation</th>
+                </tr>
+              </thead>
+              <tbody id="sessions-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: ACCESS REQUESTS -->
+      <div id="panel-upgrades" class="view-panel">
+        <div class="glass-card">
+          <h3 class="panel-header">Temporary Role Access Upgrade Requests</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>User Email</th>
+                  <th>Requested Role</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Created At</th>
+                  <th>Decision Action</th>
+                </tr>
+              </thead>
+              <tbody id="requests-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav-list button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    const displayTitles = {
+      dashboard: 'IAM Dashboard',
+      directory: 'User Directory (RBAC)',
+      sessions: 'Active Sessions',
+      upgrades: 'Access Upgrade Requests'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    if (tabId === 'dashboard') loadDashboardData();
+    else if (tabId === 'directory') loadUserDirectory();
+    else if (tabId === 'sessions') loadSessionsList();
+    else if (tabId === 'upgrades') loadAccessRequests();
+  }
+
+  // TAB 1: Dashboard
+  async function loadDashboardData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/iam/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('kpi-users').textContent = data.registeredUsers;
+      document.getElementById('kpi-locked').textContent = data.lockedAccounts;
+      document.getElementById('kpi-sessions').textContent = data.activeSessions;
+      document.getElementById('kpi-mfa').textContent = `${data.mfaAdoptionRate}%`;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TAB 2: User Directory
+  async function loadUserDirectory() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/iam/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('users-table-body');
+      tbody.innerHTML = '';
+
+      list.forEach(u => {
+        const tr = document.createElement('tr');
+        const st = u.account_status || 'Active';
+        const stClass = st === 'Locked' ? 'status-badge locked' : (st === 'Suspended' ? 'status-badge suspended' : 'status-badge');
+
+        tr.innerHTML = `
+          <td><span style="font-size:0.75rem; font-family:monospace; color:var(--text-muted);">${u.id.substring(0, 18)}...</span></td>
+          <td><strong>${u.full_name}</strong></td>
+          <td>${u.email}</td>
+          <td>
+            <select class="form-select" onchange="changeUserRole('${u.id}', this.value)">
+              <option value="student" ${u.role === 'student' ? 'selected' : ''}>Student</option>
+              <option value="teacher" ${u.role === 'teacher' ? 'selected' : ''}>Teacher</option>
+              <option value="reviewer" ${u.role === 'reviewer' ? 'selected' : ''}>Reviewer</option>
+              <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+            </select>
+          </td>
+          <td>${u.failed_logins || 0}</td>
+          <td><span class="${stClass}">${st}</span></td>
+          <td>
+            <button class="btn-submit" style="font-size:0.7rem; padding:0.25rem 0.5rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:#fff;" onclick="toggleAccountLock('${u.id}', '${st}')">
+              ${st === 'Active' ? 'Lock Account' : 'Unlock / Reset'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function changeUserRole(userId, newRole) {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/iam/users/role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, role: newRole })
+      });
+      if (!res.ok) throw new Error('Role modification failed');
+      alert('User role successfully updated!');
+      loadUserDirectory();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function toggleAccountLock(userId, currentStatus) {
+    const nextStatus = currentStatus === 'Active' ? 'Locked' : 'Active';
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/iam/users/status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, status: nextStatus })
+      });
+      if (!res.ok) throw new Error('Status update failed');
+      loadUserDirectory();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // TAB 3: Active Sessions
+  async function loadSessionsList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/iam/sessions', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('sessions-table-body');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:3rem;">No active device sessions.</td></tr>';
+        return;
+      }
+
+      list.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span style="font-size:0.75rem; font-family:monospace; color:var(--text-muted);">${s.session_id.substring(0, 12)}...</span></td>
+          <td><strong>${s.email}</strong></td>
+          <td>${s.operating_system || 'Unknown'}</td>
+          <td>${s.browser || 'Unknown'}</td>
+          <td>${s.ip_address || '127.0.0.1'}</td>
+          <td>${new Date(s.login_time).toLocaleString()}</td>
+          <td><span class="status-badge ${s.status !== 'Active' ? 'locked' : ''}">${s.status}</span></td>
+          <td>
+            ${s.status === 'Active' ? `<button class="btn-submit" style="background:var(--danger); font-size:0.7rem; padding:0.25rem 0.5rem;" onclick="revokeSession('${s.session_id}')">Revoke</button>` : '<span style="color:var(--text-muted);">Revoked</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function revokeSession(sessionId) {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/iam/sessions/revoke', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ sessionId })
+      });
+      if (!res.ok) throw new Error('Revoke session failed');
+      loadSessionsList();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // TAB 4: Access requests
+  async function loadAccessRequests() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/iam/access-requests', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('requests-table-body');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:3rem;">No temporary role upgrade requests.</td></tr>';
+        return;
+      }
+
+      list.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span style="font-size:0.75rem; font-family:monospace; color:var(--text-muted);">${r.id.substring(0, 12)}...</span></td>
+          <td><strong>${r.email}</strong></td>
+          <td><span class="status-badge">${r.requested_role}</span></td>
+          <td>${r.reason}</td>
+          <td><strong>${r.status}</strong></td>
+          <td>${new Date(r.created_at).toLocaleDateString()}</td>
+          <td>
+            ${r.status === 'Pending' ? `
+              <button class="btn-submit" style="font-size:0.7rem; padding:0.25rem 0.5rem;" onclick="decideRequest('${r.id}', 'Approved')">Approve</button>
+              <button class="btn-submit" style="background:var(--danger); font-size:0.7rem; padding:0.25rem 0.5rem;" onclick="decideRequest('${r.id}', 'Rejected')">Reject</button>
+            ` : `<span style="color:var(--text-muted);">${r.status}</span>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function decideRequest(requestId, decision) {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/iam/access-requests/decide', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ requestId, status: decision })
+      });
+      if (!res.ok) throw new Error('Decision submission failed');
+      loadAccessRequests();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+  });
+</script>
+
+</body>
+</html>

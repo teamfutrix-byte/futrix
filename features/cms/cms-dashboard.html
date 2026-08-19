@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise CMS Console | FUTRIX Console</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #070913;
+      --sidebar-bg: #0b0d1b;
+      --surface: rgba(20, 24, 46, 0.6);
+      --surface-hi: rgba(30, 36, 68, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #4d8eff;
+      --primary-glow: rgba(77, 142, 255, 0.4);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --accent: #06b6d4;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(77, 142, 255, 0.07) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── LAYOUT ── */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--primary); }
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(77, 142, 255, 0.12);
+      color: var(--primary);
+      border-color: rgba(77, 142, 255, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+    .btn-back-console:hover { background: rgba(255, 255, 255, 0.08); }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(7, 9, 19, 0.3);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    /* KPIs Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(25, 29, 54, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.accent::before { background: var(--accent); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Details Grid */
+    .details-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(77, 142, 255, 0.15);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-submit:hover {
+      background: #3b7ced;
+      transform: translateY(-1px);
+    }
+
+    /* Split Workspace */
+    .split-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 1.5rem;
+    }
+
+    .content-list-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 550px;
+      overflow-y: auto;
+    }
+
+    .content-list-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .content-list-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(77, 142, 255, 0.2);
+    }
+    .content-list-item.selected {
+      background: rgba(77, 142, 255, 0.08);
+      border-color: var(--primary);
+    }
+    .content-list-item-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+    }
+    .content-list-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .status-badge {
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-badge.Published { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .status-badge.Draft { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
+    .status-badge.Review { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .status-badge.Archived { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    /* Visual Builder Sections Helper */
+    .builder-components-drawer {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .btn-component-tag {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .btn-component-tag:hover {
+      background: rgba(77, 142, 255, 0.12);
+      border-color: var(--primary);
+    }
+
+    /* SEO Indicators */
+    .seo-score-widget {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .seo-score-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      background: var(--surface-hi);
+      border: 3px solid var(--warning);
+    }
+    .seo-score-circle.good { border-color: var(--success); color: var(--success); }
+    .seo-score-circle.alert { border-color: var(--danger); color: var(--danger); }
+
+    .seo-suggestions-list {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding-left: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    /* Version Diff Timelines */
+    .version-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .version-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem;
+    }
+
+    /* Media Grid */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 1rem;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+    .media-card {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem;
+      text-align: center;
+      font-size: 0.75rem;
+      transition: background 0.15s;
+    }
+    .media-card:hover { background: rgba(255, 255, 255, 0.03); }
+    .media-thumb {
+      height: 70px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Menu management list */
+    .menu-tree-editor {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .menu-node {
+      background: rgba(255,255,255,0.01);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">FUTRIX<span>.</span></a>
+      <span class="logo-subtitle">Dynamic CMS Portal</span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-overview" class="active" onclick="switchTab('overview')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+          CMS Overview
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-editor" onclick="switchTab('editor')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+          Visual Page Builder
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-media" onclick="switchTab('media')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          Media & Assets
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-menus" onclick="switchTab('menus')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"></path></svg>
+          Navigation Menus
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-faqs" onclick="switchTab('faqs')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          FAQ Manager
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">Back to Admin Panel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">CMS Overview</h2>
+      <div class="live-status">
+        <span class="live-pulse"></span>
+        CMS Engine Live
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: OVERVIEW -->
+      <div id="panel-overview" class="view-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card success">
+            <span class="kpi-label">Published Pages</span>
+            <span class="kpi-value" id="kpi-published">0</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Draft / Under Review</span>
+            <span class="kpi-value" id="kpi-drafts">0</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">Pending Approvals</span>
+            <span class="kpi-value" id="kpi-pending-approvals">0</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">Average SEO Score</span>
+            <span class="kpi-value" id="kpi-seo-score">0.0</span>
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div class="glass-card">
+            <h3 class="panel-header">Publishing Audit Activity Log</h3>
+            <div id="publishing-activities-list" style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.82rem; max-height: 400px; overflow-y:auto;">
+              <!-- Activities populated dynamically -->
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            <div class="glass-card">
+              <h3 class="panel-header">Digital Assets quota</h3>
+              <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.85rem;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Total Media Files</span>
+                  <strong id="stat-media-count">0</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Storage Used</span>
+                  <strong id="stat-storage-size">0 KB</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <h3 class="panel-header">Popular FAQ Items</h3>
+              <div id="popular-pages-list" style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.82rem;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: VISUAL EDITOR -->
+      <div id="panel-editor" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <div class="panel-header">
+              <span>FUTRIX Pages</span>
+              <button class="btn-submit" style="padding:0.4rem 0.8rem; font-size:0.75rem;" onclick="createNewPageForm()">+ New Page</button>
+            </div>
+            <div class="content-list-items" id="pages-list">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+
+          <div class="glass-card" id="page-editor-panel">
+            <h3 class="panel-header" id="editor-title">Page Content Editor</h3>
+            
+            <!-- Live SEO widget -->
+            <div class="seo-score-widget">
+              <div class="seo-score-circle" id="live-seo-score">0</div>
+              <div>
+                <strong style="font-size:0.85rem; color:#fff; display:block;">Live SEO Score Evaluation</strong>
+                <ul class="seo-suggestions-list" id="seo-suggestions">
+                  <li>Start entering page metadata to view scores and search engine guidelines.</li>
+                </ul>
+              </div>
+            </div>
+
+            <form id="content-form" onsubmit="savePageContent(e)">
+              <div class="form-group" style="display:grid; grid-template-columns:1.5fr 1fr; gap:1rem;">
+                <div>
+                  <label class="form-label">Page ID</label>
+                  <input type="text" id="pg-id" class="form-input" required />
+                </div>
+                <div>
+                  <label class="form-label">Category</label>
+                  <select id="pg-category" class="form-select">
+                    <option value="Landing Page">Landing Page</option>
+                    <option value="Policy">Terms / Policies</option>
+                    <option value="Documentation">Help Document</option>
+                    <option value="Blog">Blog post</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div>
+                  <label class="form-label">Page Title</label>
+                  <input type="text" id="pg-title" class="form-input" oninput="calculateLiveSeo()" required />
+                </div>
+                <div>
+                  <label class="form-label">URL Slug</label>
+                  <input type="text" id="pg-slug" class="form-input" oninput="calculateLiveSeo()" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Meta Description (SEO)</label>
+                <input type="text" id="pg-seo-desc" class="form-input" oninput="calculateLiveSeo()" placeholder="Provide search engine snippets description..." />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Keywords (Comma separated)</label>
+                <input type="text" id="pg-keywords" class="form-input" oninput="calculateLiveSeo()" placeholder="E.g. jee prep, gamified, practice mock" />
+              </div>
+
+              <!-- Component Builder helper -->
+              <span class="form-label" style="font-size:0.7rem; margin-bottom:0.25rem;">Visual Builder Components (Click to insert):</span>
+              <div class="builder-components-drawer">
+                <button type="button" class="btn-component-tag" onclick="insertComponent('hero')">Hero Section</button>
+                <button type="button" class="btn-component-tag" onclick="insertComponent('pricing')">Pricing Grid</button>
+                <button type="button" class="btn-component-tag" onclick="insertComponent('accordion')">FAQ Accordion</button>
+                <button type="button" class="btn-component-tag" onclick="insertComponent('features')">Features Cards</button>
+                <button type="button" class="btn-component-tag" onclick="insertComponent('cta')">Call To Action</button>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Page Content Body (JSON components or Rich Markdown)</label>
+                <textarea id="pg-body" class="form-textarea" rows="8" required></textarea>
+              </div>
+
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1.5fr; gap:1rem;">
+                <div>
+                  <label class="form-label">Status</label>
+                  <select id="pg-status" class="form-select">
+                    <option value="Draft">Draft</option>
+                    <option value="Review">Submit for Review</option>
+                    <option value="Published">Approved & Publish</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Changelog Change Summary</label>
+                  <input type="text" id="pg-changelog" class="form-input" placeholder="What was changed in this version?" />
+                </div>
+              </div>
+
+              <button type="button" class="btn-submit" onclick="submitContentForm()">Commit Version Updates</button>
+            </form>
+
+            <!-- Version list under selected content -->
+            <div style="border-top:1px solid var(--border); padding-top:1.5rem; margin-top:2rem;" id="versions-history-block">
+              <h4 class="panel-header" style="font-size:0.9rem;">Version Logs & Git-like rollback</h4>
+              <div class="version-timeline" id="page-versions-timeline">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: MEDIA -->
+      <div id="panel-media" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Upload Media Simulation</h3>
+            <form id="media-form" onsubmit="uploadMedia(event)">
+              <div class="form-group">
+                <label class="form-label">Filename</label>
+                <input type="text" id="med-name" class="form-input" placeholder="E.g. banner-jee-2026.png" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mock Path URL</label>
+                <input type="text" id="med-path" class="form-input" placeholder="E.g. /media/banner-jee-2026.png" required />
+              </div>
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div>
+                  <label class="form-label">File size (Bytes)</label>
+                  <input type="number" id="med-size" class="form-input" placeholder="E.g. 102400" required />
+                </div>
+                <div>
+                  <label class="form-label">Format / Extension</label>
+                  <select id="med-format" class="form-select">
+                    <option value="image/png">PNG Image</option>
+                    <option value="image/jpeg">JPEG Image</option>
+                    <option value="image/svg+xml">SVG Vector</option>
+                    <option value="application/pdf">PDF Document</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Alt text / Accessibility tag</label>
+                <input type="text" id="med-alt" class="form-input" placeholder="Explain image visual contents..." />
+              </div>
+              <button type="submit" class="btn-submit">Upload & Optimize</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Cataloged Media Assets</h3>
+            <div class="media-grid" id="media-deck-container">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: MENUS -->
+      <div id="panel-menus" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Navigation Menus</h3>
+            <div class="content-list-items" id="menus-list-container">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+
+          <div class="glass-card" id="menu-editor-panel" style="display:none;">
+            <h3 class="panel-header" id="menu-editor-title">Edit Menu</h3>
+            <div class="form-group">
+              <label class="form-label">Friendly Name</label>
+              <input type="text" id="menu-name" class="form-input" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role Restrictions (Comma-separated)</label>
+              <input type="text" id="menu-roles" class="form-input" placeholder="E.g. guest, student" />
+            </div>
+
+            <div style="margin-bottom:1.5rem;">
+              <span class="form-label" style="margin-bottom:0.5rem;">Menu Nodes hierarchy</span>
+              <div class="menu-tree-editor" id="menu-nodes-list">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <button class="btn-submit" style="margin-right:0.5rem;" onclick="addMenuNodeRow()">+ Add Link Node</button>
+            <button class="btn-submit" style="background:var(--success); box-shadow:none;" onclick="saveMenuNavTree()">Save Menu Navigation</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: FAQS -->
+      <div id="panel-faqs" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Add / Edit FAQ</h3>
+            <form id="faq-form" onsubmit="saveFaqItem(event)">
+              <input type="hidden" id="faq-id" />
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select id="faq-category" class="form-select">
+                  <option value="General">General</option>
+                  <option value="Gamification">Gamification rules</option>
+                  <option value="Billing">Billing & Subscription</option>
+                  <option value="AI Mentoring">AI Mentoring</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Question Text</label>
+                <input type="text" id="faq-question" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Answer Details</label>
+                <textarea id="faq-answer" class="form-textarea" rows="5" required></textarea>
+              </div>
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div>
+                  <label class="form-label">Display Order</label>
+                  <input type="number" id="faq-order" class="form-input" value="1" required />
+                </div>
+                <div>
+                  <label class="form-label">Visibility</label>
+                  <select id="faq-visibility" class="form-select">
+                    <option value="Public">Public Access</option>
+                    <option value="Student Only">Students Only</option>
+                    <option value="Teacher Only">Teachers Only</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn-submit">Save FAQ Node</button>
+              <button type="button" class="btn-submit" style="background:rgba(255,255,255,0.03); border:1px solid var(--border); box-shadow:none; color:#fff;" onclick="resetFaqForm()">Reset Form</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Active FAQ List</h3>
+            <div class="content-list-items" id="faqs-list-container">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  let activeTab = 'overview';
+  let allPages = [];
+  let selectedPageId = null;
+  let allMenus = [];
+  let selectedMenuId = null;
+
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  function switchTab(tabId) {
+    activeTab = tabId;
+    document.querySelectorAll('.nav-list button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    const displayTitles = {
+      overview: 'CMS Overview',
+      editor: 'Visual Page Builder',
+      media: 'Media & Assets',
+      menus: 'Navigation Menus',
+      faqs: 'FAQ Manager'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    if (tabId === 'overview') loadOverviewData();
+    else if (tabId === 'editor') loadPagesList();
+    else if (tabId === 'media') loadMediaDeck();
+    else if (tabId === 'menus') loadMenusList();
+    else if (tabId === 'faqs') loadFaqsList();
+  }
+
+  // TAB 1: Load stats
+  async function loadOverviewData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/cms/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('kpi-published').textContent = data.publishedCount;
+      document.getElementById('kpi-drafts').textContent = data.draftCount + data.scheduledCount;
+      document.getElementById('kpi-pending-approvals').textContent = data.pendingApprovals;
+      document.getElementById('kpi-seo-score').textContent = `${data.seoScoreAvg}%`;
+
+      document.getElementById('stat-media-count').textContent = data.mediaCount;
+      document.getElementById('stat-storage-size').textContent = `${(data.storageUsedBytes / 1024).toFixed(1)} KB`;
+
+      // Load activities
+      const actCont = document.getElementById('publishing-activities-list');
+      actCont.innerHTML = '';
+      if (data.recentActivities.length === 0) {
+        actCont.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:1.5rem;">No recent publishing activity.</div>';
+      } else {
+        data.recentActivities.forEach(a => {
+          const div = document.createElement('div');
+          div.style.padding = '0.5rem';
+          div.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
+          const time = new Date(a.timestamp).toLocaleString();
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; font-weight:600; color:var(--primary); font-size:0.75rem;">
+              <span>${a.action} (${a.target})</span>
+              <span style="color:var(--text-muted);">${time}</span>
+            </div>
+            <div style="color:#fff; font-size:0.75rem; margin-top:0.15rem;">Actor: ${a.actor}</div>
+          `;
+          actCont.appendChild(div);
+        });
+      }
+
+      // Load popular pages
+      const popCont = document.getElementById('popular-pages-list');
+      popCont.innerHTML = '';
+      data.popularPages.forEach(p => {
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.padding = '0.35rem 0';
+        div.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
+        div.innerHTML = `
+          <span style="color:#fff;">${p.title}</span>
+          <span style="color:var(--accent); font-weight:600;">${p.views} reads</span>
+        `;
+        popCont.appendChild(div);
+      });
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TAB 2: Pages list
+  async function loadPagesList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/cms/content', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      allPages = await res.json();
+
+      const listCont = document.getElementById('pages-list');
+      listCont.innerHTML = '';
+      allPages.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'content-list-item';
+        item.id = `page-card-${p.id}`;
+        item.onclick = () => selectPage(p.id);
+        item.innerHTML = `
+          <div class="content-list-item-title">
+            <span>${p.title}</span>
+            <span class="status-badge ${p.status}">${p.status}</span>
+          </div>
+          <div class="content-list-item-meta">
+            <span>Slug: /${p.slug}</span>
+            <span>Ver: v${p.version}</span>
+            <span>SEO: ${(p.structured_data || {}).seoScore || 0}%</span>
+          </div>
+        `;
+        listCont.appendChild(item);
+      });
+
+      if (allPages.length > 0) {
+        selectPage(allPages[0].id);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Select page
+  function selectPage(id) {
+    document.querySelectorAll('.content-list-item').forEach(card => card.classList.remove('selected'));
+    const selectedCard = document.getElementById(`page-card-${id}`);
+    if (selectedCard) selectedCard.classList.add('selected');
+
+    const page = allPages.find(p => p.id === id);
+    if (!page) return;
+
+    selectedPageId = id;
+    document.getElementById('editor-title').textContent = `Edit Page: ${page.title}`;
+    document.getElementById('pg-id').value = page.id;
+    document.getElementById('pg-id').readOnly = true;
+    document.getElementById('pg-category').value = page.category;
+    document.getElementById('pg-title').value = page.title;
+    document.getElementById('pg-slug').value = page.slug;
+    document.getElementById('pg-seo-desc').value = page.seo_description || '';
+    document.getElementById('pg-keywords').value = (page.keywords || []).join(', ');
+    document.getElementById('pg-body').value = page.content_body;
+    document.getElementById('pg-status').value = page.status;
+    document.getElementById('pg-changelog').value = '';
+
+    calculateLiveSeo();
+    loadPageVersions(page.id);
+  }
+
+  function createNewPageForm() {
+    selectedPageId = null;
+    document.querySelectorAll('.content-list-item').forEach(card => card.classList.remove('selected'));
+    document.getElementById('editor-title').textContent = 'Create New Page';
+    document.getElementById('pg-id').value = '';
+    document.getElementById('pg-id').readOnly = false;
+    document.getElementById('pg-category').value = 'Landing Page';
+    document.getElementById('pg-title').value = '';
+    document.getElementById('pg-slug').value = '';
+    document.getElementById('pg-seo-desc').value = '';
+    document.getElementById('pg-keywords').value = '';
+    document.getElementById('pg-body').value = '';
+    document.getElementById('pg-status').value = 'Draft';
+    document.getElementById('pg-changelog').value = 'Initial publication';
+
+    calculateLiveSeo();
+    document.getElementById('page-versions-timeline').innerHTML = '<div style="color:var(--text-muted)">No history for unsaved pages.</div>';
+  }
+
+  // Component injections
+  function insertComponent(type) {
+    const textarea = document.getElementById('pg-body');
+    const templates = {
+      hero: `{\n  "component": "HeroSection",\n  "settings": {\n    "title": "Master Your Prep Today",\n    "subtitle": "Interactive mock exams with AI coaching guidelines.",\n    "cta": "Get Started"\n  }\n}`,
+      pricing: `{\n  "component": "PricingGrid",\n  "settings": {\n    "title": "Pricing Plans",\n    "plans": [\n      {"name": "Free", "price": 0},\n      {"name": "Premium Monthly", "price": 599}\n    ]\n  }\n}`,
+      accordion: `{\n  "component": "FAQAccordion",\n  "settings": {\n    "items": [\n      {"q": "How does the AI Mentor work?", "a": "It reviews weak areas and suggests formula revisions."}\n    ]\n  }\n}`,
+      features: `{\n  "component": "FeaturesGrid",\n  "settings": {\n    "cards": [\n      {"title": "Gamified Leagues", "desc": "Compete with peers on live score leaderboards."}\n    ]\n  }\n}`,
+      cta: `{\n  "component": "CTAStrip",\n  "settings": {\n    "label": "Ready to excel?",\n    "buttonText": "Enroll Now"\n  }\n}`
+    };
+
+    const code = templates[type];
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const val = textarea.value;
+    textarea.value = val.substring(0, start) + code + val.substring(end);
+    textarea.focus();
+  }
+
+  // Live SEO checker
+  function calculateLiveSeo() {
+    const title = document.getElementById('pg-title').value;
+    const desc = document.getElementById('pg-seo-desc').value;
+    const slug = document.getElementById('pg-slug').value;
+    const keywords = document.getElementById('pg-keywords').value.split(',').map(k => k.trim()).filter(Boolean);
+
+    let score = 0;
+    const suggestions = [];
+
+    if (title && title.length >= 15 && title.length <= 60) {
+      score += 25;
+    } else {
+      suggestions.push('Meta Title length should be 15-60 characters.');
+    }
+
+    if (desc && desc.length >= 50 && desc.length <= 160) {
+      score += 25;
+    } else {
+      suggestions.push('Meta Description should be 50-160 characters for indexing snippets.');
+    }
+
+    const cleanSlugReg = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    if (slug && cleanSlugReg.test(slug)) {
+      score += 20;
+    } else {
+      suggestions.push('URL Slug should be lowercase alphanumeric and hyphens only.');
+    }
+
+    if (keywords && keywords.length >= 2) {
+      score += 15;
+    } else {
+      suggestions.push('Identify at least 2 target SEO keywords.');
+    }
+
+    score += 15; // standard credentials
+
+    const circle = document.getElementById('live-seo-score');
+    circle.textContent = score;
+    circle.className = 'seo-score-circle';
+    if (score >= 80) circle.classList.add('good');
+    else if (score < 50) circle.classList.add('alert');
+
+    const sugList = document.getElementById('seo-suggestions');
+    sugList.innerHTML = '';
+    if (suggestions.length === 0) {
+      sugList.innerHTML = '<li style="color:var(--success)">✓ Title, Description, and Slug criteria met perfectly!</li>';
+    } else {
+      suggestions.forEach(s => {
+        const li = document.createElement('li');
+        li.textContent = s;
+        sugList.appendChild(li);
+      });
+    }
+  }
+
+  // Load versions
+  async function loadPageVersions(pageId) {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/cms/content/${pageId}/versions`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const versions = await res.json();
+
+      const timeline = document.getElementById('page-versions-timeline');
+      timeline.innerHTML = '';
+      if (versions.length === 0) {
+        timeline.innerHTML = '<div style="color:var(--text-muted)">No previous versions logged. Updates will create rollback checkpoints.</div>';
+        return;
+      }
+
+      versions.forEach(v => {
+        const div = document.createElement('div');
+        div.className = 'version-item';
+        const date = new Date(v.timestamp).toLocaleString();
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+            <span style="color:var(--primary);">Version #${v.version_number}</span>
+            <button class="btn-submit" style="padding:0.2rem 0.5rem; font-size:0.65rem;" onclick="rollbackPage('${v.content_id}', ${v.version_number})">Rollback ⎌</button>
+          </div>
+          <p style="font-size:0.75rem; color:#fff; margin-top:0.25rem;">Change: ${v.change_summary || 'Manual update'}</p>
+          <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:0.15rem;">Time: ${date} | Author: ${v.author_id}</span>
+        `;
+        timeline.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Rollback Page
+  async function rollbackPage(contentId, ver) {
+    if (!confirm(`Are you sure you want to rollback to version #${ver}? This will create a new version log entry.`)) return;
+
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/cms/content/${contentId}/rollback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ versionNumber: ver })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Rollback failed');
+
+      alert(`Successfully rolled back to version #${ver}! Current Active version: #${data.currentVersion}`);
+      loadPagesList();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // Save/Update content page
+  async function submitPageContent() {
+    // Form submits handled by click event
+  }
+
+  async function submitContentForm() {
+    const token = await getAuthToken();
+
+    const payload = {
+      id: document.getElementById('pg-id').value,
+      title: document.getElementById('pg-title').value,
+      slug: document.getElementById('pg-slug').value,
+      category: document.getElementById('pg-category').value,
+      seoDescription: document.getElementById('pg-seo-desc').value,
+      keywords: document.getElementById('pg-keywords').value.split(',').map(k => k.trim()).filter(Boolean),
+      contentBody: document.getElementById('pg-body').value,
+      status: document.getElementById('pg-status').value,
+      changeSummary: document.getElementById('pg-changelog').value || 'Updated page'
+    };
+
+    try {
+      const res = await fetch('/api/cms/content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save page');
+
+      alert(`Page committed successfully! SEO Score: ${data.seoScore}%`);
+      loadPagesList();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // TAB 3: Media library
+  async function loadMediaDeck() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/cms/media', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const media = await res.json();
+
+      const deck = document.getElementById('media-deck-container');
+      deck.innerHTML = '';
+
+      if (media.length === 0) {
+        deck.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:2rem; grid-column:span 4;">No media documents uploaded yet. Use the upload tool to catalog.</div>';
+        return;
+      }
+
+      media.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'media-card';
+        const sizeKb = (m.file_size / 1024).toFixed(1);
+        div.innerHTML = `
+          <div class="media-thumb">${m.format.split('/')[1].toUpperCase()}</div>
+          <strong style="color:#fff; display:block; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${m.filename}</strong>
+          <span style="color:var(--text-muted); font-size:0.68rem; display:block;">Size: ${sizeKb} KB</span>
+          <span class="status-badge Published" style="padding:0.1rem 0.3rem; font-size:0.6rem; margin-top:0.25rem; display:inline-block;">${m.optimization_status}</span>
+        `;
+        deck.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function uploadMedia(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      filename: document.getElementById('med-name').value,
+      filepath: document.getElementById('med-path').value,
+      fileSize: parseInt(document.getElementById('med-size').value),
+      format: document.getElementById('med-format').value,
+      altText: document.getElementById('med-alt').value
+    };
+
+    try {
+      const res = await fetch('/api/cms/media', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Media upload failed');
+
+      alert('Media asset uploaded, optimized, and cataloged on CDN!');
+      document.getElementById('media-form').reset();
+      loadMediaDeck();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // TAB 4: Menus
+  async function loadMenusList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/cms/menus', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      allMenus = await res.json();
+
+      const listCont = document.getElementById('menus-list-container');
+      listCont.innerHTML = '';
+      allMenus.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'content-list-item';
+        item.id = `menu-card-${m.id}`;
+        item.onclick = () => selectMenu(m.id);
+        item.innerHTML = `
+          <div class="content-list-item-title">
+            <span>${m.name}</span>
+          </div>
+          <div class="content-list-item-meta">
+            <span>ID: ${m.id}</span>
+            <span>Items: ${(m.items || []).length} nodes</span>
+          </div>
+        `;
+        listCont.appendChild(item);
+      });
+
+      if (allMenus.length > 0) {
+        selectMenu(allMenus[0].id);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function selectMenu(id) {
+    document.querySelectorAll('#menus-list-container .content-list-item').forEach(card => card.classList.remove('selected'));
+    const selectedCard = document.getElementById(`menu-card-${id}`);
+    if (selectedCard) selectedCard.classList.add('selected');
+
+    const menu = allMenus.find(m => m.id === id);
+    if (!menu) return;
+
+    selectedMenuId = id;
+    document.getElementById('menu-editor-title').textContent = `Edit Menu: ${menu.name}`;
+    document.getElementById('menu-name').value = menu.name;
+    document.getElementById('menu-roles').value = (menu.role_restrictions || []).join(', ');
+
+    const nodesCont = document.getElementById('menu-nodes-list');
+    nodesCont.innerHTML = '';
+    
+    (menu.items || []).forEach((item, index) => {
+      addMenuNodeRow(item.label, item.url, item.role || '');
+    });
+
+    document.getElementById('menu-editor-panel').style.display = 'block';
+  }
+
+  function addMenuNodeRow(label = '', url = '', role = '') {
+    const list = document.getElementById('menu-nodes-list');
+    const div = document.createElement('div');
+    div.className = 'menu-node';
+    div.innerHTML = `
+      <input type="text" class="form-input menu-node-label" style="width:30%" placeholder="Label" value="${label}" />
+      <input type="text" class="form-input menu-node-url" style="width:40%" placeholder="URL" value="${url}" />
+      <select class="form-select menu-node-role" style="width:20%">
+        <option value="">Public</option>
+        <option value="student" ${role === 'student' ? 'selected' : ''}>Student</option>
+        <option value="teacher" ${role === 'teacher' ? 'selected' : ''}>Teacher</option>
+      </select>
+      <button class="btn-submit" style="background:var(--danger); box-shadow:none; padding:0.4rem 0.6rem;" onclick="this.parentElement.remove()">X</button>
+    `;
+    list.appendChild(div);
+  }
+
+  async function saveMenuNavTree() {
+    const token = await getAuthToken();
+
+    const items = [];
+    document.querySelectorAll('#menu-nodes-list .menu-node').forEach((node, index) => {
+      const label = node.querySelector('.menu-node-label').value.trim();
+      const url = node.querySelector('.menu-node-url').value.trim();
+      const role = node.querySelector('.menu-node-role').value;
+
+      if (label && url) {
+        items.push({ label, url, order: index + 1, role: role || null });
+      }
+    });
+
+    const payload = {
+      id: selectedMenuId,
+      name: document.getElementById('menu-name').value,
+      roleRestrictions: document.getElementById('menu-roles').value.split(',').map(r => r.trim()).filter(Boolean),
+      items
+    };
+
+    try {
+      const res = await fetch('/api/cms/menus', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to save menu configuration');
+
+      alert('Navigation Menu structure saved successfully!');
+      loadMenusList();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // TAB 5: FAQs List
+  async function loadFaqsList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/cms/faqs', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const faqs = await res.json();
+
+      const listCont = document.getElementById('faqs-list-container');
+      listCont.innerHTML = '';
+      faqs.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'content-list-item';
+        item.onclick = () => selectFaq(f);
+        item.innerHTML = `
+          <div class="content-list-item-title">
+            <span>Q: ${f.question}</span>
+            <span class="status-badge Published" style="font-size:0.6rem;">${f.category}</span>
+          </div>
+          <div class="content-list-item-meta">
+            <span>Order: ${f.display_order}</span>
+            <span>Views: ${f.views || 0} hits</span>
+            <span>Visible: ${f.visibility}</span>
+          </div>
+        `;
+        listCont.appendChild(item);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function selectFaq(faq) {
+    document.getElementById('faq-id').value = faq.id;
+    document.getElementById('faq-category').value = faq.category;
+    document.getElementById('faq-question').value = faq.question;
+    document.getElementById('faq-answer').value = faq.answer;
+    document.getElementById('faq-order').value = faq.display_order;
+    document.getElementById('faq-visibility').value = faq.visibility;
+  }
+
+  function resetFaqForm() {
+    document.getElementById('faq-form').reset();
+    document.getElementById('faq-id').value = '';
+  }
+
+  async function saveFaqItem(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      id: document.getElementById('faq-id').value || null,
+      category: document.getElementById('faq-category').value,
+      question: document.getElementById('faq-question').value,
+      answer: document.getElementById('faq-answer').value,
+      displayOrder: parseInt(document.getElementById('faq-order').value),
+      visibility: document.getElementById('faq-visibility').value
+    };
+
+    try {
+      const res = await fetch('/api/cms/faqs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('FAQ save failed');
+
+      alert('FAQ node saved successfully!');
+      resetFaqForm();
+      loadFaqsList();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadOverviewData();
+  });
+</script>
+
+</body>
+</html>

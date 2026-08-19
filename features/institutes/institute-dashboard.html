@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Institute SaaS Portal | FUTRIX Enterprise</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #060812;
+      --sidebar-bg: #090b18;
+      --surface: rgba(18, 22, 44, 0.65);
+      --surface-hi: rgba(28, 34, 68, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      
+      /* White label theme colors - dynamically customizable */
+      --primary: #4d8eff;
+      --primary-glow: rgba(77, 142, 255, 0.4);
+      --secondary: #06b6d4;
+      --accent: #10b981;
+      
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(77, 142, 255, 0.07) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── LAYOUT ── */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 270px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tenant-logo-preview {
+      width: 35px;
+      height: 35px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .sidebar-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .tenant-name-lbl {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+      max-width: 170px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tenant-plan-badge {
+      font-size: 0.62rem;
+      color: var(--primary);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(77, 142, 255, 0.12);
+      color: var(--primary);
+      border-color: rgba(77, 142, 255, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(6, 8, 18, 0.35);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px var(--accent); }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    /* KPIs Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(25, 29, 54, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.success::before { background: var(--accent); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.danger::before { background: var(--danger); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Details Grid */
+    .details-grid {
+      display: grid;
+      grid-template-columns: 2.2fr 1.2fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(77, 142, 255, 0.15);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-submit:hover {
+      background: #3b7ced;
+      transform: translateY(-1px);
+    }
+
+    /* Split Workspace */
+    .split-workspace {
+      display: grid;
+      grid-template-columns: 1.2fr 2fr;
+      gap: 1.5rem;
+    }
+
+    .content-list-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 550px;
+      overflow-y: auto;
+    }
+
+    .content-list-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 1rem;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .content-list-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(77, 142, 255, 0.2);
+    }
+    .content-list-item-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+    }
+    .content-list-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .status-badge {
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-badge.Active { background: rgba(16, 185, 129, 0.15); color: var(--accent); }
+    .status-badge.Trial { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .status-badge.Paid { background: rgba(16, 185, 129, 0.15); color: var(--accent); }
+    .status-badge.Unpaid { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    /* Custom branding live preview */
+    .branding-live-preview-box {
+      border: 1px dashed var(--primary);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      background: rgba(255,255,255,0.01);
+      margin-top: 1.5rem;
+    }
+
+    .preview-header-mock {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      font-family: 'Sora', sans-serif;
+    }
+    .preview-button-mock {
+      background: var(--secondary);
+      color: #fff;
+      padding: 0.35rem 0.75rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Timetable scheduling layout */
+    .schedule-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+    .schedule-day-box {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem;
+      text-align: center;
+      font-size: 0.7rem;
+      cursor: pointer;
+      background: rgba(255,255,255,0.02);
+      transition: all 0.15s;
+    }
+    .schedule-day-box.selected {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="tenant-logo-preview" id="side-tenant-logo-text">A</div>
+      <div class="sidebar-title-block">
+        <span class="tenant-name-lbl" id="side-tenant-name">Apex Academy</span>
+        <span class="tenant-plan-badge" id="side-tenant-plan">STARTER PLAN</span>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-overview" class="active" onclick="switchTab('overview')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+          Institute Stats
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-branding" onclick="switchTab('branding')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+          Branding Settings
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-batches" onclick="switchTab('batches')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          Batch Timetables
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-roster" onclick="switchTab('roster')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          Members Roster
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-billing" onclick="switchTab('billing')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Billing & Invoices
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-ai" onclick="switchTab('ai')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+          AI Configuration
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">FUTRIX Super Admin</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">Institute Statistics</h2>
+      <div class="live-status">
+        <span class="live-pulse"></span>
+        Tenant Sandbox Active
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: OVERVIEW -->
+      <div id="panel-overview" class="view-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card success">
+            <span class="kpi-label">Enrolled Students</span>
+            <span class="kpi-value" id="kpi-students">0</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">Active Teachers</span>
+            <span class="kpi-value" id="kpi-teachers">0</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">Active Batches</span>
+            <span class="kpi-value" id="kpi-batches">0</span>
+          </div>
+          <div class="kpi-card danger" id="kpi-health-card">
+            <span class="kpi-label">Tenant Health Score</span>
+            <span class="kpi-value" id="kpi-health">Active</span>
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div class="glass-card">
+            <h3 class="panel-header">Academic Programs Overview</h3>
+            <div style="display:flex; flex-direction:column; gap:1.25rem;">
+              <div>
+                <strong style="font-size:0.9rem; color:#fff; display:block; margin-bottom:0.4rem;">Supported Standard Courses</strong>
+                <div style="display:flex; gap:0.5rem;" id="tenant-courses-tags">
+                  <!-- Dynamic tags -->
+                </div>
+              </div>
+              <div style="border-top: 1px solid var(--border); padding-top: 1rem; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                <div>
+                  <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Average Attendance rate</span>
+                  <strong style="font-size:1.5rem; color:#fff;" id="stat-attendance">0%</strong>
+                </div>
+                <div>
+                  <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Monthly storage quota used</span>
+                  <strong style="font-size:1.5rem; color:#fff;" id="stat-storage">0 MB</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Subscription Status</h3>
+            <div style="display:flex; flex-direction:column; gap:0.8rem; font-size:0.85rem;">
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--text-muted);">Current Plan</span>
+                <strong style="color:var(--primary);" id="stat-plan">Starter</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--text-muted);">Verification Badge</span>
+                <span class="status-badge Active" id="stat-verify">Verified</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:0.5rem;">
+                <span style="color:var(--text-muted);">Total Revenue</span>
+                <strong style="color:#fff;" id="stat-revenue">$0</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--text-muted);">Outstanding Dues</span>
+                <strong style="color:var(--danger);" id="stat-outstanding">$0</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: BRANDING -->
+      <div id="panel-branding" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Configure White-Label Style</h3>
+            <form id="branding-form" onsubmit="saveBrandingConfig(event)">
+              <div class="form-group">
+                <label class="form-label">Primary Color Theme</label>
+                <div style="display:flex; gap:0.5rem;">
+                  <input type="color" id="brand-primary" style="width:50px; height:38px; border:none; background:transparent; cursor:pointer;" onchange="applyPreviewVariables()" />
+                  <input type="text" id="brand-primary-text" class="form-input" style="flex:1" oninput="applyPreviewVariables()" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Secondary Color Theme</label>
+                <div style="display:flex; gap:0.5rem;">
+                  <input type="color" id="brand-secondary" style="width:50px; height:38px; border:none; background:transparent; cursor:pointer;" onchange="applyPreviewVariables()" />
+                  <input type="text" id="brand-secondary-text" class="form-input" style="flex:1" oninput="applyPreviewVariables()" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Typography Family</label>
+                <select id="brand-font" class="form-select" onchange="applyPreviewVariables()">
+                  <option value="Geist">Geist Modern Sans</option>
+                  <option value="Sora">Sora Premium UI</option>
+                  <option value="system-ui">Standard Default</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Branding Logo Image URL</label>
+                <input type="text" id="brand-logo" class="form-input" oninput="applyPreviewVariables()" placeholder="E.g. /assets/my-logo.png" />
+              </div>
+              <button type="submit" class="btn-submit">Apply Settings</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Live White-Label Preview</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">The widgets below simulate the custom styling injected onto your white-labeled student dashboard.</p>
+            
+            <div class="branding-live-preview-box" id="preview-branding-box">
+              <div class="preview-header-mock" id="preview-header">APEX COACHING ACADEMY</div>
+              <p style="font-size:0.75rem; margin:1rem 0; color:#fff;" id="preview-text">Welcome to the Student Learning Lab.</p>
+              <button class="preview-button-mock" id="preview-btn">Start Mock Exam</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: BATCHES -->
+      <div id="panel-batches" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Allocate Academic Batch</h3>
+            <form id="batch-form" onsubmit="saveBatchTimetable(event)">
+              <div class="form-group">
+                <label class="form-label">Batch Name</label>
+                <input type="text" id="bat-name" class="form-input" placeholder="E.g. NEET-2026-Super30" required />
+              </div>
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1.2fr; gap:0.5rem;">
+                <div>
+                  <label class="form-label">Academic Year</label>
+                  <input type="text" id="bat-year" class="form-input" placeholder="E.g. 2026-27" required />
+                </div>
+                <div>
+                  <label class="form-label">Course Type</label>
+                  <select id="bat-course" class="form-select">
+                    <option value="NEET">NEET Prep</option>
+                    <option value="JEE">JEE Prep</option>
+                    <option value="Foundation">Foundation Course</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                <div>
+                  <label class="form-label">Timings</label>
+                  <input type="text" id="bat-timings" class="form-input" placeholder="E.g. 4:00 PM - 7:00 PM" />
+                </div>
+                <div>
+                  <label class="form-label">Max Student Seats</label>
+                  <input type="number" id="bat-capacity" class="form-input" value="30" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Schedule Days</label>
+                <div class="schedule-days-grid" id="batch-days-container">
+                  <div class="schedule-day-box" onclick="toggleScheduleDay(this, 'Mon')">Mon</div>
+                  <div class="schedule-day-box" onclick="toggleScheduleDay(this, 'Tue')">Tue</div>
+                  <div class="schedule-day-box" onclick="toggleScheduleDay(this, 'Wed')">Wed</div>
+                  <div class="schedule-day-box" onclick="toggleScheduleDay(this, 'Thu')">Thu</div>
+                  <div class="schedule-day-box" onclick="toggleScheduleDay(this, 'Fri')">Fri</div>
+                  <div class="schedule-day-box" onclick="toggleScheduleDay(this, 'Sat')">Sat</div>
+                  <div class="schedule-day-box" onclick="toggleScheduleDay(this, 'Sun')">Sun</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Assigned Teacher User ID</label>
+                <input type="text" id="bat-teacher" class="form-input" placeholder="E.g. teacher_test" />
+              </div>
+              <button type="submit" class="btn-submit">Register Batch</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Active Batch Rosters</h3>
+            <div class="content-list-items" id="batches-list-container">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: ROSTER -->
+      <div id="panel-roster" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Enroll Member Profile</h3>
+            <form id="enroll-form" onsubmit="enrollMember(event)">
+              <div class="form-group">
+                <label class="form-label">User Access ID (Auth ID / Email)</label>
+                <input type="text" id="enroll-uid" class="form-input" placeholder="E.g. student@gmail.com" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Designated Role</label>
+                <select id="enroll-role" class="form-select">
+                  <option value="student">Student</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="administrator">Institute Administrator</option>
+                  <option value="principal">Principal / Director</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-submit">Save Member</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Institution Roster Directory</h3>
+            <div class="content-list-items" id="roster-list-container">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: BILLING -->
+      <div id="panel-billing" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Generate SaaS Invoice</h3>
+            <form id="invoice-form" onsubmit="generateBillingInvoice(event)">
+              <div class="form-group">
+                <label class="form-label">Amount ($)</label>
+                <input type="number" step="0.01" id="inv-amount" class="form-input" placeholder="E.g. 500" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Base Fee Portion ($)</label>
+                <input type="number" step="0.01" id="inv-base" class="form-input" placeholder="E.g. 299" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Seat Usage Fee ($)</label>
+                <input type="number" step="0.01" id="inv-seats" class="form-input" placeholder="E.g. 201" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select id="inv-status" class="form-select">
+                  <option value="Unpaid">Unpaid</option>
+                  <option value="Paid">Paid</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-submit">Dispatch Invoice</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Invoices & Billing History</h3>
+            <div class="content-list-items" id="invoices-list-container">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: AI CONFIG -->
+      <div id="panel-ai" class="view-panel">
+        <div class="glass-card" style="max-width:600px;">
+          <h3 class="panel-header">AI Services Quotas</h3>
+          <form id="ai-form" onsubmit="saveAiConfig(event)">
+            <div class="form-group" style="display:flex; align-items:center; gap:0.5rem;">
+              <input type="checkbox" id="ai-enabled" style="width:20px; height:20px; cursor:pointer;" checked />
+              <label class="form-label" style="margin-bottom:0;" for="ai-enabled">Enable AI Mentoring and recommendations</label>
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:0.5rem; border-bottom:1px solid var(--border); padding-bottom:1.25rem;">
+              <input type="checkbox" id="ai-tutor" style="width:20px; height:20px; cursor:pointer;" checked />
+              <label class="form-label" style="margin-bottom:0;" for="ai-tutor">Enable Live AI Coach in Exam Labs</label>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" id="ai-limit-lbl">Daily AI Token Budget limit: 50,000</label>
+              <input type="range" id="ai-limit" min="10000" max="500000" step="5000" class="form-input" style="padding:0;" oninput="updateRangeLabel(this.value)" />
+            </div>
+
+            <button type="submit" class="btn-submit">Apply Quota Limits</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  let currentTenantId = null;
+  let activeTab = 'overview';
+
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  // Detect and resolve active tenant ID from database profiles
+  async function resolveActiveTenant() {
+    try {
+      const token = await getAuthToken();
+      // Fetch all tenants to pick one for administration (simulating tenant context resolution)
+      const res = await fetch('/api/admin/tenants', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+      if (list && list.length > 0) {
+        // Pick the seeded "Apex Coaching Academy" if present, otherwise first one
+        const apex = list.find(t => t.name === 'Apex Coaching Academy') || list[0];
+        currentTenantId = apex.id;
+        loadTenantDetails();
+        loadOverviewStats();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadTenantDetails() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/tenants/${currentTenantId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('side-tenant-name').textContent = data.name;
+      document.getElementById('side-tenant-logo-text').textContent = data.name.charAt(0);
+      document.getElementById('side-tenant-plan').textContent = `${data.subscription_plan} Plan`;
+
+      // Fill branding inputs
+      const bc = data.branding_config || {};
+      document.getElementById('brand-primary').value = bc.primaryColor || '#4d8eff';
+      document.getElementById('brand-primary-text').value = bc.primaryColor || '#4d8eff';
+      document.getElementById('brand-secondary').value = bc.secondaryColor || '#06b6d4';
+      document.getElementById('brand-secondary-text').value = bc.secondaryColor || '#06b6d4';
+      document.getElementById('brand-font').value = bc.typography || 'Geist';
+      document.getElementById('brand-logo').value = bc.logoUrl || '';
+
+      // Fill AI config inputs
+      const ai = data.ai_config || {};
+      document.getElementById('ai-enabled').checked = ai.enabled !== false;
+      document.getElementById('ai-tutor').checked = ai.tutor_enabled !== false;
+      document.getElementById('ai-limit').value = ai.daily_limit_tokens || 50000;
+      updateRangeLabel(ai.daily_limit_tokens || 50000);
+
+      applyPreviewVariables();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function applyPreviewVariables() {
+    const box = document.getElementById('preview-branding-box');
+    const header = document.getElementById('preview-header');
+    const btn = document.getElementById('preview-btn');
+
+    const primary = document.getElementById('brand-primary-text').value || '#4d8eff';
+    const secondary = document.getElementById('brand-secondary').value || '#06b6d4';
+    const font = document.getElementById('brand-font').value;
+
+    header.textContent = document.getElementById('side-tenant-name').textContent.toUpperCase();
+
+    // Set variables
+    box.style.fontFamily = font;
+    header.style.background = primary;
+    btn.style.background = secondary;
+  }
+
+  function updateRangeLabel(val) {
+    document.getElementById('ai-limit-lbl').textContent = `Daily AI Token Budget limit: ${Number(val).toLocaleString()}`;
+  }
+
+  function switchTab(tabId) {
+    activeTab = tabId;
+    document.querySelectorAll('.nav-list button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    const displayTitles = {
+      overview: 'Institute Statistics',
+      branding: 'Branding & Theme Settings',
+      batches: 'Batch Timetables',
+      roster: 'Members Roster',
+      billing: 'Billing & Invoices',
+      ai: 'AI Configurations'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    if (tabId === 'overview') loadOverviewStats();
+    else if (tabId === 'batches') loadBatchesList();
+    else if (tabId === 'roster') loadRosterList();
+    else if (tabId === 'billing') loadBillingList();
+  }
+
+  async function loadOverviewStats() {
+    if (!currentTenantId) return;
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/tenants/${currentTenantId}/dashboard`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('kpi-students').textContent = data.totalStudents;
+      document.getElementById('kpi-teachers').textContent = data.totalTeachers;
+      document.getElementById('kpi-batches').textContent = data.batchesCount;
+      
+      const healthCard = document.getElementById('kpi-health-card');
+      const healthLbl = document.getElementById('kpi-health');
+      healthLbl.textContent = data.healthStatus;
+      healthCard.className = 'kpi-card';
+      if (data.healthStatus === 'Active') healthCard.classList.add('success');
+      else healthCard.classList.add('danger');
+
+      // Additional fields
+      document.getElementById('stat-attendance').textContent = `${data.attendanceRate}%`;
+      document.getElementById('stat-storage').textContent = `${data.storageUsedMb} MB`;
+      document.getElementById('stat-plan').textContent = data.plan;
+      document.getElementById('stat-verify').textContent = data.verificationStatus;
+      document.getElementById('stat-revenue').textContent = `$${data.revenue.toLocaleString()}`;
+      document.getElementById('stat-outstanding').textContent = `$${data.outstanding.toLocaleString()}`;
+
+      // Courses tags
+      const tagCont = document.getElementById('tenant-courses-tags');
+      tagCont.innerHTML = '';
+      data.courses.forEach(c => {
+        const span = document.createElement('span');
+        span.className = 'status-badge Active';
+        span.textContent = c;
+        tagCont.appendChild(span);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TAB 2: Branding saves
+  async function saveBrandingConfig(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      brandingConfig: {
+        primaryColor: document.getElementById('brand-primary-text').value,
+        secondaryColor: document.getElementById('brand-secondary').value,
+        typography: document.getElementById('brand-font').value,
+        logoUrl: document.getElementById('brand-logo').value
+      }
+    };
+
+    try {
+      const res = await fetch(`/api/tenants/${currentTenantId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Branding update failed');
+
+      alert('Branding stylesheet tokens updated successfully!');
+      loadTenantDetails();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // TAB 3: Batches
+  let selectedDays = [];
+  function toggleScheduleDay(box, day) {
+    if (selectedDays.includes(day)) {
+      selectedDays = selectedDays.filter(d => d !== day);
+      box.classList.remove('selected');
+    } else {
+      selectedDays.push(day);
+      box.classList.add('selected');
+    }
+  }
+
+  async function loadBatchesList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/tenants/${currentTenantId}/batches`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const cont = document.getElementById('batches-list-container');
+      cont.innerHTML = '';
+      if (list.length === 0) {
+        cont.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:2rem;">No batches configured for this term.</div>';
+        return;
+      }
+
+      list.forEach(b => {
+        const div = document.createElement('div');
+        div.className = 'content-list-item';
+        div.innerHTML = `
+          <div class="content-list-item-title">
+            <span>${b.name} (${b.course})</span>
+            <span class="status-badge Active">${b.status}</span>
+          </div>
+          <div class="content-list-item-meta">
+            <span>Term: ${b.academic_year}</span>
+            <span>Timing: ${b.timing}</span>
+            <span>Capacity: ${(b.student_ids || []).length}/${b.capacity} seats</span>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function saveBatchTimetable(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      name: document.getElementById('bat-name').value,
+      academicYear: document.getElementById('bat-year').value,
+      session: '2026 Regular',
+      course: document.getElementById('bat-course').value,
+      timing: document.getElementById('bat-timings').value,
+      capacity: parseInt(document.getElementById('bat-capacity').value),
+      teacherId: document.getElementById('bat-teacher').value || null,
+      schedule: selectedDays
+    };
+
+    try {
+      const res = await fetch(`/api/tenants/${currentTenantId}/batches`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to create batch');
+
+      alert('Academic batch registered and teacher timetable updated!');
+      document.getElementById('batch-form').reset();
+      selectedDays = [];
+      document.querySelectorAll('.schedule-day-box').forEach(b => b.classList.remove('selected'));
+      loadBatchesList();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // TAB 4: Roster
+  async function loadRosterList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/tenants/${currentTenantId}/members`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const cont = document.getElementById('roster-list-container');
+      cont.innerHTML = '';
+      if (list.length === 0) {
+        cont.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:2rem;">Roster directory is empty. Enroll students or teachers above.</div>';
+        return;
+      }
+
+      list.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'content-list-item';
+        div.innerHTML = `
+          <div class="content-list-item-title">
+            <span>ID: ${m.user_id}</span>
+            <span class="status-badge Active" style="padding:0.15rem 0.4rem; font-size:0.62rem;">${m.role}</span>
+          </div>
+          <div class="content-list-item-meta">
+            <span>Status: ${m.status}</span>
+            <span>Joined: ${new Date(m.joined_at).toLocaleDateString()}</span>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function enrollMember(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      userId: document.getElementById('enroll-uid').value,
+      role: document.getElementById('enroll-role').value
+    };
+
+    try {
+      const res = await fetch(`/api/tenants/${currentTenantId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Enrollment failed');
+
+      alert('Member profile enrolled under tenant roster!');
+      document.getElementById('enroll-form').reset();
+      loadRosterList();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // TAB 5: Billing
+  async function loadBillingList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/tenants/${currentTenantId}/billing`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const cont = document.getElementById('invoices-list-container');
+      cont.innerHTML = '';
+      if (list.length === 0) {
+        cont.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:2rem;">No bills or invoices registered.</div>';
+        return;
+      }
+
+      list.forEach(i => {
+        const div = document.createElement('div');
+        div.className = 'content-list-item';
+        const date = new Date(i.billing_date).toLocaleDateString();
+        div.innerHTML = `
+          <div class="content-list-item-title">
+            <span>Invoice: ${i.invoice_number}</span>
+            <span class="status-badge ${i.status}">${i.status}</span>
+          </div>
+          <div class="content-list-item-meta">
+            <span>Amount: $${parseFloat(i.amount).toFixed(2)}</span>
+            <span>Outstanding: $${parseFloat(i.outstanding).toFixed(2)}</span>
+            <span>Date: ${date}</span>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function generateBillingInvoice(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      amount: parseFloat(document.getElementById('inv-amount').value),
+      breakdown: {
+        base_fee: parseFloat(document.getElementById('inv-base').value),
+        seat_usage: parseFloat(document.getElementById('inv-seats').value)
+      },
+      status: document.getElementById('inv-status').value
+    };
+
+    try {
+      const res = await fetch(`/api/tenants/${currentTenantId}/invoice`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Invoice dispatch failed');
+
+      alert('Billing invoice dispatched to tenant administrators!');
+      document.getElementById('invoice-form').reset();
+      loadBillingList();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // TAB 6: AI Quotas
+  async function saveAiConfig(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      aiConfig: {
+        enabled: document.getElementById('ai-enabled').checked,
+        tutor_enabled: document.getElementById('ai-tutor').checked,
+        daily_limit_tokens: parseInt(document.getElementById('ai-limit').value)
+      }
+    };
+
+    try {
+      const res = await fetch(`/api/tenants/${currentTenantId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('AI configuration update failed');
+
+      alert('Tenant AI services and prompts limits applied successfully!');
+      loadTenantDetails();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    resolveActiveTenant();
+  });
+</script>
+
+</body>
+</html>

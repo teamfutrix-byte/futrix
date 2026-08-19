@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SaaS Governance, Audit & Compliance Console | FUTRIX</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #03050a;
+      --sidebar-bg: #06080e;
+      --surface: rgba(10, 14, 28, 0.6);
+      --surface-hi: rgba(20, 26, 48, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #c084fc; /* Purple accent for security & encryption governance */
+      --primary-glow: rgba(192, 132, 252, 0.4);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #f87171;
+      --success: #34d399;
+      --accent: #22d3ee;
+      --warning: #fbbf24;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(192, 132, 252, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(34, 211, 238, 0.04) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--primary); }
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(192, 132, 252, 0.12);
+      color: var(--primary);
+      border-color: rgba(192, 132, 252, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(3, 5, 10, 0.35);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .compliance-score-shield {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--success);
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      border: 1px solid rgba(52, 211, 153, 0.2);
+    }
+
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(20, 24, 45, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.accent::before { background: var(--accent); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(192, 132, 252, 0.15);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-submit:hover {
+      background: #a855f7;
+      transform: translateY(-1px);
+    }
+
+    /* Split Workspace */
+    .split-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1.8fr;
+      gap: 1.5rem;
+    }
+
+    .content-list-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 550px;
+      overflow-y: auto;
+    }
+
+    /* Ledger Table */
+    .ledger-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .ledger-table th, .ledger-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .ledger-table th {
+      background: rgba(255,255,255,0.02);
+      color: var(--text-muted);
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+    }
+
+    .severity-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .severity-badge.Informational { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+    .severity-badge.Medium { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+    .severity-badge.High { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
+    .severity-badge.Critical { background: var(--danger); color: #fff; }
+
+    /* Timeline Styles */
+    .timeline-container {
+      position: relative;
+      padding-left: 2rem;
+      border-left: 2px dashed rgba(255,255,255,0.1);
+      margin-left: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .timeline-node {
+      position: relative;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -2.45rem;
+      top: 0.25rem;
+      width: 12px;
+      height: 12px;
+      background: var(--primary);
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 8px var(--primary);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-body {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.85rem;
+    }
+
+    .timeline-crypto {
+      font-family: monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      margin-top: 0.4rem;
+      word-break: break-all;
+      background: rgba(34, 211, 238, 0.05);
+      padding: 0.25rem;
+      border-radius: 4px;
+    }
+
+    /* Compliance Scan Cards */
+    .policy-card {
+      background: rgba(255,255,255,0.01);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .policy-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .policy-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+
+    .policy-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    .status-indicator.Compliant { background: var(--success); }
+    .status-indicator.Non-Compliant { background: var(--danger); }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">FUTRIX<span>.</span></a>
+      <span class="logo-subtitle">Compliance Vault</span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-dashboard" class="active" onclick="switchTab('dashboard')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          Security Scan
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-forensics" onclick="switchTab('forensics')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+          Forensics Timeline
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-ledger" onclick="switchTab('ledger')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+          Audit Ledger
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-holds" onclick="switchTab('holds')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          Legal Holds Vault
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">Back to Admin Panel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">Security & Compliance Scan</h2>
+      <div class="compliance-score-shield" id="overall-shield">
+        Shield: <span id="overall-score">100</span> / 100
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: SECURITY SCAN -->
+      <div id="panel-dashboard" class="view-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card success">
+            <span class="kpi-label">Audited Actions Today</span>
+            <span class="kpi-value" id="kpi-events-today">0</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Security Alerts (24h)</span>
+            <span class="kpi-value" id="kpi-sec-today">0</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">Critical Incidents</span>
+            <span class="kpi-value" id="kpi-critical-today">0</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">Active Preservations (Holds)</span>
+            <span class="kpi-value" id="kpi-holds-active">0</span>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Platform Security Checklist Scans</h3>
+          <div id="compliance-policies-list">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: FORENSICS TIMELINE -->
+      <div id="panel-forensics" class="view-panel">
+        <div class="split-workspace" style="grid-template-columns:1fr 2fr;">
+          <div class="glass-card">
+            <h3 class="panel-header">Search Correlation</h3>
+            <form onsubmit="searchForensicTimeline(event)">
+              <div class="form-group">
+                <label class="form-label">Correlation ID</label>
+                <input type="text" id="forensic-corr-id" class="form-input" placeholder="Enter transaction or request UUID" required />
+              </div>
+              <button type="submit" class="btn-submit" style="width:100%;">Inspect Timeline</button>
+            </form>
+
+            <div style="margin-top:1.5rem; font-size:0.8rem; color:var(--text-muted);">
+              <p>Chained logs reference the previous node's SHA-256 hash. If any block data is modified, the cryptographic link breaks instantly.</p>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Evidence Block Chain</h3>
+            <div id="forensic-timeline-container" class="timeline-container">
+              <div style="text-align:center; color:var(--text-muted); padding:3rem; border:1px dashed var(--border); border-radius:12px; margin-left:-2rem;">
+                No forensic correlation inspect matches loaded.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: AUDIT LEDGER -->
+      <div id="panel-ledger" class="view-panel">
+        <div class="glass-card">
+          <h3 class="panel-header">Chained Audit logs Ledger</h3>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr) auto; gap:0.5rem; margin-bottom:1.5rem;">
+            <input type="text" id="search-actor" class="form-input" placeholder="Actor (e.g. admin)" />
+            <input type="text" id="search-action" class="form-input" placeholder="Action (e.g. ROTATE_ROOT_KEYS)" />
+            <select id="search-severity" class="form-select">
+              <option value="">All Severities</option>
+              <option value="Informational">Informational</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+            <select id="search-module" class="form-select">
+              <option value="">All Modules</option>
+              <option value="governance">governance</option>
+              <option value="security">security</option>
+              <option value="ai">ai</option>
+              <option value="payments">payments</option>
+            </select>
+            <button class="btn-submit" onclick="searchLedger()">Search</button>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="ledger-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Actor</th>
+                  <th>Action</th>
+                  <th>Target</th>
+                  <th>Severity</th>
+                  <th>Risk Score</th>
+                  <th>Result</th>
+                  <th>Cryptographic Block Hash</th>
+                </tr>
+              </thead>
+              <tbody id="ledger-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: LEGAL HOLDS -->
+      <div id="panel-holds" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Issue Case Legal Hold</h3>
+            <form onsubmit="issueLegalHold(event)">
+              <div class="form-group">
+                <label class="form-label">Case ID / Reference</label>
+                <input type="text" id="hold-case-id" class="form-input" placeholder="E.g. CASE-2026-NEET" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Reasoning & Scope</label>
+                <textarea id="hold-reason" class="form-textarea" rows="4" placeholder="Specify regulatory compliance reason..." required></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Approved By</label>
+                <input type="text" id="hold-approver" class="form-input" value="Security Officer" required />
+              </div>
+              <button type="submit" class="btn-submit" style="width:100%;">Create Hold</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Active Preservations</h3>
+            <table class="ledger-table">
+              <thead>
+                <tr>
+                  <th>Case ID</th>
+                  <th>Reason</th>
+                  <th>Approved By</th>
+                  <th>Issued Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="holds-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav-list button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    const displayTitles = {
+      dashboard: 'Security & Compliance Scan',
+      forensics: 'Forensics Timeline',
+      ledger: 'Audit Ledger',
+      holds: 'Legal Holds Vault'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    if (tabId === 'dashboard') loadDashboardData();
+    else if (tabId === 'ledger') searchLedger();
+    else if (tabId === 'holds') loadLegalHolds();
+  }
+
+  // TAB 1: Scan
+  async function loadDashboardData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/compliance/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('kpi-events-today').textContent = data.totalEventsToday;
+      document.getElementById('kpi-sec-today').textContent = data.securityEventsToday;
+      document.getElementById('kpi-critical-today').textContent = data.criticalEventsToday;
+      document.getElementById('kpi-holds-active').textContent = data.activeLegalHolds;
+
+      document.getElementById('overall-score').textContent = data.complianceScore;
+      const shield = document.getElementById('overall-shield');
+      if (data.complianceScore < 85) {
+        shield.style.color = 'var(--warning)';
+        shield.style.borderColor = 'rgba(251, 191, 36, 0.2)';
+        shield.style.background = 'rgba(251, 191, 36, 0.1)';
+      } else {
+        shield.style.color = 'var(--success)';
+        shield.style.borderColor = 'rgba(52, 211, 153, 0.2)';
+        shield.style.background = 'rgba(52, 211, 153, 0.1)';
+      }
+
+      loadCompliancePolicies();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadCompliancePolicies() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/compliance/checks', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const policies = await res.json();
+
+      const cont = document.getElementById('compliance-policies-list');
+      cont.innerHTML = '';
+      policies.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'policy-card';
+        div.innerHTML = `
+          <div class="policy-meta">
+            <div class="policy-title">
+              <span class="status-indicator ${p.status}"></span>
+              ${p.policy_name}
+            </div>
+            <div class="policy-desc">${p.description} (Category: ${p.category})</div>
+          </div>
+          <div>
+            <button class="btn-submit" style="font-size:0.75rem; padding:0.4rem 0.8rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); box-shadow:none; color:#fff;" onclick="toggleComplianceStatus('${p.id}', '${p.status}')">
+              Set ${p.status === 'Compliant' ? 'Non-Compliant' : 'Compliant'}
+            </button>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function toggleComplianceStatus(policyId, currentStatus) {
+    const nextStatus = currentStatus === 'Compliant' ? 'Non-Compliant' : 'Compliant';
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/compliance/checks/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ policyId, status: nextStatus })
+      });
+      if (!res.ok) throw new Error('Toggle status failed');
+      loadDashboardData();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // TAB 2: Forensics Timeline
+  async function searchForensicTimeline(e) {
+    e.preventDefault();
+    const corrId = document.getElementById('forensic-corr-id').value;
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/compliance/timeline/${corrId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const timeline = await res.json();
+
+      const cont = document.getElementById('forensic-timeline-container');
+      cont.innerHTML = '';
+      
+      if (timeline.length === 0) {
+        cont.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:3rem; border:1px dashed var(--border); border-radius:12px; margin-left:-2rem;">No logs found for Correlation ID: ${corrId}</div>`;
+        return;
+      }
+
+      timeline.forEach(t => {
+        const node = document.createElement('div');
+        node.className = 'timeline-node';
+        node.innerHTML = `
+          <div class="timeline-dot"></div>
+          <div class="timeline-header">
+            <span><strong>${t.action}</strong> by ${t.actor}</span>
+            <span>${new Date(t.timestamp).toLocaleTimeString()}</span>
+          </div>
+          <div class="timeline-body">
+            <p>Target: ${t.target} | Status: ${t.result}</p>
+            <p style="color:var(--text-muted); font-size:0.75rem; margin-top:0.25rem;">IP: ${t.ip_address} | Env: ${t.environment} | Browser: ${t.browser || 'Unknown'}</p>
+            <div class="timeline-crypto">Chained Block Hash: ${t.immutable_hash}</div>
+          </div>
+        `;
+        cont.appendChild(node);
+      });
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // TAB 3: Audit Ledger
+  async function searchLedger() {
+    const actor = document.getElementById('search-actor').value;
+    const action = document.getElementById('search-action').value;
+    const severity = document.getElementById('search-severity').value;
+    const module = document.getElementById('search-module').value;
+
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/compliance/search?actor=${actor}&action=${action}&severity=${severity}&module=${module}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      const tbody = document.getElementById('ledger-table-body');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:3rem;">No audited events matched criteria.</td></tr>';
+        return;
+      }
+
+      data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${new Date(row.timestamp).toLocaleDateString()} ${new Date(row.timestamp).toLocaleTimeString()}</td>
+          <td><strong>${row.actor}</strong></td>
+          <td><span style="color:var(--primary)">${row.action}</span></td>
+          <td>${row.target}</td>
+          <td><span class="severity-badge ${row.severity}">${row.severity}</span></td>
+          <td>${row.risk_score}</td>
+          <td><strong style="color:${row.result === 'SUCCESS' ? 'var(--success)' : 'var(--danger)'}">${row.result}</strong></td>
+          <td style="font-family:monospace; font-size:0.7rem; color:var(--accent); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${row.immutable_hash}">
+            ${row.immutable_hash}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TAB 4: Legal Holds
+  async function loadLegalHolds() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/compliance/holds', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const holds = await res.json();
+
+      const tbody = document.getElementById('holds-table-body');
+      tbody.innerHTML = '';
+
+      if (holds.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:3rem;">No active legal hold cases.</td></tr>';
+        return;
+      }
+
+      holds.forEach(h => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color:var(--primary)">${h.case_id}</strong></td>
+          <td>${h.reason}</td>
+          <td>${h.approved_by}</td>
+          <td>${new Date(h.created_at).toLocaleDateString()}</td>
+          <td><span style="color:var(--success); font-weight:700;">${h.status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function issueLegalHold(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+    const payload = {
+      caseId: document.getElementById('hold-case-id').value,
+      reason: document.getElementById('hold-reason').value,
+      approvedBy: document.getElementById('hold-approver').value
+    };
+
+    try {
+      const res = await fetch('/api/compliance/holds', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Create legal hold failed');
+      alert('Legal hold preservation order issued successfully!');
+      switchTab('holds');
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+  });
+</script>
+
+</body>
+</html>

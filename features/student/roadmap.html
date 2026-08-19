@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Futrix - Interactive Product Roadmap</title>
+  <meta name="description" content="Explore Futrix interactive product roadmap, detailed phases, completed milestones, and upcoming retention engine modules." />
+  <link rel="icon" href="favicon.png" type="image/png">
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: rgba(17, 24, 39, 0.7);
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --primary: #4d8eff;
+      --primary-glow: rgba(77, 142, 255, 0.15);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.15);
+      --warning: #f59e0b;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font: 'Outfit', sans-serif;
+      --font-title: 'Sora', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(77, 142, 255, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Header styling */
+    .header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .header h1 {
+      font-family: var(--font-title);
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff 40%, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .btn-back {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-family: var(--font);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(77, 142, 255, 0.15);
+    }
+
+    /* Timeline component */
+    .timeline {
+      position: relative;
+      margin: 2rem 0;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--success), var(--primary), var(--surface-border));
+    }
+
+    .timeline-node {
+      position: relative;
+      margin-bottom: 3.5rem;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -2rem;
+      top: 5px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 3px solid var(--surface-border);
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    .timeline-node.completed .timeline-dot {
+      border-color: var(--success);
+      box-shadow: 0 0 10px var(--success-glow);
+      background: var(--success);
+    }
+
+    .timeline-node.active .timeline-dot {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+      background: var(--primary);
+    }
+
+    .timeline-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .timeline-card:hover {
+      border-color: var(--primary);
+      transform: translateX(5px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .timeline-title {
+      font-family: var(--font-title);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .status-badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge.completed {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.active {
+      background: rgba(77, 142, 255, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(77, 142, 255, 0.2);
+    }
+
+    .status-badge.upcoming {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border: 1px solid var(--surface-border);
+    }
+
+    .timeline-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .timeline-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .feature-icon {
+      font-size: 1rem;
+    }
+
+    /* Footer styling */
+    .footer {
+      text-align: center;
+      margin-top: 5rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1.5rem 0.5rem;
+      }
+      .header h1 {
+        font-size: 2.2rem;
+      }
+      .timeline-features {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>Futrix Product Roadmap</h1>
+      <p>Follow the evolution of India's most advanced AI-powered testing and retention platform.</p>
+      <a href="instruction.html" class="btn-back" style="margin-bottom: 1.5rem;">
+        <span>←</span> Back to Dashboard
+      </a>
+    </div>
+
+    <!-- Tab Buttons -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 2.5rem; justify-content: center;">
+      <button id="btnTabRoadmap" class="btn-back" style="background: var(--primary); color: #fff; border-color: var(--primary);">Platform Roadmap 🗺️</button>
+      <button id="btnTabStudyPlan" class="btn-back">My Study Plan & AI Recommendations ✦</button>
+    </div>
+
+    <div id="roadmapView">
+
+    <div class="timeline">
+      
+      <!-- Phase 1 -->
+      <div class="timeline-node completed">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <div class="timeline-title">Phase 1: Core Testing & Proctoring</div>
+            <span class="status-badge completed">Completed</span>
+          </div>
+          <p class="timeline-desc">Establishment of the core gamified test application environment, registration workflows, secure sandbox fullscreen proctor locks, and performance reports.</p>
+          <div class="timeline-features">
+            <div class="feature-item">
+              <span class="feature-icon">📝</span>
+              <span>Test Series Engine</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🔒</span>
+              <span>Fullscreen Proctoring</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📊</span>
+              <span>Local Scorecard Reports</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">⚡</span>
+              <span>Audio Synthesis Clicks</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="timeline-node completed">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <div class="timeline-title">Phase 2: Gamification & Retention</div>
+            <span class="status-badge completed">Completed</span>
+          </div>
+          <p class="timeline-desc">Addition of daily missions, customizable anti-fraud referral loops, institute Battle mode, and 2D canvas rank achievements card sharing exporter.</p>
+          <div class="timeline-features">
+            <div class="feature-item">
+              <span class="feature-icon">🏆</span>
+              <span>League Rebalancing</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎯</span>
+              <span>Daily Mission Trackers</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎨</span>
+              <span>Dynamic Rank Card Exporter</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">👥</span>
+              <span>Friends & Rivals Panel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="timeline-node active">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <div class="timeline-title">Phase 3: Smart Revision & Spaced Repetition</div>
+            <span class="status-badge active">In Progress</span>
+          </div>
+          <p class="timeline-desc">AI-powered retention prediction, spaced repetition revision schedule (Day 1, 3, 7, 21, 45, 90, 180), welcome assessments, and Glassmorphism 3D flashcards.</p>
+          <div class="timeline-features">
+            <div class="feature-item">
+              <span class="feature-icon">🧠</span>
+              <span>Spaced Spacing Logic</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">✨</span>
+              <span>3D Glassmorphism Cards</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📊</span>
+              <span>Memory Health Meter</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🕵️</span>
+              <span>AI Weakness Radar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Future Milestones -->
+      <div class="timeline-node">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <div class="timeline-title">Future Milestones: Scaling & Mobile</div>
+            <span class="status-badge upcoming">Upcoming</span>
+          </div>
+          <p class="timeline-desc">Expanding the Futrix ecosystem into native Android/iOS mobile applications, offline study syncs, and nationwide coaching scholarships challenges.</p>
+          <div class="timeline-features">
+            <div class="feature-item">
+              <span class="feature-icon">📱</span>
+              <span>Native iOS & Android Apps</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🤖</span>
+              <span>AI Study Mentor Expansion</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">⚔️</span>
+              <span>Multi-Coaching Tournaments</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🎓</span>
+              <span>Scholarships Registry</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+
+    <!-- STUDY PLAN VIEW -->
+    <div id="studyPlanView" style="display: none; flex-direction: column; gap: 2rem;">
+      <!-- Recommendations Section -->
+      <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 2rem;">
+        <h2 style="font-family: var(--font-title); font-size: 1.3rem; margin-bottom: 1rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>✦</span> Personal Study Recommendations
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">AI-generated topic targets based on your preparation stream and platform-wide accuracy metrics.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;" id="recListContainer">
+          <!-- Physics Card -->
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--surface-border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #fff;">Physics</span>
+              <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; background: rgba(77, 142, 255, 0.1); color: var(--primary); border-radius: 4px; font-weight: 700;">Mechanics</span>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">Recommended focus: laws of motion, work, energy, and friction parameters. Plan for 20 questions.</p>
+            <button onclick="triggerMentorAi('Plan physics study strategy for mechanics', 'study_planning', 'Physics', 'Mechanics')" style="background: var(--primary); border: none; color: #fff; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-align: center;">Ask AI Strategy ✦</button>
+          </div>
+
+          <!-- Chemistry Card -->
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--surface-border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #fff;">Chemistry</span>
+              <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; background: rgba(0, 229, 212, 0.1); color: var(--teal); border-radius: 4px; font-weight: 700;">Organic</span>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">Recommended focus: hybridisation, nomenclature, resonance, and electronegativity rules.</p>
+            <button onclick="triggerMentorAi('Plan chemistry organic reaction mechanisms revision strategy', 'study_planning', 'Chemistry', 'Organic')" style="background: var(--primary); border: none; color: #fff; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-align: center;">Ask AI Strategy ✦</button>
+          </div>
+
+          <!-- Third Card (Bio / Math) -->
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--surface-border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; color: #fff;" id="studyPlanThirdName">Biology</span>
+              <span style="font-size: 0.72rem; padding: 0.2rem 0.5rem; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 4px; font-weight: 700;" id="studyPlanThirdTag">Physiology</span>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;" id="studyPlanThirdDesc">Recommended focus: cell cycle regulatory checkpoints, mitosis/meiosis, and respiration.</p>
+            <button id="studyPlanThirdBtn" onclick="triggerMentorAi('Plan biology physiology cell cycles revision strategy', 'study_planning', 'Biology', 'Cell Division')" style="background: var(--primary); border: none; color: #fff; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-align: center;">Ask AI Strategy ✦</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Calendar / Spaced Repetition Planner -->
+      <div style="background: var(--surface); border: 1px solid var(--surface-border); border-radius: 16px; padding: 2rem;">
+        <h2 style="font-family: var(--font-title); font-size: 1.3rem; margin-bottom: 1rem; color: var(--success); display: flex; align-items: center; gap: 0.5rem;">
+          <span>📅</span> Spaced Repetition Revision Cycle
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Tick completed tasks. We automatically schedule them for re-testing on Day 1, Day 3, Day 7, and Day 21.</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+          <!-- Day 1 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.01); border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.8rem 1.2rem;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <input type="checkbox" id="chkDay1" style="width:16px; height:16px; cursor:pointer;" onchange="saveCalendarState()">
+              <div>
+                <strong style="font-size:0.9rem; color:#fff;">Day 1: Concept Review</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Revise formulas and mistakes from Wrong Notebook immediately after test.</div>
+              </div>
+            </div>
+            <span style="font-size: 0.72rem; padding: 0.15rem 0.4rem; background: rgba(16, 185, 129, 0.15); color: var(--success); border-radius: 4px; font-weight: 600;">High Priority</span>
+          </div>
+
+          <!-- Day 3 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.01); border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.8rem 1.2rem;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <input type="checkbox" id="chkDay3" style="width:16px; height:16px; cursor:pointer;" onchange="saveCalendarState()">
+              <div>
+                <strong style="font-size:0.9rem; color:#fff;">Day 3: Target Practice</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Solve 15 target MCQs on the same chapter in active exam consoles.</div>
+              </div>
+            </div>
+            <span style="font-size: 0.72rem; padding: 0.15rem 0.4rem; background: rgba(77, 142, 255, 0.15); color: var(--primary); border-radius: 4px; font-weight: 600;">Medium Priority</span>
+          </div>
+
+          <!-- Day 7 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.01); border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.8rem 1.2rem;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <input type="checkbox" id="chkDay7" style="width:16px; height:16px; cursor:pointer;" onchange="saveCalendarState()">
+              <div>
+                <strong style="font-size:0.9rem; color:#fff;">Day 7: Re-evaluation Mock</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Re-take the mock series to confirm 90%+ retention strength.</div>
+              </div>
+            </div>
+            <span style="font-size: 0.72rem; padding: 0.15rem 0.4rem; background: rgba(245, 158, 11, 0.15); color: var(--warning); border-radius: 4px; font-weight: 600;">Active Cycle</span>
+          </div>
+
+          <!-- Day 21 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.01); border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.8rem 1.2rem;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <input type="checkbox" id="chkDay21" style="width:16px; height:16px; cursor:pointer;" onchange="saveCalendarState()">
+              <div>
+                <strong style="font-size:0.9rem; color:#fff;">Day 21: Final Anchoring</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Verify concepts via Memory Lab flashcard drills.</div>
+              </div>
+            </div>
+            <span style="font-size: 0.72rem; padding: 0.15rem 0.4rem; background: rgba(255, 255, 255, 0.1); color: var(--text-muted); border-radius: 4px; font-weight: 600;">Future Cycle</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>© 2026 Futrix Education. All Rights Reserved. Built for ultimate competitive preparation.</p>
+    </div>
+  </div>
+
+  <!-- Supabase Scripts & AI Mentor -->
+  <script src="supabase-js.js"></script>
+  <script src="/supabase-client.js"></script>
+  <script src="floating-ai-mentor.js"></script>
+  <script>
+    // Tab switching logic
+    const btnRoadmap = document.getElementById('btnTabRoadmap');
+    const btnStudyPlan = document.getElementById('btnTabStudyPlan');
+    const roadmapView = document.getElementById('roadmapView');
+    const studyPlanView = document.getElementById('studyPlanView');
+
+    if (btnRoadmap && btnStudyPlan) {
+      btnRoadmap.onclick = () => {
+        btnRoadmap.style.background = 'var(--primary)';
+        btnRoadmap.style.color = '#fff';
+        btnRoadmap.style.borderColor = 'var(--primary)';
+        btnStudyPlan.style.background = 'var(--surface)';
+        btnStudyPlan.style.color = 'var(--text)';
+        btnStudyPlan.style.borderColor = 'var(--surface-border)';
+        roadmapView.style.display = 'block';
+        studyPlanView.style.display = 'none';
+      };
+
+      btnStudyPlan.onclick = () => {
+        btnStudyPlan.style.background = 'var(--primary)';
+        btnStudyPlan.style.color = '#fff';
+        btnStudyPlan.style.borderColor = 'var(--primary)';
+        btnRoadmap.style.background = 'var(--surface)';
+        btnRoadmap.style.color = 'var(--text)';
+        btnRoadmap.style.borderColor = 'var(--surface-border)';
+        studyPlanView.style.display = 'flex';
+        roadmapView.style.display = 'none';
+        loadStudyPlanPreferences();
+      };
+    }
+
+    // Load session info & customize third card
+    const userRaw = sessionStorage.getItem('futrix_user');
+    const user = JSON.parse(userRaw || '{}');
+    const prep = (user.preparation || 'NEET').toUpperCase();
+
+    if (prep === 'JEE') {
+      const thirdName = document.getElementById('studyPlanThirdName');
+      const thirdTag = document.getElementById('studyPlanThirdTag');
+      const thirdDesc = document.getElementById('studyPlanThirdDesc');
+      const thirdBtn = document.getElementById('studyPlanThirdBtn');
+      if (thirdName) thirdName.textContent = 'Mathematics';
+      if (thirdTag) thirdTag.textContent = 'Algebra';
+      if (thirdDesc) thirdDesc.textContent = 'Recommended focus: Cramers rule, matrix determinants, and linear transformations.';
+      if (thirdBtn) {
+        thirdBtn.setAttribute('onclick', "triggerMentorAi('Plan mathematics algebra matrices revision strategy', 'study_planning', 'Mathematics', 'Matrices')");
+      }
+    }
+
+    // Persistence calendar state
+    window.saveCalendarState = function() {
+      const state = {
+        d1: document.getElementById('chkDay1').checked,
+        d3: document.getElementById('chkDay3').checked,
+        d7: document.getElementById('chkDay7').checked,
+        d21: document.getElementById('chkDay21').checked
+      };
+      localStorage.setItem(`futrix_calendar_state_${user.id || 'anonymous'}`, JSON.stringify(state));
+    };
+
+    function loadStudyPlanPreferences() {
+      const cached = localStorage.getItem(`futrix_calendar_state_${user.id || 'anonymous'}`);
+      if (cached) {
+        try {
+          const state = JSON.parse(cached);
+          document.getElementById('chkDay1').checked = !!state.d1;
+          document.getElementById('chkDay3').checked = !!state.d3;
+          document.getElementById('chkDay7').checked = !!state.d7;
+          document.getElementById('chkDay21').checked = !!state.d21;
+        } catch(e){}
+      }
+    }
+  </script>
+</body>
+</html>

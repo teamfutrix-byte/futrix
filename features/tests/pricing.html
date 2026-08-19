@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Membership Plans | FUTRIX</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #090b11;
+      --surface: rgba(17, 20, 34, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #4d8eff;
+      --accent: #a855f7;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #22c55e;
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(168, 85, 247, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 85%, rgba(77, 142, 255, 0.06) 0%, transparent 60%),
+        #090b11;
+      min-height: 100vh;
+      font-family: 'Geist', 'Sora', sans-serif;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+      animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: #e1e2ec;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+    }
+    .logo span { color: var(--primary); }
+
+    .title {
+      font-family: 'Sora', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 40%, var(--primary) 70%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.75rem;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    /* Cards Grid */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      width: 100%;
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 968px) {
+      .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 576px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+
+    .price-card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.2rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    .price-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: rgba(77, 142, 255, 0.3);
+      box-shadow: 0 20px 40px rgba(77, 142, 255, 0.1);
+    }
+
+    /* Featured/Popular tag effect */
+    .price-card.popular {
+      border-color: rgba(168, 85, 247, 0.4);
+      background: linear-gradient(180deg, rgba(17, 20, 34, 0.9) 0%, rgba(26, 21, 44, 0.9) 100%);
+      box-shadow: 0 15px 35px rgba(168, 85, 247, 0.1);
+    }
+    .price-card.popular:hover {
+      border-color: var(--accent);
+      box-shadow: 0 20px 45px rgba(168, 85, 247, 0.2);
+    }
+
+    .popular-tag {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: linear-gradient(135deg, var(--accent), #e879f9);
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.25rem 0.65rem;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .price-container {
+      display: flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      margin: 1.2rem 0;
+    }
+
+    .currency {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .price {
+      font-family: 'Sora', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .duration {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      width: 100%;
+      margin: 1.5rem 0;
+    }
+
+    .features-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-bottom: 2.2rem;
+      flex-grow: 1;
+    }
+
+    .feature-item {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      line-height: 1.4;
+    }
+
+    .feature-item svg {
+      width: 16px; height: 16px;
+      color: var(--success);
+      flex-shrink: 0;
+    }
+
+    .btn-select {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .price-card:hover .btn-select {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 6px 18px rgba(77, 142, 255, 0.3);
+    }
+
+    .price-card.popular .btn-select {
+      background: linear-gradient(135deg, var(--accent), #9333ea);
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25);
+    }
+    .price-card.popular:hover .btn-select {
+      transform: scale(1.02);
+      box-shadow: 0 6px 22px rgba(168, 85, 247, 0.4);
+    }
+
+    .back-link {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: color 0.2s;
+      margin-top: 1.5rem;
+    }
+    .back-link:hover { color: var(--primary); }
+
+    /* ── CHECKOUT / PAYMENT MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 6, 12, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .checkout-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 520px;
+      padding: 2.2rem;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+      position: relative;
+      margin: auto;
+      transform: translateY(30px) scale(0.96);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.show .checkout-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 1.25rem; right: 1.25rem;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      transition: all 0.2s;
+    }
+    .close-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .checkout-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .checkout-plan-info {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .invoice-table {
+      width: 100%;
+      margin-bottom: 1.5rem;
+      border-collapse: collapse;
+    }
+    .invoice-table td {
+      padding: 0.45rem 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .invoice-table tr.total-row td {
+      border-top: 1px dashed var(--border);
+      padding-top: 0.75rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* UPI QR details */
+    .qr-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255,255,255,0.01);
+      border: 1px dashed var(--border);
+      padding: 1.25rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    .qr-code-img {
+      width: 180px; height: 180px;
+      border-radius: 12px;
+      border: 4px solid #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    /* Payment inputs */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .input-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .checkout-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(13, 16, 23, 0.45);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+    .checkout-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(77, 142, 255, 0.2);
+    }
+
+    .btn-pay-submit {
+      width: 100%;
+      padding: 0.95rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 16px rgba(77, 142, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-pay-submit:hover {
+      box-shadow: 0 6px 22px rgba(77, 142, 255, 0.4);
+    }
+    .btn-pay-submit:active {
+      transform: scale(0.98);
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top: 2px solid #fff;
+      border-radius: 50%;
+      width: 14px; height: 14px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ── SPLIT LAYOUT FOR CHECKOUT ── */
+    .checkout-card {
+      max-width: 900px !important;
+      padding: 2rem !important;
+    }
+    .checkout-split-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 2rem;
+      margin-top: 1.5rem;
+      text-align: left;
+    }
+    @media (max-width: 768px) {
+      .checkout-split-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+    .checkout-left-panel {
+      display: flex;
+      flex-direction: column;
+    }
+    .checkout-right-panel {
+      display: flex;
+      flex-direction: column;
+    }
+    .checkout-section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+    .checkout-section-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+    
+    /* ── TABS SELECTOR WITH SLIDING CAPSULE ── */
+    .payment-tabs-wrapper {
+      display: flex;
+      position: relative;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.25rem;
+      margin-bottom: 1.5rem;
+      z-index: 1;
+    }
+    .payment-tab-indicator {
+      position: absolute;
+      top: 0.25rem;
+      bottom: 0.25rem;
+      left: 0.25rem;
+      width: calc(25% - 0.35rem);
+      background: linear-gradient(135deg, rgba(77, 142, 255, 0.15), rgba(34, 211, 238, 0.15));
+      border: 1px solid rgba(77, 142, 255, 0.3);
+      border-radius: 9px;
+      z-index: -1;
+      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .payment-tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.6rem 0.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: color 0.25s;
+    }
+    .payment-tab-btn.active {
+      color: #fff;
+    }
+    
+    /* Panel content logic */
+    .payment-panel-content {
+      display: none;
+      animation: fadeInPanel 0.3s ease both;
+    }
+    .payment-panel-content.active {
+      display: block;
+    }
+    @keyframes fadeInPanel {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ── CREDIT CARD MOCKUP & 3D FLIP ── */
+    .credit-card-mockup-wrapper {
+      perspective: 1000px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+    .credit-card-mockup {
+      width: 320px;
+      height: 190px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .credit-card-mockup.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    }
+    .card-front {
+      background: linear-gradient(135deg, #1b2136 0%, #0d1017 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .card-back {
+      background: linear-gradient(135deg, #0d1017 0%, #1b2136 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #fff;
+      transform: rotateY(180deg);
+      padding: 1.5rem 0;
+    }
+    .card-glow {
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(77, 142, 255, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .card-chip-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-chip {
+      width: 42px; height: 32px;
+      background: linear-gradient(135deg, #ffd700, #ffb900);
+      border-radius: 6px;
+    }
+    .card-type-logo {
+      font-weight: 800;
+      font-style: italic;
+      font-size: 1.3rem;
+      letter-spacing: -0.05em;
+      color: rgba(255,255,255,0.85);
+    }
+    .card-number-display {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.25rem;
+      letter-spacing: 0.15em;
+      text-align: center;
+      margin: 0.8rem 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .card-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .card-meta-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      text-align: left;
+    }
+    .card-meta-label {
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+    .card-meta-value {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Card back elements */
+    .card-magnetic-strip {
+      width: 100%;
+      height: 38px;
+      background: #000;
+      margin-top: 0.5rem;
+    }
+    .card-signature-strip {
+      background: #eee;
+      height: 36px;
+      margin: 0.8rem 1.5rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 0.6rem;
+      position: relative;
+    }
+    .card-signature-lines {
+      position: absolute;
+      left: 0.6rem; right: 3.5rem;
+      top: 0; bottom: 0;
+      background-image: repeating-linear-gradient(45deg, #ccc 0, #ccc 2px, transparent 0, transparent 8px);
+      opacity: 0.4;
+    }
+    .card-cvv-box {
+      font-family: 'Courier New', Courier, monospace;
+      color: #000;
+      font-weight: 700;
+      font-style: italic;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      position: relative;
+      z-index: 2;
+    }
+    .card-back-text {
+      font-size: 0.5rem;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 0.05em;
+      padding: 0 1.5rem;
+    }
+    
+    .card-inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+    }
+    .card-inputs-grid .full-width {
+      grid-column: span 2;
+    }
+    
+    /* Razorpay direct panel styles */
+    .razorpay-direct-info {
+      background: rgba(77, 142, 255, 0.04);
+      border: 1px solid rgba(77, 142, 255, 0.15);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .rzp-icon-circle {
+      width: 48px; height: 48px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.8rem;
+      box-shadow: 0 4px 12px rgba(77, 142, 255, 0.3);
+    }
+    .razorpay-direct-info h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .razorpay-direct-info p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    
+    /* Right panel invoice summary */
+    .invoice-summary-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.6rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .invoice-summary-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .plan-features-list {
+      margin: 1.2rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      border-top: 1px dashed var(--border);
+      padding-top: 1rem;
+    }
+    .feature-item {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .feature-bullet {
+      color: var(--primary);
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <a href="active-exams.html" class="logo">⚡ FUTRIX<span> Ecosystem</span></a>
+      <h1 class="title">FUTRIX Premium Pricing</h1>
+      <p class="subtitle">Choose a premium catalog plan to unlock unlimited exam retakes, comprehensive error notebooks, automated revision flashcards, and personalized AI mentoring.</p>
+    </header>
+
+    <div class="pricing-grid">
+      
+      <!-- Card 1: Basic -->
+      <div class="price-card" id="cardBasic">
+        <h3 class="card-name">Basic Plan</h3>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">Great for quick test practice revisions.</p>
+        <div class="price-container">
+          <span class="currency">₹</span>
+          <span class="price" id="priceBasic">199</span>
+          <span class="duration">/ 1 month</span>
+        </div>
+        <div class="divider"></div>
+        <ul class="features-list">
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Unlimited Retakes on all Mock tests
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Dynamic Whiteboard visuals
+          </li>
+          <li class="feature-item" style="opacity:0.4;">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" style="color:#ef4444;"/></svg>
+            Personalized AI Coaching (PRO only)
+          </li>
+          <li class="feature-item" style="opacity:0.4;">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" style="color:#ef4444;"/></svg>
+            Automatic Spaced Flashcards
+          </li>
+        </ul>
+        <button class="btn-select" onclick="startCheckout('plan_basic_1m')">Choose Basic Plan</button>
+      </div>
+
+      <!-- Card 2: Silver -->
+      <div class="price-card" id="cardSilver">
+        <h3 class="card-name">Silver Plan</h3>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">For dedicated stream tracking prep.</p>
+        <div class="price-container">
+          <span class="currency">₹</span>
+          <span class="price" id="priceSilver">499</span>
+          <span class="duration">/ 3 months</span>
+        </div>
+        <div class="divider"></div>
+        <ul class="features-list">
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Unlimited Retakes on all Mock tests
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Dynamic Whiteboard visuals
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Active Spaced Flashcards Generator
+          </li>
+          <li class="feature-item" style="opacity:0.4;">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" style="color:#ef4444;"/></svg>
+            Personalized AI Coaching (PRO only)
+          </li>
+        </ul>
+        <button class="btn-select" onclick="startCheckout('plan_silver_3m')">Choose Silver Plan</button>
+      </div>
+
+      <!-- Card 3: Gold -->
+      <div class="price-card popular" id="cardGold">
+        <div class="popular-tag">Best Value</div>
+        <h3 class="card-name">Gold Plan (PRO)</h3>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">Includes full AI features package.</p>
+        <div class="price-container">
+          <span class="currency">₹</span>
+          <span class="price" id="priceGold">999</span>
+          <span class="duration">/ 6 months</span>
+        </div>
+        <div class="divider"></div>
+        <ul class="features-list">
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Unlimited Retakes & custom tests
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Whiteboard visuals & diagrams
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Active Recall Flashcards Generator
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Unlimited AI Coach Mentor Chat
+          </li>
+        </ul>
+        <button class="btn-select" onclick="startCheckout('plan_gold_6m')">Upgrade to Gold Pro</button>
+      </div>
+
+      <!-- Card 4: Diamond -->
+      <div class="price-card" id="cardDiamond">
+        <h3 class="card-name">Diamond (Yearly)</h3>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">Full year complete package.</p>
+        <div class="price-container">
+          <span class="currency">₹</span>
+          <span class="price" id="priceDiamond">1499</span>
+          <span class="duration">/ 12 months</span>
+        </div>
+        <div class="divider"></div>
+        <ul class="features-list">
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Unlimited Retakes & custom tests
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Whiteboard visuals & diagrams
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Active Recall Flashcards Generator
+          </li>
+          <li class="feature-item">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            Unlimited AI Coach Mentor Chat
+          </li>
+        </ul>
+        <button class="btn-select" onclick="startCheckout('plan_diamond_1y')">Choose Diamond Plan</button>
+      </div>
+
+    </div>
+
+    <a href="active-exams.html" class="back-link">← Return to Candidate Dashboard</a>
+  </div>
+
+  <!-- ── CHECKOUT MODAL ── -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="checkout-card">
+      <button class="close-btn" onclick="closeCheckout()">&times;</button>
+      
+      <div class="checkout-split-layout">
+        
+        <!-- Left Panel: Payment Mode Configuration -->
+        <div class="checkout-left-panel">
+          <h2 class="checkout-section-title">Configure your payment</h2>
+          <p class="checkout-section-desc">Select your preferred payment method and complete verification</p>
+          
+          <!-- Sliding Tab Selector -->
+          <div class="payment-tabs-wrapper">
+            <div class="payment-tab-indicator" id="tabIndicator"></div>
+            <button class="payment-tab-btn active" onclick="switchPaymentTab('tab_card', 0)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Card
+            </button>
+            <button class="payment-tab-btn" onclick="switchPaymentTab('tab_phonepe', 1)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              PhonePe
+            </button>
+            <button class="payment-tab-btn" onclick="switchPaymentTab('tab_upi', 2)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              UPI ID
+            </button>
+            <button class="payment-tab-btn" onclick="switchPaymentTab('tab_razorpay', 3)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22"/></svg>
+              Razorpay
+            </button>
+          </div>
+          
+          <!-- TAB PANELS -->
+          
+          <!-- 1. Card Payment Panel -->
+          <div id="panel_tab_card" class="payment-panel-content active">
+            <!-- 3D Card Mockup -->
+            <div class="credit-card-mockup-wrapper">
+              <div class="credit-card-mockup" id="ccMockup">
+                <div class="card-front">
+                  <div class="card-glow"></div>
+                  <div class="card-chip-row">
+                    <div class="card-chip"></div>
+                    <div class="card-type-logo">VISA</div>
+                  </div>
+                  <div class="card-number-display" id="ccNumDisplay">•••• •••• •••• ••••</div>
+                  <div class="card-meta-row">
+                    <div class="card-meta-col">
+                      <div class="card-meta-label">CARD HOLDER</div>
+                      <div class="card-meta-value" id="ccNameDisplay">YOUR NAME</div>
+                    </div>
+                    <div class="card-meta-col">
+                      <div class="card-meta-label">EXPIRES</div>
+                      <div class="card-meta-value" id="ccExpiryDisplay">MM/YY</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-back">
+                  <div class="card-magnetic-strip"></div>
+                  <div class="card-signature-strip">
+                    <div class="card-signature-lines"></div>
+                    <div class="card-cvv-box" id="ccCvvDisplay">•••</div>
+                  </div>
+                  <div class="card-back-text">FUTRIX PREMIER MEMBERSHIP CARD</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Card Form inputs -->
+            <div class="card-inputs-grid">
+              <div class="input-group full-width">
+                <label class="input-label">Cardholder Name</label>
+                <input type="text" id="ccHolderName" class="checkout-input" placeholder="e.g. Rahul Sharma" oninput="updateCCField('name', this.value)">
+              </div>
+              <div class="input-group full-width">
+                <label class="input-label">Card Number</label>
+                <input type="text" id="ccNumber" class="checkout-input" placeholder="0000 0000 0000 0000" maxlength="19" oninput="updateCCField('number', this.value)">
+              </div>
+              <div class="input-group">
+                <label class="input-label">Expiration Date</label>
+                <input type="text" id="ccExpiry" class="checkout-input" placeholder="MM/YY" maxlength="5" oninput="updateCCField('expiry', this.value)">
+              </div>
+              <div class="input-group">
+                <label class="input-label">CVV / CV2</label>
+                <input type="text" id="ccCvv" class="checkout-input" placeholder="123" maxlength="3" onfocus="flipCard(true)" onblur="flipCard(false)" oninput="updateCCField('cvv', this.value)">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 2. PhonePe Scan Panel -->
+          <div id="panel_tab_phonepe" class="payment-panel-content">
+            <div class="qr-container">
+              <span style="font-size:0.8rem; color:var(--accent); font-weight:700;">Scan QR using PhonePe / GPay / Paytm</span>
+              <img id="upiQRCodePhonePe" class="qr-code-img" src="" alt="PhonePe UPI QR">
+              <span id="upiMerchantAddressPhonePe" style="font-size:0.75rem; color:var(--text-muted); font-family:monospace; margin-top:0.25rem;">UPI ID: teamfutrix@upi</span>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Sender UPI ID / Mobile Reference Number</label>
+              <input type="text" id="phonepeSenderUpi" class="checkout-input" placeholder="e.g. name@upi / 9876543210">
+            </div>
+            <div class="input-group">
+              <label class="input-label">PhonePe Payment UTR / 12-Digit Reference ID</label>
+              <input type="text" id="phonepeTransactionId" class="checkout-input" placeholder="e.g. 123456789012" maxlength="12">
+            </div>
+          </div>
+          
+          <!-- 3. UPI ID panel -->
+          <div id="panel_tab_upi" class="payment-panel-content">
+            <div class="input-group">
+              <label class="input-label">Enter Merchant UPI Target ID</label>
+              <input type="text" id="upiMerchantTarget" class="checkout-input" readonly>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Your UPI ID (VPA)</label>
+              <input type="text" id="upiVpaSender" class="checkout-input" placeholder="e.g. name@okaxis">
+            </div>
+            <div class="input-group">
+              <label class="input-label">Transaction Reference UTR (12-Digit)</label>
+              <input type="text" id="upiTransactionId" class="checkout-input" placeholder="e.g. 987654321098" maxlength="12">
+            </div>
+          </div>
+          
+          <!-- 4. Razorpay Panel -->
+          <div id="panel_tab_razorpay" class="payment-panel-content">
+            <div class="razorpay-direct-info">
+              <div class="rzp-icon-circle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 2 22 22 22"/></svg>
+              </div>
+              <h3>Razorpay Instant Portal</h3>
+              <p>Clicking confirmation below will launch the secure Razorpay sandbox dialog to accept card, netbanking, or UPI payments instantly.</p>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Razorpay Simulated Invoice Reference</label>
+              <input type="text" id="rzpMockRef" class="checkout-input" placeholder="e.g. RZP-INV-109283">
+            </div>
+          </div>
+          
+        </div>
+        
+        <!-- Right Panel: Invoice Summary Card -->
+        <div class="checkout-right-panel">
+          <div class="invoice-summary-card">
+            <div>
+              <h3 class="invoice-summary-title">Plan Details</h3>
+              
+              <div class="checkout-plan-info">
+                <span id="chkPlanName" style="font-weight:700; color:#fff;">Basic Plan Upgrade</span>
+                <span id="chkPlanPrice" style="font-weight:800; color:var(--primary); font-size:1.2rem;">₹199.00</span>
+              </div>
+              
+              <table class="invoice-table">
+                <tr>
+                  <td>Base Subscription Fee</td>
+                  <td style="text-align:right;" id="chkBaseFee">₹199.00</td>
+                </tr>
+                <tr>
+                  <td>Processing Fee / Taxes</td>
+                  <td style="text-align:right;">₹0.00</td>
+                </tr>
+                <tr class="total-row">
+                  <td>Due today</td>
+                  <td style="text-align:right; color: var(--primary);" id="chkTotal">₹199.00</td>
+                </tr>
+              </table>
+              
+              <div class="plan-features-list">
+                <div class="feature-item">
+                  <span class="feature-bullet">✓</span> Fully unlocked exams catalog
+                </div>
+                <div class="feature-item">
+                  <span class="feature-bullet">✓</span> Realtime AI Performance Graphs
+                </div>
+                <div class="feature-item">
+                  <span class="feature-bullet">✓</span> Unlimited Chat with AI Coach Mentor
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <button class="btn-pay-submit" id="btnConfirmPay" onclick="submitCheckoutPayment()">
+                <span id="payBtnSpinner" class="spinner" style="display:none;"></span>
+                <span id="payBtnText">Pay & Subscribe</span>
+              </button>
+              
+              <p style="font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-top: 1rem; line-height: 1.4;">
+                Secured by SSL encryption. Upgrade works immediately upon payment confirmation.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="/supabase-js.js"></script>
+  <script src="/supabase-client.js?v=3"></script>
+  <script>
+    let activePlanKey = '';
+    let pricingSettings = {};
+    let selectedPrice = 0;
+
+    // Load custom prices on mount
+    async function loadPricingPlanAesthetics() {
+      try {
+        const res = await fetch('/api/premium/settings');
+        if (res.ok) {
+          const data = await res.json();
+          pricingSettings = data.settings || {};
+          
+          if (pricingSettings.plan_basic_1m) {
+            document.getElementById('priceBasic').textContent = pricingSettings.plan_basic_1m;
+          }
+          if (pricingSettings.plan_silver_3m) {
+            document.getElementById('priceSilver').textContent = pricingSettings.plan_silver_3m;
+          }
+          if (pricingSettings.plan_gold_6m) {
+            document.getElementById('priceGold').textContent = pricingSettings.plan_gold_6m;
+          }
+          if (pricingSettings.plan_diamond_1y) {
+            document.getElementById('priceDiamond').textContent = pricingSettings.plan_diamond_1y;
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard pricing configuration:', err);
+      }
+    }
+
+    let currentPaymentMode = 'tab_card';
+
+    function switchPaymentTab(tabId, index) {
+      currentPaymentMode = tabId;
+      
+      // Update sliding capsule position
+      const indicator = document.getElementById('tabIndicator');
+      if (indicator) {
+        indicator.style.transform = `translateX(${100 * index}%)`;
+      }
+      
+      // Update button active states
+      document.querySelectorAll('.payment-tab-btn').forEach((btn, i) => {
+        if (i === index) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      
+      // Update visible form panel
+      document.querySelectorAll('.payment-panel-content').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.getElementById(`panel_${tabId}`).classList.add('active');
+    }
+
+    function updateCCField(field, val) {
+      if (field === 'name') {
+        document.getElementById('ccNameDisplay').textContent = val.toUpperCase() || 'YOUR NAME';
+      } else if (field === 'number') {
+        let clean = val.replace(/\D/g, '');
+        let formatted = clean.match(/.{1,4}/g)?.join(' ') || '';
+        document.getElementById('ccNumber').value = formatted;
+        document.getElementById('ccNumDisplay').textContent = formatted || '•••• •••• •••• ••••';
+      } else if (field === 'expiry') {
+        let clean = val.replace(/\D/g, '');
+        if (clean.length > 2) {
+          clean = clean.substring(0,2) + '/' + clean.substring(2,4);
+        }
+        document.getElementById('ccExpiry').value = clean;
+        document.getElementById('ccExpiryDisplay').textContent = clean || 'MM/YY';
+      } else if (field === 'cvv') {
+        let clean = val.replace(/\D/g, '');
+        document.getElementById('ccCvv').value = clean;
+        document.getElementById('ccCvvDisplay').textContent = clean || '•••';
+      }
+    }
+
+    function flipCard(shouldFlip) {
+      const ccMockup = document.getElementById('ccMockup');
+      if (ccMockup) {
+        if (shouldFlip) ccMockup.classList.add('flipped');
+        else ccMockup.classList.remove('flipped');
+      }
+    }
+
+    function startCheckout(planKey) {
+      activePlanKey = planKey;
+      let planDisplayName = 'Basic Plan Upgrade';
+      selectedPrice = 199.00;
+
+      if (planKey === 'plan_basic_1m') {
+        planDisplayName = 'Basic Pro Plan (1 Month)';
+        selectedPrice = parseFloat(pricingSettings.plan_basic_1m || 199);
+      } else if (planKey === 'plan_silver_3m') {
+        planDisplayName = 'Silver Pro Plan (3 Months)';
+        selectedPrice = parseFloat(pricingSettings.plan_silver_3m || 499);
+      } else if (planKey === 'plan_gold_6m') {
+        planDisplayName = 'Gold Pro Plan (6 Months)';
+        selectedPrice = parseFloat(pricingSettings.plan_gold_6m || 999);
+      } else if (planKey === 'plan_diamond_1y') {
+        planDisplayName = 'Diamond Pro Plan (1 Year)';
+        selectedPrice = parseFloat(pricingSettings.plan_diamond_1y || 1499);
+      }
+
+      document.getElementById('chkPlanName').textContent = planDisplayName;
+      document.getElementById('chkPlanPrice').textContent = `₹${selectedPrice.toFixed(2)}`;
+      document.getElementById('chkBaseFee').textContent = `₹${selectedPrice.toFixed(2)}`;
+      document.getElementById('chkTotal').textContent = `₹${selectedPrice.toFixed(2)}`;
+
+      // Load Payment Gateway configuration
+      const gatewayType = pricingSettings.payment_gateway_type || 'Mock Gateway';
+      const gatewayKey = pricingSettings.payment_gateway_key || 'teamfutrix@upi';
+
+      // Set target merchant key
+      document.getElementById('upiMerchantTarget').value = gatewayKey;
+      document.getElementById('upiMerchantAddressPhonePe').textContent = `UPI ID: ${gatewayKey}`;
+      
+      // PhonePe scan setup
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(gatewayKey)}&pn=FUTRIX&am=${selectedPrice.toFixed(2)}&cu=INR`;
+      document.getElementById('upiQRCodePhonePe').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}`;
+
+      // Default back to Card tab
+      switchPaymentTab('tab_card', 0);
+
+      // Reset card inputs & display
+      document.getElementById('ccHolderName').value = '';
+      document.getElementById('ccNumber').value = '';
+      document.getElementById('ccExpiry').value = '';
+      document.getElementById('ccCvv').value = '';
+      document.getElementById('ccNameDisplay').textContent = 'YOUR NAME';
+      document.getElementById('ccNumDisplay').textContent = '•••• •••• •••• ••••';
+      document.getElementById('ccExpiryDisplay').textContent = 'MM/YY';
+      document.getElementById('ccCvvDisplay').textContent = '•••';
+
+      // Reset PhonePe & UPI inputs
+      document.getElementById('phonepeSenderUpi').value = '';
+      document.getElementById('phonepeTransactionId').value = '';
+      document.getElementById('upiVpaSender').value = '';
+      document.getElementById('upiTransactionId').value = '';
+      document.getElementById('rzpMockRef').value = 'RZP-INV-' + Math.floor(Math.random() * 900000 + 100000);
+
+      document.getElementById('checkoutModal').classList.add('show');
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkoutModal').classList.remove('show');
+    }
+
+    async function submitCheckoutPayment() {
+      let transactionId = '';
+      let senderUpi = '';
+      let gateway = pricingSettings.payment_gateway_type || 'Mock Gateway';
+
+      if (currentPaymentMode === 'tab_card') {
+        const ccNum = document.getElementById('ccNumber').value.replace(/\s+/g, '');
+        const ccHolder = document.getElementById('ccHolderName').value.trim();
+        const ccExp = document.getElementById('ccExpiry').value.trim();
+        const ccCvv = document.getElementById('ccCvv').value.trim();
+
+        if (ccNum.length < 16) {
+          alert('Please enter a valid credit card number.');
+          return;
+        }
+        if (!ccHolder) {
+          alert('Please enter cardholder name.');
+          return;
+        }
+        if (ccExp.length < 5) {
+          alert('Please enter valid expiration date (MM/YY).');
+          return;
+        }
+        if (ccCvv.length < 3) {
+          alert('Please enter CVV code.');
+          return;
+        }
+
+        // Simulate secure verification
+        transactionId = 'CC-' + Math.floor(Math.random() * 900000000000 + 100000000000);
+        senderUpi = `Card (${ccNum.slice(-4)}) - ${ccHolder}`;
+        gateway = 'Stripe / Credit Card';
+      } else if (currentPaymentMode === 'tab_phonepe') {
+        senderUpi = document.getElementById('phonepeSenderUpi').value.trim();
+        transactionId = document.getElementById('phonepeTransactionId').value.trim();
+
+        if (!senderUpi) {
+          alert('Please enter your PhonePe sender address or phone number.');
+          return;
+        }
+        if (!/^\d{12}$/.test(transactionId)) {
+          alert('Please enter a valid 12-digit payment transaction ID (UTR).');
+          return;
+        }
+        gateway = 'PhonePe UPI';
+      } else if (currentPaymentMode === 'tab_upi') {
+        senderUpi = document.getElementById('upiVpaSender').value.trim();
+        transactionId = document.getElementById('upiTransactionId').value.trim();
+
+        if (!senderUpi || !senderUpi.includes('@')) {
+          alert('Please enter your UPI ID (VPA), e.g. name@okaxis');
+          return;
+        }
+        if (!/^\d{12}$/.test(transactionId)) {
+          alert('Please enter a valid 12-digit Reference UTR ID.');
+          return;
+        }
+        gateway = 'UPI ID';
+      } else if (currentPaymentMode === 'tab_razorpay') {
+        const mockRef = document.getElementById('rzpMockRef').value.trim();
+        if (!mockRef) {
+          alert('Simulated invoice reference is required.');
+          return;
+        }
+        // Simulated sandbox payment response
+        transactionId = 'RZP-' + Math.floor(Math.random() * 900000000000 + 100000000000);
+        senderUpi = `Razorpay Portal (${mockRef})`;
+        gateway = 'Razorpay Gateway';
+      }
+
+      const confirmBtn = document.getElementById('btnConfirmPay');
+      const spinner = document.getElementById('payBtnSpinner');
+      const btnText = document.getElementById('payBtnText');
+
+      confirmBtn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.textContent = "Processing Payment...";
+
+      try {
+        const token = sessionStorage.getItem('futrix_token') || 'test-student-token';
+        const res = await fetch('/api/premium/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            planKey: activePlanKey,
+            paymentDetails: {
+              transactionId,
+              senderUpi,
+              gateway
+            }
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server rejected payment verification.');
+
+        alert(`🚀 Success! Payment verified and account upgraded to FUTRIX PRO!`);
+        closeCheckout();
+
+        // Update local session flag
+        sessionStorage.setItem('futrix_is_pro', 'true');
+        window.location.href = '/features/tests/active-exams.html';
+
+      } catch (err) {
+        alert('Payment verification failed: ' + err.message);
+      } finally {
+        confirmBtn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = "Pay & Subscribe";
+      }
+    }
+
+    window.onload = loadPricingPlanAesthetics;
+  </script>
+</body>
+</html>

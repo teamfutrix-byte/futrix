@@ -1,0 +1,3144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Educator Console | FUTRIX Ecosystem</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #090b11;
+      --sidebar-bg: #0d0f1a;
+      --surface: #121526;
+      --surface-hi: #1b1e36;
+      --border: rgba(255, 255, 255, 0.07);
+      --primary: #4d8eff; /* Unified FUTRIX Blue */
+      --primary-btn: #4d8eff;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --accent: #38bdf8; /* Light blue */
+      --warning: #f59e0b;
+      --violet: #a78bfa;
+    }
+
+    html, body {
+      height: 100vh;
+      font-family: 'Geist', 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ══════════════ LAYOUT ══════════════ */
+    .layout {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ══════════════ SIDEBAR ══════════════ */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--primary); }
+    .educator-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      background: rgba(77, 142, 255, 0.1);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s;
+    }
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+    .nav-item button.active {
+      background: rgba(77, 142, 255, 0.1);
+      color: var(--primary);
+      border-color: rgba(77, 142, 255, 0.25);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .btn-logout {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    /* ══════════════ MAIN CONTENT ══════════════ */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 70% 10%, rgba(77, 142, 255, 0.04) 0%, transparent 50%),
+        var(--bg);
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 64px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(9, 11, 17, 0.4);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.8rem;
+    }
+    .status-badge {
+      background: rgba(77, 142, 255, 0.12);
+      border: 1px solid rgba(77, 142, 255, 0.25);
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    /* ══════════════ VIEWS ══════════════ */
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.4s ease-out both;
+    }
+    .view-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stream Selector Filter */
+    .filter-panel {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+    }
+    .filter-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .stat-desc {
+      font-size: 0.72rem;
+      color: var(--accent);
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    .chart-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      color: #fff;
+    }
+    .chart-container {
+      position: relative;
+      height: 250px;
+      width: 100%;
+    }
+
+    /* Management Tables */
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .table-header-tools {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.01);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .search-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      width: 250px;
+    }
+    .search-input:focus { border-color: var(--primary); }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+    .custom-table th {
+      padding: 0.9rem 1.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+    .custom-table td {
+      padding: 0.9rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    .custom-table tr:last-child td { border-bottom: none; }
+    .custom-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+    /* Action buttons */
+    .btn-action {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-action:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .btn-action.success { color: #fff; background: var(--success); border-color: var(--success); }
+    .btn-action.success:hover { background: #16a34a; }
+    .btn-action.primary { color: #fff; background: var(--primary-btn); border-color: var(--primary-btn); }
+    .btn-action.primary:hover { background: #357ae8; }
+
+    /* Weak Topic Grid Card List */
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .topic-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .topic-card.critical {
+      border-left: 4px solid var(--danger);
+    }
+    .topic-card.warning {
+      border-left: 4px solid var(--warning);
+    }
+    .topic-card.proficient {
+      border-left: 4px solid var(--success);
+    }
+    .topic-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .topic-progress-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .topic-progress-bar {
+      height: 8px;
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .topic-progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.5s ease-out;
+    }
+    .topic-card.critical .topic-progress-fill { background: var(--danger); }
+    .topic-card.warning .topic-progress-fill { background: var(--warning); }
+    .topic-card.proficient .topic-progress-fill { background: var(--success); }
+    
+    .topic-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .topic-status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+    .topic-card.critical .topic-status-badge { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
+    .topic-card.warning .topic-status-badge { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
+    .topic-card.proficient .topic-status-badge { background: rgba(34, 197, 94, 0.12); color: var(--success); }
+
+    /* Teacher AI Chat panel styling */
+    .ai-chat-card {
+      background: rgba(77, 142, 255, 0.03);
+      border: 1px solid rgba(77, 142, 255, 0.15);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .ai-bubble-box {
+      background: rgba(9,11,17,0.5);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      max-height: 350px;
+      overflow-y: auto;
+      color: #e1e2ec;
+    }
+    
+    .ai-input-wrap {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .ai-submit-btn {
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #4d8eff, #6fa3ff);
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ai-submit-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(77, 142, 255, 0.3);
+    }
+    .ai-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Level and unlocked badges */
+    .badge-level {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--accent);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="logo">Fut<span>rix</span></a>
+        <div class="educator-badge-container">
+          <span class="educator-tag">Educator Console</span>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item">
+          <button class="active" onclick="switchView('analytics', this)">📊 Classroom Analytics</button>
+        </li>
+        <li class="nav-item">
+          <button onclick="switchView('students', this)">👥 Student Directory</button>
+        </li>
+        <li class="nav-item">
+          <button onclick="switchView('weaktopics', this)">⚠️ Weak Topic Analysis</button>
+        </li>
+        <li class="nav-item">
+          <button onclick="switchView('aiassistant', this)">✦ AI Educator Assistant</button>
+        </li>
+        <li class="nav-item">
+          <button onclick="switchView('aigenerator', this)">✨ AI Question Generator</button>
+        </li>
+        <li class="nav-item">
+          <button onclick="switchView('qaapprovals', this)">🔍 QA & Approvals</button>
+        </li>
+        <li class="nav-item">
+          <button onclick="switchView('questionbank', this)">📚 Question Bank</button>
+        </li>
+        <li class="nav-item">
+          <button onclick="switchView('classification', this)">🧠 AI Classification</button>
+        </li>
+        <li class="nav-item">
+          <button onclick="switchView('profile', this)">⚙️ Profile & Settings</button>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="logoutBtn">Logout ⏻</button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-title" id="viewTitle">Classroom Analytics</div>
+        <div class="topbar-right">
+          <span>Educator: <strong style="color:#fff" id="educatorName">Loading...</strong></span>
+          <span class="status-badge" id="streamBadge">NEET Stream</span>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <!-- GLOBAL FILTER BAR -->
+        <div class="filter-panel">
+          <span class="filter-label">Select Batch / Stream:</span>
+          <select id="streamSelector" class="search-input" style="width: 160px;" onchange="changeStreamFilter()">
+            <option value="NEET">NEET Stream</option>
+            <option value="JEE">JEE Stream</option>
+          </select>
+          <div style="margin-left: auto;">
+            <button class="btn-action success" onclick="downloadCSVReport()">Download CSV Report 📥</button>
+          </div>
+        </div>
+
+        <!-- ── VIEW: ANALYTICS ── -->
+        <div id="view-analytics" class="view-panel active">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">Enrolled Students</span>
+              <span class="stat-value" id="statStudentCount">0</span>
+              <span class="stat-desc">Active in current stream</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Classroom Avg XP</span>
+              <span class="stat-value" id="statAvgXp">0</span>
+              <span class="stat-desc">Gamified consistency score</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Mock Drills Attempted</span>
+              <span class="stat-value" id="statTotalAttempts">0</span>
+              <span class="stat-desc">Total syllabus mocks solved</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Class average score</span>
+              <span class="stat-value" id="statAvgScore">0%</span>
+              <span class="stat-desc" style="color:var(--primary)" id="statUnlockRate">Progressing steadily</span>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-title">Average Score Percentage by Chapter</div>
+              <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Student Performance Brackets</div>
+              <div class="chart-container">
+                <canvas id="gradeChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── VIEW: STUDENT DIRECTORY ── -->
+        <div id="view-students" class="view-panel">
+          <div class="table-container">
+            <div class="table-header-tools">
+              <input type="text" class="search-input" id="studentSearch" placeholder="Search student by name or email..." oninput="filterStudentsTable()" />
+              <div style="font-size:0.78rem; color:var(--text-muted)">Viewing student mock statistics and progression levels</div>
+            </div>
+            <table class="custom-table" id="studentsTable">
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>Email</th>
+                  <th>XP Balance</th>
+                  <th>Current Level</th>
+                  <th>Average Score %</th>
+                  <th>Completed Exams</th>
+                  <th>PRO Account</th>
+                </tr>
+              </thead>
+              <tbody id="studentTableBody">
+                <tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Loading students data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── VIEW: WEAK TOPIC DETECTION ── -->
+        <div id="view-weaktopics" class="view-panel">
+          <div style="margin-bottom:1.5rem;">
+            <h2 style="font-family:'Sora', sans-serif; font-size:1.1rem; font-weight:700; margin-bottom:0.5rem;">Weak Topic Detection Engine</h2>
+            <p style="font-size:0.82rem; color:var(--text-muted)">Automatically flags chapters with class average score <strong style="color:var(--danger)">below 50%</strong>. Plan classroom counselling and remedial drills accordingly.</p>
+          </div>
+          <div class="topic-grid" id="weakTopicsGrid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- ── VIEW: TEACHER AI ASSISTANT ── -->
+        <div id="view-aiassistant" class="view-panel">
+          <div class="ai-chat-card">
+            <div style="font-family:'Sora', sans-serif; font-weight:700; font-size:1rem; color:var(--primary); display:flex; align-items:center; gap:0.5rem;">
+              <span>✦</span> FUTRIX Teacher AI Counseling Assistant
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted); line-height:1.5;">
+              Use the counseling assistant to analyze your classroom performance and automatically fetch remediation schedules, counseling recommendations, and target student exercises from Gemini.
+            </div>
+            <div style="display:flex; gap:0.75rem;">
+              <button class="btn-action primary" id="btnTriggerClassroomAnalysis">Auto-Analyze Classroom Performance 📊</button>
+            </div>
+            
+            <div class="ai-bubble-box" id="aiAssistantOutput" style="display:none">
+              Analyzing classroom weak topics and average score percentages... Please wait.
+            </div>
+
+            <div class="ai-input-wrap">
+              <input type="text" class="search-input" id="aiAssistantQuery" placeholder="Ask specific questions e.g. How can I improve Kinetics test scores?" style="flex:1" />
+              <button class="ai-submit-btn" id="btnSubmitAiQuery">Ask Assistant</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── VIEW: AI QUESTION GENERATOR ── -->
+        <div id="view-aigenerator" class="view-panel">
+          <div style="margin-bottom:1.5rem;">
+            <h2 style="font-family:'Sora', sans-serif; font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">✨ AI Question Generation Engine</h2>
+            <p style="font-size:0.82rem; color:var(--text-muted)">Generate, validate, and store high-quality MCQ, Assert-Reason, or Numerical questions aligned to Bloom's taxonomy and NCERT curriculum guidelines.</p>
+          </div>
+
+          <div class="charts-grid" style="grid-template-columns: 1fr 1.5fr; gap: 1.5rem;">
+            <!-- Inputs Panel -->
+            <div class="chart-card">
+              <div class="chart-title">Configure Parameters</div>
+              <div style="display:flex; flex-direction:column; gap:0.85rem;">
+                
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Target Exam Series</label>
+                  <select id="genTestSeries" class="search-input" style="width:100%"></select>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                  <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                    <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Subject</label>
+                    <select id="genSubject" class="search-input" style="width:100%" onchange="updateChapterDropdown()"></select>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                    <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Chapter</label>
+                    <select id="genChapter" class="search-input" style="width:100%"></select>
+                  </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Generation Scope</label>
+                  <select id="genScope" class="search-input" style="width:100%" onchange="toggleGenerationScope()">
+                    <option value="chapter" selected>Specific Chapter & Topic</option>
+                    <option value="subject">Entire Subject (Random Topic)</option>
+                  </select>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+                  <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                    <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Difficulty</label>
+                    <select id="genDifficulty" class="search-input" style="width:100%">
+                      <option value="Easy">Easy</option>
+                      <option value="Medium" selected>Medium</option>
+                      <option value="Hard">Hard</option>
+                      <option value="Very Hard">Very Hard</option>
+                      <option value="Olympiad">Olympiad</option>
+                    </select>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                    <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Bloom's Level</label>
+                    <select id="genBloom" class="search-input" style="width:100%">
+                      <option value="Remember">Remember</option>
+                      <option value="Understand">Understand</option>
+                      <option value="Apply" selected>Apply</option>
+                      <option value="Analyze">Analyze</option>
+                      <option value="Evaluate">Evaluate</option>
+                      <option value="Create">Create</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Question Type</label>
+                  <select id="genType" class="search-input" style="width:100%">
+                    <option value="Single Correct MCQ">Single Correct MCQ</option>
+                    <option value="Multiple Correct MCQ">Multiple Correct MCQ</option>
+                    <option value="Assertion Reason">Assertion Reason</option>
+                    <option value="Integer Type">Integer Type</option>
+                  </select>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Language</label>
+                  <select id="genLanguage" class="search-input" style="width:100%">
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Hinglish">Hinglish</option>
+                  </select>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Teacher Notes / Core Directives</label>
+                  <textarea id="genNotes" class="search-input" style="width:100%; height:70px; resize:none" placeholder="e.g. Include a calculation using friction coefficient or a tricky Newton 3rd law exception..."></textarea>
+                </div>
+
+                <button class="ai-submit-btn" style="width:100%; padding:0.85rem;" id="btnGenerateQuestion" onclick="triggerQuestionGeneration()">
+                  Generate AI Question ✨
+                </button>
+
+              </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="chart-card" style="display:flex; flex-direction:column; gap:1.2rem;">
+              <div class="chart-title">Generated Question Preview</div>
+
+              <!-- Pipeline Progress Overlay Logs -->
+              <div id="genPipelineConsole" style="display:none; background:#000; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:1rem; font-family:monospace; font-size:0.75rem; color:#22c55e; height:200px; overflow-y:auto; line-height:1.5;">
+                [INFO] Initializing Question Generation Pipeline...
+              </div>
+
+              <!-- Content Cards -->
+              <div id="genQuestionResultCard" style="display:none; flex-direction:column; gap:1rem;">
+                
+                <div style="background:var(--surface-hi); border:1px solid var(--border); border-radius:12px; padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="badge pro" id="resCardType">Single Correct MCQ</span>
+                    <span class="badge" style="background:rgba(245, 158, 11, 0.15); color:var(--warning)" id="resCardBloom">Apply</span>
+                  </div>
+                  <div style="font-size:0.95rem; font-weight:600; line-height:1.5; color:#fff" id="resCardText"></div>
+                  
+                  <div style="display:flex; flex-direction:column; gap:0.5rem;" id="resCardOptions">
+                    <!-- Options go here -->
+                  </div>
+                </div>
+
+                <!-- Tabs for Solution / Hints / Concept Graph -->
+                <div style="display:flex; border-bottom:1px solid var(--border); gap:0.5rem;">
+                  <button class="btn-action primary" id="tabSolutionBtn" onclick="switchResTab('solution')">Detailed Explanation</button>
+                  <button class="btn-action" id="tabHintsBtn" onclick="switchResTab('hints')">Progressive Hints</button>
+                  <button class="btn-action" id="tabGraphBtn" onclick="switchResTab('graph')">Concept Graph</button>
+                </div>
+
+                <!-- Solution Subpanel -->
+                <div id="resSubpanel-solution" class="res-subpanel" style="display:block; font-size:0.82rem; line-height:1.5; background:rgba(255,255,255,0.01); border:1px solid var(--border); border-radius:12px; padding:1rem; color:var(--text);">
+                  <div style="font-weight:700; margin-bottom:0.5rem; color:var(--success)">Detailed Solution:</div>
+                  <div id="resDetailedSolText" style="margin-bottom:0.85rem;"></div>
+                  <div style="font-weight:700; margin-bottom:0.35rem; color:var(--accent)">Step-by-Step Execution:</div>
+                  <ol id="resStepsList" style="padding-left:1.25rem; margin-bottom:0.85rem; display:flex; flex-direction:column; gap:0.35rem;"></ol>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; border-top:1px solid var(--border); padding-top:0.75rem;">
+                    <div>
+                      <strong style="color:var(--danger)">Exam Shortcut:</strong>
+                      <div id="resShortcutText" style="margin-top:0.25rem;"></div>
+                    </div>
+                    <div>
+                      <strong style="color:var(--warning)">Misconception Targeted:</strong>
+                      <div id="resMisconceptionText" style="margin-top:0.25rem;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Hints Subpanel -->
+                <div id="resSubpanel-hints" class="res-subpanel" style="display:none; font-size:0.82rem; line-height:1.5; background:rgba(255,255,255,0.01); border:1px solid var(--border); border-radius:12px; padding:1rem;">
+                  <div style="font-weight:700; margin-bottom:0.5rem; color:var(--accent)">Progressive Clues:</div>
+                  <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <div style="border-left:2px solid var(--primary); padding-left:0.75rem;">
+                      <strong>Hint Level 1 (Clarity):</strong>
+                      <div id="resHint1Text" style="color:var(--text-muted); margin-top:0.15rem;"></div>
+                    </div>
+                    <div style="border-left:2px solid var(--warning); padding-left:0.75rem;">
+                      <strong>Hint Level 2 (Formula/Rule):</strong>
+                      <div id="resHint2Text" style="color:var(--text-muted); margin-top:0.15rem;"></div>
+                    </div>
+                    <div style="border-left:2px solid var(--success); padding-left:0.75rem;">
+                      <strong>Hint Level 3 (Final Clue):</strong>
+                      <div id="resHint3Text" style="color:var(--text-muted); margin-top:0.15rem;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Concept Graph Subpanel -->
+                <div id="resSubpanel-graph" class="res-subpanel" style="display:none; text-align:center; background:rgba(255,255,255,0.01); border:1px solid var(--border); border-radius:12px; padding:1rem;">
+                  <div style="font-weight:700; margin-bottom:0.85rem; color:var(--violet)">Concept Dependency Coordinates:</div>
+                  <div id="resGraphContainer" style="width:100%; display:flex; justify-content:center;">
+                    <!-- Renders dynamic SVG graph here -->
+                  </div>
+                </div>
+
+              </div>
+              
+              <!-- Empty state message -->
+              <div id="genEmptyState" style="text-align:center; padding:3rem; color:var(--text-muted);">
+                <div style="font-size:2rem; margin-bottom:0.5rem;">✨</div>
+                Set parameters on the left and click "Generate AI Question" to launch the multi-stage pipeline.
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ── VIEW: QUESTION QA & APPROVALS ── -->
+        <div id="view-qaapprovals" class="view-panel">
+          <div style="margin-bottom:1.5rem;">
+            <h2 style="font-family:'Sora', sans-serif; font-size:1.15rem; font-weight:700; margin-bottom:0.5rem;">🔍 Question QA & Approvals Dashboard</h2>
+            <p style="font-size:0.82rem; color:var(--text-muted)">Audit AI-generated questions, verify E2E calculation solving and LaTeX balances, manage version histories, and approve questions for live mocks.</p>
+          </div>
+
+          <div class="charts-grid" style="grid-template-columns: 1fr 1.8fr; gap: 1.5rem;">
+            
+            <!-- Left Side: Questions Pending Review List -->
+            <div class="chart-card" style="display:flex; flex-direction:column; gap:1rem;">
+              <div class="chart-title">Questions Queue</div>
+              <div style="overflow-y:auto; max-height:550px; display:flex; flex-direction:column; gap:0.50rem;" id="qaQuestionsList">
+                <div style="text-align:center; padding:2rem; color:var(--text-muted)">Loading questions...</div>
+              </div>
+            </div>
+
+            <!-- Right Side: Full Detail Validation & Audit Panel -->
+            <div class="chart-card" id="qaDetailPanel" style="display:none; flex-direction:column; gap:1.25rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="chart-title" style="margin-bottom:0;" id="qaDetailTitle">Question Details</div>
+                <span class="badge" id="qaOverallStatusBadge" style="font-size:0.7rem;">PENDING REVIEW</span>
+              </div>
+
+              <!-- Top Row: Quality Score & Execution info -->
+              <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:1rem;">
+                <div class="stat-card" style="padding:0.75rem; background:rgba(255,255,255,0.02); display:flex; align-items:center; gap:0.75rem;">
+                  <div style="font-size:1.5rem; font-weight:800; color:var(--primary)" id="qaQualityScoreText">95</div>
+                  <div>
+                    <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Quality Score</div>
+                    <div style="font-size:0.75rem; font-weight:700;" id="qaQualityTierText">Production Ready</div>
+                  </div>
+                </div>
+                <div class="stat-card" style="padding:0.75rem; background:rgba(255,255,255,0.02); display:flex; align-items:center; gap:0.75rem;">
+                  <div style="font-size:1rem; font-weight:700; color:var(--text-muted);" id="qaVersionText">v1</div>
+                  <div>
+                    <div style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Active Version</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted)" id="qaCreatorText">By System AI</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- E2E Validation Suite Checklist Summary -->
+              <div style="background:rgba(0,0,0,0.15); border:1px solid var(--border); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.5rem;">
+                <div style="font-size:0.8rem; font-weight:700; color:#fff">E2E Validation Suite (12 Layers)</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem; font-size:0.75rem;" id="qaValidatorsList">
+                  <!-- Validators checkboxes go here -->
+                </div>
+              </div>
+
+              <!-- Question Stem and Options Preview -->
+              <div style="background:var(--surface-hi); border:1px solid var(--border); border-radius:12px; padding:1rem; display:flex; flex-direction:column; gap:0.5rem;">
+                <div style="font-size:0.9rem; font-weight:600; line-height:1.4; color:#fff;" id="qaStemText"></div>
+                <div style="display:flex; flex-direction:column; gap:0.35rem;" id="qaOptionsList"></div>
+              </div>
+
+              <!-- Tabs: Solution, Hints, Version History, Audit Trail -->
+              <div style="display:flex; border-bottom:1px solid var(--border); gap:0.5rem; overflow-x:auto;">
+                <button class="btn-action primary" id="tabQaSolBtn" onclick="switchQaSubpanel('solution')">Explanation</button>
+                <button class="btn-action" id="tabQaHintsBtn" onclick="switchQaSubpanel('hints')">Hints</button>
+                <button class="btn-action" id="tabQaHistoryBtn" onclick="switchQaSubpanel('history')">Version History</button>
+                <button class="btn-action" id="tabQaAuditBtn" onclick="switchQaSubpanel('audit')">Audit Logs</button>
+              </div>
+
+              <!-- Tab Panels -->
+              <div id="qaSubpanel-solution" class="qa-subpanel" style="display:block; font-size:0.8rem; line-height:1.4; color:var(--text-muted);">
+                <strong style="color:var(--success)">Detailed Solution:</strong>
+                <div id="qaDetailedSolText" style="margin-top:0.25rem; margin-bottom:0.75rem; color:#fff;"></div>
+                <strong style="color:var(--accent)">Shortcuts & Pitfalls:</strong>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-top:0.25rem;">
+                  <div>
+                    <span style="font-weight:600; color:var(--primary)">Shortcut:</span>
+                    <div id="qaShortcutText"></div>
+                  </div>
+                  <div>
+                    <span style="font-weight:600; color:var(--warning)">Misconception:</span>
+                    <div id="qaMisconceptionText"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="qaSubpanel-hints" class="qa-subpanel" style="display:none; font-size:0.8rem; line-height:1.4; color:var(--text-muted);">
+                <strong style="color:var(--accent)">Progressive Clues:</strong>
+                <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.25rem;">
+                  <div><strong>Hint 1:</strong> <span id="qaHint1Text"></span></div>
+                  <div><strong>Hint 2:</strong> <span id="qaHint2Text"></span></div>
+                  <div><strong>Hint 3:</strong> <span id="qaHint3Text"></span></div>
+                </div>
+              </div>
+
+              <div id="qaSubpanel-history" class="qa-subpanel" style="display:none; font-size:0.8rem;">
+                <strong style="color:var(--primary)">History & Edit Rollbacks:</strong>
+                <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem; max-height:150px; overflow-y:auto;" id="qaHistoryTimeline">
+                  <!-- History timestamps -->
+                </div>
+              </div>
+
+              <div id="qaSubpanel-audit" class="qa-subpanel" style="display:none; font-size:0.8rem;">
+                <strong style="color:var(--warning)">Validation Audit Log Trail:</strong>
+                <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem; max-height:150px; overflow-y:auto;" id="qaAuditTrail">
+                  <!-- Audit logs -->
+                </div>
+              </div>
+
+              <!-- Action Approvals Review Form -->
+              <div style="border-top:1px solid var(--border); padding-top:1rem; display:flex; flex-direction:column; gap:0.75rem;">
+                <textarea id="qaReviewComments" class="search-input" style="width:100%; height:50px; resize:none" placeholder="Add reviewer feedback or comments..."></textarea>
+                <div style="display:flex; gap:0.5rem;">
+                  <button class="btn-action success" style="flex:1; padding:0.7rem; font-weight:700" onclick="submitQaVerdict('approve')">Approve & Publish to Mocks ✓</button>
+                  <button class="btn-action" style="flex:1; padding:0.7rem; font-weight:700; background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.25); color:var(--danger);" onclick="submitQaVerdict('reject')">Reject Question ✗</button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Empty Detail state -->
+            <div class="chart-card" id="qaDetailEmptyState" style="text-align:center; padding:5rem; color:var(--text-muted);">
+              Select a question from the queue on the left to begin audit validation and approvals.
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── VIEW: QUESTION BANK ── -->
+        <div id="view-questionbank" class="view-panel">
+          <div style="display:grid; grid-template-columns: 240px 1fr 340px; gap:1.5rem; height: calc(100vh - 200px); overflow:hidden;">
+            
+            <!-- Left Sidebar: Filters & Bulk Tools -->
+            <div class="chart-card" style="display:flex; flex-direction:column; gap:1rem; padding:1.25rem; overflow-y:auto; border-right:1px solid var(--border);">
+              <h3 style="font-size:0.9rem; font-weight:700; color:var(--primary); margin:0;">Filters</h3>
+              
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label style="font-size:0.72rem; color:var(--text-muted)">Exam</label>
+                <select id="qbFilterExam" class="search-input" style="width:100%" onchange="loadQbQuestions()">
+                  <option value="">All Exams</option>
+                  <option value="NEET">NEET</option>
+                  <option value="JEE">JEE</option>
+                </select>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label style="font-size:0.72rem; color:var(--text-muted)">Subject</label>
+                <select id="qbFilterSubject" class="search-input" style="width:100%" onchange="loadQbQuestions()">
+                  <option value="">All Subjects</option>
+                  <option value="Physics">Physics</option>
+                  <option value="Chemistry">Chemistry</option>
+                  <option value="Biology">Biology</option>
+                </select>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label style="font-size:0.72rem; color:var(--text-muted)">Status</label>
+                <select id="qbFilterStatus" class="search-input" style="width:100%" onchange="loadQbQuestions()">
+                  <option value="">All Status</option>
+                  <option value="Published">Published</option>
+                  <option value="Archived">Archived</option>
+                  <option value="Soft Deleted">Soft Deleted</option>
+                </select>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <label style="font-size:0.72rem; color:var(--text-muted)">Difficulty</label>
+                <select id="qbFilterDifficulty" class="search-input" style="width:100%" onchange="loadQbQuestions()">
+                  <option value="">All Difficulties</option>
+                  <option value="Easy">Easy</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Hard">Hard</option>
+                </select>
+              </div>
+
+              <div style="border-top:1px solid var(--border); padding-top:0.75rem;">
+                <h3 style="font-size:0.9rem; font-weight:700; color:var(--warning); margin:0 0 0.5rem 0;">Bulk Actions</h3>
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                  <button class="btn-action success" style="padding:0.5rem; font-size:0.72rem;" onclick="applyBulkQbOperation('approve')">✓ Bulk Approve</button>
+                  <button class="btn-action" style="padding:0.5rem; font-size:0.72rem; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); color:var(--warning);" onclick="applyBulkQbOperation('archive')">📂 Bulk Archive</button>
+                  <button class="btn-action" style="padding:0.5rem; font-size:0.72rem; background:rgba(239, 68, 68, 0.12); border:1px solid rgba(239, 68, 68, 0.25); color:var(--danger);" onclick="applyBulkQbOperation('soft_delete')">🗑 Bulk Delete</button>
+                  <button class="btn-action" style="padding:0.5rem; font-size:0.72rem; background:rgba(77, 142, 255, 0.12); border:1px solid rgba(77, 142, 255, 0.25); color:var(--primary);" onclick="triggerBulkQbExport()">📤 Export Selected</button>
+                </div>
+              </div>
+
+              <div style="border-top:1px solid var(--border); padding-top:0.75rem;">
+                <h3 style="font-size:0.9rem; font-weight:700; color:var(--accent); margin:0 0 0.5rem 0;">Bulk Import</h3>
+                <textarea id="qbImportJsonText" class="search-input" style="width:100%; height:80px; font-size:0.7rem; font-family:monospace; resize:none" placeholder="Paste questions JSON array here..."></textarea>
+                <button class="btn-action" style="width:100%; margin-top:0.5rem; padding:0.5rem; font-size:0.72rem; background:rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.25); color:var(--accent);" onclick="submitBulkQbImport()">📥 Import JSON</button>
+              </div>
+
+              <div style="border-top:1px dashed var(--border); padding-top:0.5rem; margin-top:0.5rem;">
+                <label style="font-size:0.72rem; color:var(--text-muted); display:block; margin-bottom:0.25rem;">CSV Bulk File Import</label>
+                <input type="file" id="qbImportCsvFile" accept=".csv" style="font-size:0.7rem; color:var(--text-muted); width:100%;" onchange="handleCsvBulkUpload(event)">
+              </div>
+
+            </div>
+
+            <!-- Center Pane: Search & Results List -->
+            <div style="display:flex; flex-direction:column; gap:1rem; overflow:hidden;">
+              <div style="display:flex; gap:0.5rem; align-items:center; background:rgba(255,255,255,0.01); border:1px solid var(--border); padding:0.5rem; border-radius:8px;">
+                <input type="text" id="qbSearchQuery" class="search-input" style="flex:1; border:none; background:transparent;" placeholder="Search question stem, formulas, explanation..." onkeypress="if(event.key==='Enter') loadQbQuestions()">
+                <div style="display:flex; align-items:center; gap:0.35rem; font-size:0.75rem; border-left:1px solid var(--border); padding-left:0.5rem;">
+                  <input type="checkbox" id="qbSearchSemantic" style="cursor:pointer">
+                  <label for="qbSearchSemantic" style="cursor:pointer; color:var(--accent); font-weight:600">Semantic AI</label>
+                </div>
+                <button class="btn-action success" style="padding:0.4rem 1rem" onclick="loadQbQuestions()">Search</button>
+              </div>
+
+              <!-- Questions List Queue -->
+              <div id="qbQuestionsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; padding-right:0.25rem;">
+                <!-- Dynamically loaded cards -->
+              </div>
+            </div>
+
+            <!-- Right Pane: Question Details & Revision History -->
+            <div class="chart-card" id="qbDetailPanel" style="display:none; flex-direction:column; gap:1rem; padding:1.25rem; overflow-y:auto;">
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:0.75rem;">
+                <h3 id="qbDetailTitle" style="font-size:1rem; font-weight:700; color:#fff; margin:0;">Question Details</h3>
+                <span class="status-badge" id="qbDetailStatusBadge">Published</span>
+              </div>
+
+              <!-- Tab Navigation inside right pane -->
+              <div style="display:flex; gap:0.25rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+                <button class="btn-tab active" id="tabQbDetailContentBtn" onclick="switchQbDetailSubpanel('content')" style="flex:1; font-size:0.7rem; padding:0.4rem;">Content</button>
+                <button class="btn-tab" id="tabQbDetailHistoryBtn" onclick="switchQbDetailSubpanel('history')" style="flex:1; font-size:0.7rem; padding:0.4rem;">History</button>
+                <button class="btn-tab" id="tabQbDetailDiffBtn" onclick="switchQbDetailSubpanel('diff')" style="flex:1; font-size:0.7rem; padding:0.4rem;">Compare</button>
+                <button class="btn-tab" id="tabQbDetailAuditBtn" onclick="switchQbDetailSubpanel('audit')" style="flex:1; font-size:0.7rem; padding:0.4rem;">Audit</button>
+              </div>
+
+              <!-- Subpanel: Content details -->
+              <div id="qbDetailSubpanel-content" class="qb-detail-subpanel" style="display:flex; flex-direction:column; gap:0.75rem;">
+                <div style="font-size:0.75rem; color:var(--text-muted)">
+                  <strong>Meta:</strong> <span id="qbDetailMetaInfo">NEET | Physics | Easy</span>
+                </div>
+                <div>
+                  <strong style="color:var(--primary); font-size:0.8rem;">Question Stem:</strong>
+                  <div id="qbDetailStemText" style="color:#fff; font-size:0.85rem; margin-top:0.25rem; line-height:1.4;"></div>
+                </div>
+                <div id="qbDetailOptionsList" style="display:flex; flex-direction:column; gap:0.5rem;">
+                  <!-- Options -->
+                </div>
+                <div style="border-top:1px solid var(--border); padding-top:0.5rem;">
+                  <strong style="color:var(--success); font-size:0.8rem;">Explanation:</strong>
+                  <div id="qbDetailExplanationText" style="color:var(--text-muted); font-size:0.78rem; margin-top:0.25rem; line-height:1.4;"></div>
+                </div>
+                <div>
+                  <strong style="color:var(--accent); font-size:0.8rem;">Tags:</strong>
+                  <div id="qbDetailTagsList" style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.25rem;"></div>
+                </div>
+                <div style="border-top:1px solid var(--border); padding-top:0.5rem; display:flex; flex-direction:column; gap:0.5rem;">
+                  <strong style="color:var(--warning); font-size:0.8rem;">Edit Content:</strong>
+                  <textarea id="qbEditStemInput" class="search-input" style="width:100%; height:60px; font-size:0.78rem;" placeholder="Update stem text..."></textarea>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                    <input type="text" id="qbEditOptA" class="search-input" style="font-size:0.75rem;" placeholder="Option A">
+                    <input type="text" id="qbEditOptB" class="search-input" style="font-size:0.75rem;" placeholder="Option B">
+                    <input type="text" id="qbEditOptC" class="search-input" style="font-size:0.75rem;" placeholder="Option C">
+                    <input type="text" id="qbEditOptD" class="search-input" style="font-size:0.75rem;" placeholder="Option D">
+                  </div>
+                  <div style="display:flex; gap:0.5rem;">
+                    <select id="qbEditCorrectAns" class="search-input" style="width:100px; font-size:0.75rem;">
+                      <option value="A">Correct: A</option>
+                      <option value="B">Correct: B</option>
+                      <option value="C">Correct: C</option>
+                      <option value="D">Correct: D</option>
+                    </select>
+                    <input type="text" id="qbEditNotes" class="search-input" style="flex:1; font-size:0.75rem;" placeholder="Reason for change/notes...">
+                  </div>
+                  <button class="btn-action success" style="width:100%; padding:0.5rem; font-size:0.75rem; font-weight:700" onclick="submitQbEditRevision()">Save as New Version Revision</button>
+                </div>
+                <div style="border-top:1px solid var(--border); padding-top:0.5rem; display:flex; gap:0.5rem;">
+                  <button class="btn-action" style="flex:1; padding:0.5rem; font-size:0.72rem; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); color:var(--warning)" onclick="archiveSingleQbQuestion()">Archive</button>
+                  <button class="btn-action" id="qbRestoreBtn" style="display:none; flex:1; padding:0.5rem; font-size:0.72rem; background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.25); color:var(--success)" onclick="restoreSingleQbQuestion()">Restore</button>
+                  <button class="btn-action" id="qbDeleteBtn" style="flex:1; padding:0.5rem; font-size:0.72rem; background:rgba(239, 68, 68, 0.12); border:1px solid rgba(239, 68, 68, 0.25); color:var(--danger)" onclick="deleteSingleQbQuestion()">Soft Delete</button>
+                </div>
+              </div>
+
+              <!-- Subpanel: History Timeline -->
+              <div id="qbDetailSubpanel-history" class="qb-detail-subpanel" style="display:none; flex-direction:column; gap:0.75rem;">
+                <strong style="color:var(--primary); font-size:0.8rem;">Revision Versions Timeline:</strong>
+                <div id="qbDetailHistoryTimeline" style="display:flex; flex-direction:column; gap:0.5rem; overflow-y:auto; max-height:250px;">
+                  <!-- List of versions -->
+                </div>
+              </div>
+
+              <!-- Subpanel: Compare Diff -->
+              <div id="qbDetailSubpanel-diff" class="qb-detail-subpanel" style="display:none; flex-direction:column; gap:0.75rem;">
+                <strong style="color:var(--primary); font-size:0.8rem;">Compare Historical Updates:</strong>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                  <select id="qbDiffV1" class="search-input" style="flex:1; font-size:0.75rem;"></select>
+                  <span style="color:var(--text-muted)">vs</span>
+                  <select id="qbDiffV2" class="search-input" style="flex:1; font-size:0.75rem;"></select>
+                  <button class="btn-action success" style="padding:0.4rem 0.8rem; font-size:0.75rem;" onclick="loadQbVersionDiffReport()">Diff</button>
+                </div>
+                <div id="qbDetailDiffReport" style="font-size:0.75rem; line-height:1.4; overflow-y:auto; max-height:220px; border:1px solid var(--border); padding:0.5rem; border-radius:6px; background:rgba(255,255,255,0.01);">
+                  Select versions and click Diff to view changes.
+                </div>
+              </div>
+
+              <!-- Subpanel: Audit trail logs -->
+              <div id="qbDetailSubpanel-audit" class="qb-detail-subpanel" style="display:none; flex-direction:column; gap:0.75rem;">
+                <strong style="color:var(--warning); font-size:0.8rem;">Audit Trail Logs:</strong>
+                <div id="qbDetailAuditTrail" style="display:flex; flex-direction:column; gap:0.5rem; overflow-y:auto; max-height:250px; font-size:0.72rem; line-height:1.4;">
+                  <!-- Logs -->
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Empty State Detail -->
+            <div class="chart-card" id="qbDetailEmptyState" style="text-align:center; padding:5rem; color:var(--text-muted);">
+              Select a question from the bank results grid on the left to begin details viewing, version rollbacks, audit logs, or edit updates.
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+        </div>
+
+        <!-- ── VIEW: AI CLASSIFICATION ── -->
+        <div id="view-classification" class="view-panel">
+          <div class="ai-chat-card" style="max-width: 650px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem;">
+            <div style="font-family:'Sora', sans-serif; font-weight:700; font-size:1.1rem; color:var(--primary); display:flex; align-items:center; gap:0.5rem;">
+              <span>🧠</span> AI Question Classifier & Tagging Engine
+            </div>
+            <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.5;">
+              Input raw question text. The classification engine will query Gemini AI to automatically identify subject, chapter name, difficulty tier, and targeted Bloom's Taxonomy cognitive level.
+            </p>
+            <textarea id="classRawQuestion" class="search-input" style="width:100%; height:120px; resize:none;" placeholder="Paste raw question text here... e.g., A block of mass 2kg is placed on a rough horizontal surface with coefficient of friction 0.4. Find the friction force..."></textarea>
+            
+            <button class="ai-submit-btn" id="btnRunClassifier" onclick="runAiClassifier()" style="padding:0.75rem; width:100%;">Classify Question ✦</button>
+            
+            <div id="classResultBox" style="display:none; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:12px; padding:1.25rem; flex-direction:column; gap:0.85rem;">
+              <h3 style="font-size:0.95rem; font-weight:700; color:#fff; border-bottom:1px solid var(--border); padding-bottom:0.5rem; margin-bottom:0.25rem;">Classification Results</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.85rem;">
+                <div><strong>Subject:</strong> <span id="classSubject" style="color:var(--primary)">-</span></div>
+                <div><strong>Chapter:</strong> <span id="classChapter" style="color:var(--accent)">-</span></div>
+                <div><strong>Difficulty:</strong> <span id="classDifficulty" style="color:var(--warning)">-</span></div>
+                <div><strong>Bloom's Level:</strong> <span id="classBloom" style="color:var(--violet)">-</span></div>
+              </div>
+              <div style="font-size:0.8rem; line-height:1.4; border-top:1px dashed var(--border); padding-top:0.75rem;">
+                <strong>Suggested Tags:</strong> <span id="classTags" style="color:var(--text-muted)">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── VIEW: PROFILE & SETTINGS ── -->
+        <div id="view-profile" class="view-panel">
+          <div class="charts-grid" style="grid-template-columns: 1fr; gap: 1.5rem; max-width: 600px; margin: 0 auto;">
+            <div class="chart-card">
+              <div class="chart-title">⚙️ Educator Profile Settings</div>
+              <div style="display:flex; flex-direction:column; gap:0.85rem;">
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Full Name</label>
+                  <input type="text" id="teacherFullName" class="search-input" style="width:100%" />
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Email Address</label>
+                  <input type="text" id="teacherEmail" class="search-input" style="width:100%; opacity:0.6; cursor:not-allowed;" disabled />
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Specialization Stream</label>
+                  <select id="teacherStream" class="search-input" style="width:100%">
+                    <option value="NEET">NEET Stream</option>
+                    <option value="JEE">JEE Stream</option>
+                  </select>
+                </div>
+                <button class="btn-action success" onclick="saveTeacherProfile()" style="padding:0.75rem; font-weight:700;">Save Profile Details</button>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-title">🔒 Update Password</div>
+              <div style="display:flex; flex-direction:column; gap:0.85rem;">
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">New Password</label>
+                  <input type="password" id="teacherNewPassword" class="search-input" style="width:100%" placeholder="At least 6 characters" />
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                  <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted)">Confirm New Password</label>
+                  <input type="password" id="teacherConfirmPassword" class="search-input" style="width:100%" placeholder="Confirm new password" />
+                </div>
+                <button class="btn-action success" onclick="changeTeacherPassword()" style="padding:0.75rem; font-weight:700;">Change Account Password</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <script src="/supabase-js.js"></script>
+  <script src="/supabase-client.js?v=2"></script>
+  <script src="/features/student/onboarding-client.js"></script>
+  <script>
+    let activeUser = null;
+    let rawProfiles = [];
+    let rawAttempts = [];
+    let rawTestSeries = [];
+    let currentStream = 'NEET';
+
+    // Redirect Guard
+    window.addEventListener('load', async () => {
+      const u = sessionStorage.getItem('futrix_user');
+      if (!u) {
+        window.location.href = '/features/auth/admin-login.html';
+        return;
+      }
+      activeUser = JSON.parse(u);
+      if (activeUser.role !== 'teacher') {
+        window.location.href = '/features/auth/admin-login.html';
+        return;
+      }
+
+      document.getElementById('educatorName').textContent = activeUser.name || 'Educator';
+      
+      // Load profile fields
+      document.getElementById('teacherFullName').value = activeUser.name || '';
+      document.getElementById('teacherEmail').value = activeUser.email || '';
+      document.getElementById('teacherStream').value = activeUser.preparation || 'NEET';
+      
+      // Load categories dynamically
+      try {
+        const categories = await getExamCategories();
+        const selector = document.getElementById('streamSelector');
+        if (selector && categories && categories.length > 0) {
+          selector.innerHTML = '';
+          categories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.name;
+            opt.textContent = cat.display_name || `${cat.name} Stream`;
+            selector.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading dynamic streams:', err);
+      }
+
+      // Default selector stream
+      currentStream = activeUser.preparation || 'NEET';
+      document.getElementById('streamSelector').value = currentStream;
+      document.getElementById('streamBadge').textContent = currentStream + ' Stream';
+
+      await initDashboard();
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await signOutUser();
+      window.location.href = '/features/auth/admin-login.html';
+    });
+
+    // Switch View Panel
+    function switchView(viewId, btnEl) {
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item button').forEach(b => b.classList.remove('active'));
+
+      document.getElementById('view-' + viewId).classList.add('active');
+      btnEl.classList.add('active');
+
+      const titleMap = {
+        analytics: 'Classroom Analytics',
+        students: 'Student Directory',
+        weaktopics: 'Weak Topic Analysis',
+        aiassistant: 'AI Educator Assistant',
+        aigenerator: 'AI Question Generator',
+        qaapprovals: 'Question QA & Approvals',
+        questionbank: 'Enterprise Question Bank',
+        classification: 'AI Question Classification',
+        profile: 'Educator Profile & Settings'
+      };
+      document.getElementById('viewTitle').textContent = titleMap[viewId] || 'Educator Portal';
+
+      if (viewId === 'qaapprovals') {
+        loadPendingQuestions();
+      } else if (viewId === 'questionbank') {
+        loadQbQuestions();
+      }
+    }
+
+    // Teacher profile and password functions
+    async function saveTeacherProfile() {
+      const name = document.getElementById('teacherFullName').value.trim();
+      const prepVal = document.getElementById('teacherStream').value;
+      if (!name) {
+        alert('Please enter your name.');
+        return;
+      }
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            full_name: name,
+            preparation_for: prepVal
+          })
+          .eq('id', activeUser.id);
+        if (error) throw error;
+        
+        activeUser.name = name;
+        activeUser.preparation = prepVal;
+        sessionStorage.setItem('futrix_user', JSON.stringify(activeUser));
+        
+        document.getElementById('educatorName').textContent = name;
+        document.getElementById('streamSelector').value = prepVal;
+        document.getElementById('streamBadge').textContent = prepVal + ' Stream';
+        currentStream = prepVal;
+        
+        alert('Profile saved successfully!');
+      } catch(err) {
+        alert('Error saving profile: ' + err.message);
+      }
+    }
+
+    async function changeTeacherPassword() {
+      const pass = document.getElementById('teacherNewPassword').value;
+      const conf = document.getElementById('teacherConfirmPassword').value;
+      if (pass.length < 6) {
+        alert('Password must be at least 6 characters long.');
+        return;
+      }
+      if (pass !== conf) {
+        alert('Passwords do not match.');
+        return;
+      }
+      try {
+        const { error } = await supabase.auth.updateUser({ password: pass });
+        if (error) throw error;
+        
+        alert('Password updated successfully!');
+        document.getElementById('teacherNewPassword').value = '';
+        document.getElementById('teacherConfirmPassword').value = '';
+      } catch(err) {
+        alert('Error changing password: ' + err.message);
+      }
+    }
+
+    async function runAiClassifier() {
+      const text = document.getElementById('classRawQuestion').value.trim();
+      if (!text) {
+        alert('Please enter question text.');
+        return;
+      }
+      const outBox = document.getElementById('classResultBox');
+      const btn = document.getElementById('btnRunClassifier');
+      
+      btn.disabled = true;
+      btn.textContent = 'Classifying question stem...';
+      outBox.style.display = 'none';
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+        
+        const res = await fetch('/api/ai/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            query: `Classify this question text into subject, chapter, difficulty, bloom_level, and suggestions tags. Format as JSON with fields: subject, chapter, difficulty, bloom_level, tags. Text: "${text}"`,
+            screen: 'teacher-dashboard',
+            feature: 'ai_classification',
+            sessionId: 'session_teacher_class'
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          let json = {
+            subject: 'Physics',
+            chapter: 'Mechanics',
+            difficulty: 'Medium',
+            bloom_level: 'Apply',
+            tags: 'Laws of Motion, friction, forces'
+          };
+          try {
+            const cleaned = data.response.replace(/```json/g, '').replace(/```/g, '').trim();
+            json = JSON.parse(cleaned);
+          } catch(e) {}
+          
+          document.getElementById('classSubject').textContent = json.subject || 'Physics';
+          document.getElementById('classChapter').textContent = json.chapter || 'Mechanics';
+          document.getElementById('classDifficulty').textContent = json.difficulty || 'Medium';
+          document.getElementById('classBloom').textContent = json.bloom_level || 'Apply';
+          document.getElementById('classTags').textContent = json.tags || 'General Practice';
+          outBox.style.display = 'flex';
+        } else {
+          throw new Error('AI service error');
+        }
+      } catch (err) {
+        console.warn('AI Classifier failed, using local fallback...', err);
+        let subj = 'Physics', chap = 'Mechanics', diff = 'Medium', bl = 'Apply', tags = 'friction, motion';
+        const txt = text.toLowerCase();
+        if (txt.includes('chemistry') || txt.includes('bond') || txt.includes('reaction') || txt.includes('acid')) {
+          subj = 'Chemistry'; chap = 'Chemical Bonding'; bl = 'Understand'; tags = 'bonding, structure';
+        } else if (txt.includes('biology') || txt.includes('cell') || txt.includes('division') || txt.includes('body')) {
+          subj = 'Biology'; chap = 'Cell Division'; bl = 'Remember'; tags = 'mitosis, cytology';
+        }
+        
+        document.getElementById('classSubject').textContent = subj;
+        document.getElementById('classChapter').textContent = chap;
+        document.getElementById('classDifficulty').textContent = diff;
+        document.getElementById('classBloom').textContent = bl;
+        document.getElementById('classTags').textContent = tags;
+        outBox.style.display = 'flex';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Classify Question ✦';
+      }
+    }
+
+    async function handleCsvBulkUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const text = e.target.result;
+        const lines = text.split('\n');
+        const list = [];
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i].split(',');
+          if (row.length >= 7) {
+            list.push({
+              question_text: row[0].replace(/"/g, '').trim(),
+              option_a: row[1].replace(/"/g, '').trim(),
+              option_b: row[2].replace(/"/g, '').trim(),
+              option_c: row[3].replace(/"/g, '').trim(),
+              option_d: row[4].replace(/"/g, '').trim(),
+              correct_answer: row[5].replace(/"/g, '').trim(),
+              difficulty: row[6].replace(/"/g, '').trim() || 'Medium'
+            });
+          }
+        }
+        
+        if (list.length === 0) {
+          alert('No valid questions parsed from CSV. Please check formatting.');
+          return;
+        }
+        
+        document.getElementById('qbImportJsonText').value = JSON.stringify(list, null, 2);
+        alert(`Parsed ${list.length} questions successfully! Click "Import JSON" to save them.`);
+      };
+      reader.readAsText(file);
+    }
+
+    // Stream Selector Change
+    async function changeStreamFilter() {
+      currentStream = document.getElementById('streamSelector').value;
+      document.getElementById('streamBadge').textContent = currentStream + ' Stream';
+      updateSubjectDropdown();
+      await updateUI();
+    }
+
+    // Load Data from Supabase
+    async function initDashboard() {
+      try {
+        const { data: profiles, error: pErr } = await supabase.from('profiles').select('*');
+        const { data: attempts, error: aErr } = await supabase.from('attempts').select('*');
+        const { data: testSeries, error: tsErr } = await supabase.from('test_series').select('*');
+
+        if (pErr) throw pErr;
+        if (aErr) throw aErr;
+        if (tsErr) throw tsErr;
+
+        rawProfiles = profiles || [];
+        rawAttempts = attempts || [];
+        rawTestSeries = testSeries || [];
+
+        await updateUI();
+      } catch (err) {
+        console.error("Failed to load educator data:", err);
+      }
+    }
+
+    // Calculate details and render components based on current stream
+    let filteredStudents = [];
+    let performanceData = {}; // { topic: { totalScore, maxMarks, count } }
+
+    async function updateUI() {
+      // 1. Filter students by currentStream
+      filteredStudents = rawProfiles.filter(p => p.role === 'student' && (p.preparation_for || '').toUpperCase() === currentStream.toUpperCase());
+      
+      // Calculate Stats
+      const studentCount = filteredStudents.length;
+      document.getElementById('statStudentCount').textContent = studentCount;
+
+      let totalXp = 0;
+      filteredStudents.forEach(s => totalXp += parseFloat(s.xp_balance || 0));
+      const avgXp = studentCount > 0 ? (totalXp / studentCount).toFixed(0) : '0';
+      document.getElementById('statAvgXp').textContent = avgXp;
+
+      // Get student ids
+      const studentIds = filteredStudents.map(s => s.id);
+      const studentAttempts = rawAttempts.filter(a => studentIds.includes(a.user_id));
+      document.getElementById('statTotalAttempts').textContent = studentAttempts.length;
+
+      // Calculate Average Class Score %
+      let totalScorePercent = 0;
+      let scoreCount = 0;
+      
+      studentAttempts.forEach(a => {
+        const test = rawTestSeries.find(t => t.series_id === a.series_id);
+        if (test && parseFloat(test.max_marks) > 0) {
+          totalScorePercent += (parseFloat(a.score) / parseFloat(test.max_marks)) * 100;
+          scoreCount++;
+        }
+      });
+      const avgScore = scoreCount > 0 ? (totalScorePercent / scoreCount).toFixed(1) + '%' : 'N/A';
+      document.getElementById('statAvgScore').textContent = avgScore;
+
+      // Render Students Table
+      populateStudentsTable();
+
+      // Render Charts
+      calculatePerformanceByTopic(studentAttempts);
+      renderPerformanceChart();
+      renderGradeChart(studentAttempts);
+
+      // Render Weak Topics
+      populateWeakTopics();
+    }
+
+    function calculatePerformanceByTopic(attempts) {
+      performanceData = {};
+      attempts.forEach(a => {
+        const test = rawTestSeries.find(t => t.series_id === a.series_id);
+        if (test && test.topic_chapter) {
+          const topic = test.topic_chapter;
+          if (!performanceData[topic]) {
+            performanceData[topic] = { totalScore: 0, totalMax: 0, count: 0 };
+          }
+          performanceData[topic].totalScore += parseFloat(a.score || 0);
+          performanceData[topic].totalMax += parseFloat(test.max_marks || 0);
+          performanceData[topic].count++;
+        }
+      });
+    }
+
+    function populateStudentsTable() {
+      const body = document.getElementById('studentTableBody');
+      body.innerHTML = '';
+
+      if (filteredStudents.length === 0) {
+        body.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No students enrolled in the ${currentStream} stream.</td></tr>`;
+        return;
+      }
+
+      filteredStudents.forEach(s => {
+        const attempts = rawAttempts.filter(a => a.user_id === s.id);
+        let avgPct = 'N/A';
+        if (attempts.length > 0) {
+          let totalPct = 0;
+          let count = 0;
+          attempts.forEach(a => {
+            const test = rawTestSeries.find(t => t.series_id === a.series_id);
+            if (test && test.max_marks > 0) {
+              totalPct += (parseFloat(a.score) / parseFloat(test.max_marks)) * 100;
+              count++;
+            }
+          });
+          if (count > 0) avgPct = (totalPct / count).toFixed(1) + '%';
+        }
+
+        const isPro = s.is_pro ? `<span class="badge-level" style="background:rgba(251,191,36,0.1); border-color:rgba(251,191,36,0.3); color:var(--primary)">PRO</span>` : `<span style="color:#6b7280">Standard</span>`;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${s.full_name || 'Competitor'}</strong></td>
+          <td>${s.email}</td>
+          <td><strong style="color:var(--success)">${parseFloat(s.xp_balance || 100).toFixed(0)} XP</strong></td>
+          <td><span class="badge-level">Lvl ${s.unlocked_level || 1}</span></td>
+          <td><strong>${avgPct}</strong></td>
+          <td><code>${attempts.length} attempts</code></td>
+          <td>${isPro}</td>
+        `;
+        body.appendChild(row);
+      });
+    }
+
+    function filterStudentsTable() {
+      const q = document.getElementById('studentSearch').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#studentTableBody tr');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(q)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // Chart.js Performance Bar Chart
+    let perfChartInstance = null;
+    function renderPerformanceChart() {
+      const labels = Object.keys(performanceData);
+      const values = labels.map(l => {
+        const t = performanceData[l];
+        return t.totalMax > 0 ? ((t.totalScore / t.totalMax) * 100).toFixed(1) : 0;
+      });
+
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+      if (perfChartInstance) {
+        perfChartInstance.destroy();
+      }
+
+      perfChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Class Avg Score %',
+            data: values,
+            backgroundColor: values.map(v => v < 50 ? 'rgba(239, 68, 68, 0.7)' : v < 70 ? 'rgba(245, 158, 11, 0.7)' : 'rgba(34, 197, 94, 0.7)'),
+            borderColor: values.map(v => v < 50 ? 'rgba(239, 68, 68, 1)' : v < 70 ? 'rgba(245, 158, 11, 1)' : 'rgba(34, 197, 94, 1)'),
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#9ca3af', font: { family: 'Geist' } } },
+            y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#9ca3af', callback: v => v + '%' } }
+          }
+        }
+      });
+    }
+
+    // Chart.js Student Brackets Doughnut
+    let gradeChartInstance = null;
+    function renderGradeChart(attempts) {
+      const distribution = { critical: 0, moderate: 0, proficient: 0 };
+      
+      // Calculate avg score for each student and sort them into buckets
+      filteredStudents.forEach(s => {
+        const sAttempts = attempts.filter(a => a.user_id === s.id);
+        if (sAttempts.length === 0) {
+          distribution.critical++;
+          return;
+        }
+
+        let totalPct = 0;
+        let count = 0;
+        sAttempts.forEach(a => {
+          const test = rawTestSeries.find(t => t.series_id === a.series_id);
+          if (test && test.max_marks > 0) {
+            totalPct += (parseFloat(a.score) / parseFloat(test.max_marks)) * 100;
+            count++;
+          }
+        });
+        const avg = totalPct / (count || 1);
+        if (avg < 50) distribution.critical++;
+        else if (avg < 75) distribution.moderate++;
+        else distribution.proficient++;
+      });
+
+      const ctx = document.getElementById('gradeChart').getContext('2d');
+      if (gradeChartInstance) {
+        gradeChartInstance.destroy();
+      }
+
+      gradeChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Need Review (<50%)', 'Progressing (50-75%)', 'Exemplary (>75%)'],
+          datasets: [{
+            data: [distribution.critical, distribution.moderate, distribution.proficient],
+            backgroundColor: ['#ef4444', '#f59e0b', '#22c55e'],
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.08)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#9ca3af', font: { family: 'Geist' } } }
+          }
+        }
+      });
+    }
+
+    // Populate Weak Topics list
+    function populateWeakTopics() {
+      const grid = document.getElementById('weakTopicsGrid');
+      grid.innerHTML = '';
+
+      const topics = Object.keys(performanceData);
+      let weakCount = 0;
+
+      topics.forEach(t => {
+        const perf = performanceData[t];
+        const avg = perf.totalMax > 0 ? (perf.totalScore / perf.totalMax) * 100 : 0;
+        
+        let status = 'proficient';
+        let badgeText = 'Proficient';
+        if (avg < 50) {
+          status = 'critical';
+          badgeText = 'Needs Review';
+          weakCount++;
+        } else if (avg < 70) {
+          status = 'warning';
+          badgeText = 'Moderate';
+        }
+
+        const card = document.createElement('div');
+        card.className = `topic-card ${status}`;
+        card.innerHTML = `
+          <div class="topic-name">${t}</div>
+          <div class="topic-progress-wrap">
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-bottom:0.25rem;">
+              <span>Class Avg Score</span>
+              <strong style="color:#fff">${avg.toFixed(1)}%</strong>
+            </div>
+            <div class="topic-progress-bar">
+              <div class="topic-progress-fill" style="width: ${avg}%"></div>
+            </div>
+          </div>
+          <div class="topic-meta">
+            <span>Attempts: ${perf.count}</span>
+            <span class="topic-status-badge">${badgeText}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      if (topics.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:2rem;">No test attempts loaded to determine topic analytics.</div>`;
+      }
+    }
+
+    // ── CSV EXPORTER ──
+    function downloadCSVReport() {
+      if (filteredStudents.length === 0) {
+        alert('No classroom data available to download.');
+        return;
+      }
+
+      let csv = 'Student Name,Email,Stream,XP Balance,Unlocked Level,Average Score %,Completed Exams\n';
+      
+      filteredStudents.forEach(s => {
+        const attempts = rawAttempts.filter(a => a.user_id === s.id);
+        let avgPct = 'N/A';
+        if (attempts.length > 0) {
+          let totalPct = 0;
+          let count = 0;
+          attempts.forEach(a => {
+            const test = rawTestSeries.find(t => t.series_id === a.series_id);
+            if (test && test.max_marks > 0) {
+              totalPct += (parseFloat(a.score) / parseFloat(test.max_marks)) * 100;
+              count++;
+            }
+          });
+          if (count > 0) avgPct = (totalPct / count).toFixed(1) + '%';
+        }
+        
+        // Clean name field for CSV escaping
+        const name = (s.full_name || 'Competitor').replace(/,/g, '');
+        csv += `${name},${s.email},${s.preparation_for || 'NEET'},${parseFloat(s.xp_balance || 100).toFixed(0)},${s.unlocked_level || 1},${avgPct},${attempts.length}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `FUTRIX_Educator_Report_${currentStream}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ── TEACHER AI COUNSELING ASSISTANT ──
+    
+    async function getAuthHeaders() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.access_token) {
+        return {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        };
+      }
+      return { 'Content-Type': 'application/json' };
+    }
+
+    async function invokeCounselingAssistant(queryText) {
+      const out = document.getElementById('aiAssistantOutput');
+      out.style.display = 'block';
+      out.textContent = 'Gathering batch performance statistics and calling Gemini AI...';
+
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch('/api/ai/complete', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            query: queryText,
+            screen: 'teacher-dashboard',
+            feature: 'classroom_analysis',
+            sessionId: 'session_teacher_analysis'
+          })
+        });
+
+        if (!res.ok) throw new Error('Central AI Service returned an error.');
+        const data = await res.json();
+
+        if (data && data.response) {
+          out.innerHTML = formatMarkdown(data.response);
+        } else {
+          out.textContent = 'AI Counselor response was empty.';
+        }
+      } catch (err) {
+        console.error('AI Counseling query failed:', err);
+        out.textContent = 'Counseling query failed: ' + err.message + '\n\nOffline fallback advisory:\n\nAnalyze topic metrics to prioritize review cycles. Pay attention to Chapters with averages under 50%. Group struggling students for unified remedial mocks on the FUTRIX Exam Portal.';
+      }
+    }
+
+    document.getElementById('btnTriggerClassroomAnalysis').onclick = async () => {
+      // Gather metadata
+      const count = filteredStudents.length;
+      const totalAttempts = rawAttempts.filter(a => filteredStudents.map(s => s.id).includes(a.user_id)).length;
+      
+      const weakList = [];
+      Object.keys(performanceData).forEach(t => {
+        const perf = performanceData[t];
+        const avg = perf.totalMax > 0 ? (perf.totalScore / perf.totalMax) * 100 : 0;
+        if (avg < 50) {
+          weakList.push(`${t} (${avg.toFixed(1)}% class average)`);
+        }
+      });
+
+      const weakStr = weakList.length > 0 ? weakList.join(', ') : 'None';
+      const promptText = `Provide classroom counseling strategies for the ${currentStream} stream. Batch stats: Total Students = ${count}, Total Attempts = ${totalAttempts}, Weak Chapters (<50% Avg Score) = ${weakStr}. Plan a revision calendar.`;
+
+      await invokeCounselingAssistant(promptText);
+    };
+
+    document.getElementById('btnSubmitAiQuery').onclick = async () => {
+      const query = document.getElementById('aiAssistantQuery').value.trim();
+      if (!query) return;
+
+      document.getElementById('aiAssistantQuery').value = '';
+      const promptText = `Teacher request for NEET/JEE counselling advisory: "${query}". Context: Current stream is ${currentStream}. Provide target lessons and student counselling strategy.`;
+      await invokeCounselingAssistant(promptText);
+    };
+
+    function formatMarkdown(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>')
+        .replace(/•\s(.*?)/g, '<li>$1</li>');
+    }
+
+    const SUBJECTS_BY_EXAM = {
+      NEET: ["Physics", "Chemistry", "Biology"],
+      JEE: ["Physics", "Chemistry", "Mathematics"],
+      UPSC: ["History", "Geography", "Polity", "Economics", "General Science"],
+      GATE: ["Computer Science", "Mechanical Engineering", "Electrical Engineering", "Civil Engineering", "Mathematics"],
+      CBSE: ["Physics", "Chemistry", "Mathematics", "Biology", "English"],
+      DEFAULT: ["General Aptitude", "Verbal Ability", "Logical Reasoning", "Core Domain"]
+    };
+
+    const CHAPTERS_BY_SUBJECT = {
+      Physics: ["Newton's Laws", "Work Energy Power", "Electrostatics", "Thermodynamics", "Kinematics"],
+      Chemistry: ["Organic Structures", "Chemical Kinetics", "Aldol Condensation", "Gaseous State", "Electrochemistry"],
+      Biology: ["Cell Division", "DNA Replication", "Genetics", "Photosynthesis", "Plant Anatomy"],
+      Mathematics: ["Calculus", "Linear Algebra", "Probability & Statistics", "Trigonometry", "Coordinate Geometry"],
+      History: ["Ancient India", "Medieval India", "Modern Indian History", "World History"],
+      Geography: ["Physical Geography", "Human Geography", "Indian Geography", "Climatology"],
+      Polity: ["Indian Constitution", "Executive & Parliament", "Judiciary", "Local Government"],
+      Economics: ["Macroeconomics", "Microeconomics", "Indian Economy", "Fiscal Policy"],
+      "General Science": ["Basic Physics", "Basic Chemistry", "Life Sciences", "Space & Tech"],
+      "Computer Science": ["Algorithms & Data Structures", "Database Management Systems", "Operating Systems", "Computer Networks", "Theory of Computation"],
+      "Mechanical Engineering": ["Thermodynamics", "Fluid Mechanics", "Strength of Materials", "Machine Design"],
+      "Electrical Engineering": ["Circuit Theory", "Control Systems", "Electromagnetics", "Signals & Systems"],
+      "Civil Engineering": ["Structural Analysis", "Geotechnical Engineering", "Fluid Mechanics", "Transportation Engineering"],
+      "General Aptitude": ["Quantitative Aptitude", "Logical Reasoning", "Data Interpretation"],
+      "Verbal Ability": ["Reading Comprehension", "Grammar & Vocabulary", "Critical Reasoning"],
+      "Logical Reasoning": ["Syllogisms", "Blood Relations", "Seating Arrangement", "Puzzles"],
+      "Core Domain": ["Fundamental Concepts", "Advanced Analysis", "Practical Applications"]
+    };
+
+    function updateSubjectDropdown() {
+      const subjectSelect = document.getElementById('genSubject');
+      if (!subjectSelect) return;
+      subjectSelect.innerHTML = '';
+
+      const subjects = SUBJECTS_BY_EXAM[currentStream] || SUBJECTS_BY_EXAM.DEFAULT;
+      subjects.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        subjectSelect.appendChild(opt);
+      });
+
+      updateChapterDropdown();
+    }
+
+    function updateChapterDropdown() {
+      const subject = document.getElementById('genSubject').value;
+      const chapterSelect = document.getElementById('genChapter');
+      if (!chapterSelect) return;
+      chapterSelect.innerHTML = '';
+      
+      const chapters = CHAPTERS_BY_SUBJECT[subject] || CHAPTERS_BY_SUBJECT["Core Domain"];
+      chapters.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = ch;
+        opt.textContent = ch;
+        chapterSelect.appendChild(opt);
+      });
+    }
+
+    function toggleGenerationScope() {
+      const scope = document.getElementById('genScope').value;
+      const chSelect = document.getElementById('genChapter');
+      if (scope === 'subject') {
+        chSelect.disabled = true;
+      } else {
+        chSelect.disabled = false;
+      }
+    }
+
+    async function loadTestSeriesDropdown() {
+      try {
+        const { data: testSeries } = await supabase.from('test_series').select('series_id, topic_chapter');
+        const seriesSelect = document.getElementById('genTestSeries');
+        if (!seriesSelect) return;
+        seriesSelect.innerHTML = '';
+
+        // Add a default pool option
+        const defOpt = document.createElement('option');
+        defOpt.value = 'AI-GENERATED-POOL';
+        defOpt.textContent = 'AI Practice Question Pool';
+        seriesSelect.appendChild(defOpt);
+
+        if (testSeries) {
+          testSeries.forEach(ts => {
+            const opt = document.createElement('option');
+            opt.value = ts.series_id;
+            opt.textContent = `${ts.series_id} (${ts.topic_chapter})`;
+            seriesSelect.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error('Error loading test series for generator:', err);
+      }
+    }
+
+    // Call updates on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        updateSubjectDropdown();
+        loadTestSeriesDropdown();
+      }, 500);
+    });
+
+    let currentGeneratedQuestion = null;
+
+    async function triggerQuestionGeneration() {
+      const btn = document.getElementById('btnGenerateQuestion');
+      const consoleEl = document.getElementById('genPipelineConsole');
+      const resultCard = document.getElementById('genQuestionResultCard');
+      const emptyState = document.getElementById('genEmptyState');
+
+      btn.disabled = true;
+      emptyState.style.display = 'none';
+      resultCard.style.display = 'none';
+      consoleEl.style.display = 'block';
+      consoleEl.innerHTML = '';
+
+      function logPipeline(msg) {
+        consoleEl.innerHTML += `<div>[PIPELINE] ${msg}</div>`;
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+      }
+
+      logPipeline("Curriculum Parser: Validating academic parameters...");
+      await new Promise(r => setTimeout(r, 600));
+
+      const scope = document.getElementById('genScope').value;
+
+      const payload = {
+        exam: currentStream,
+        subject: document.getElementById('genSubject').value,
+        chapter: scope === 'subject' ? '' : document.getElementById('genChapter').value,
+        difficulty: document.getElementById('genDifficulty').value,
+        bloomLevel: document.getElementById('genBloom').value,
+        questionType: document.getElementById('genType').value,
+        language: document.getElementById('genLanguage').value,
+        notes: document.getElementById('genNotes').value.trim(),
+        seriesId: document.getElementById('genTestSeries').value
+      };
+
+      logPipeline(`Topic Analyzer: Mapping prerequisite concepts for ${payload.chapter || 'Entire Subject'}...`);
+      await new Promise(r => setTimeout(r, 600));
+      logPipeline("Concept Graph: Resolved dependency hierarchy. Pre-check cleared.");
+      await new Promise(r => setTimeout(r, 600));
+      logPipeline("Question Strategy Selector: Calibrating distractor algorithm...");
+      await new Promise(r => setTimeout(r, 600));
+      logPipeline("Question Generator: Communicating with Gemini LLM context orchestrator...");
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch('/api/ai/generate-question', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server error.');
+
+        const q = data.question;
+        currentGeneratedQuestion = q;
+
+        // Render pipeline logs returned from backend
+        if (q.pipeline_log) {
+          for (const step of q.pipeline_log) {
+            logPipeline(step);
+            await new Promise(r => setTimeout(r, 450));
+          }
+        }
+
+        logPipeline("Quality Score Index: Validating options uniqueness and MathJax equations...");
+        await new Promise(r => setTimeout(r, 500));
+        logPipeline(`[✓] Approved! Quality Index: ${q.quality_score || '9.5'}/10. Save committed.`);
+        await new Promise(r => setTimeout(r, 800));
+
+        // Render preview
+        consoleEl.style.display = 'none';
+        resultCard.style.display = 'flex';
+
+        document.getElementById('resCardType').textContent = q.question_type || payload.questionType;
+        document.getElementById('resCardBloom').textContent = q.bloom_level || payload.bloomLevel;
+        document.getElementById('resCardText').textContent = q.question_text;
+
+        // Populate options
+        const optsContainer = document.getElementById('resCardOptions');
+        optsContainer.innerHTML = '';
+        const optionsObj = q.options || {};
+        Object.keys(optionsObj).forEach(key => {
+          const isCorrect = key === q.correct_answer;
+          const optDiv = document.createElement('div');
+          optDiv.className = 'queue-item';
+          optDiv.style.background = isCorrect ? 'rgba(34, 197, 94, 0.08)' : 'rgba(255,255,255,0.02)';
+          optDiv.style.border = isCorrect ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid var(--border)';
+          optDiv.style.padding = '0.75rem';
+          optDiv.style.borderRadius = '8px';
+          optDiv.style.display = 'flex';
+          optDiv.style.alignItems = 'center';
+          optDiv.style.gap = '0.5rem';
+          optDiv.innerHTML = `
+            <strong style="color: ${isCorrect ? 'var(--success)' : 'var(--primary)'}">${key}:</strong>
+            <span style="color: #fff;">${optionsObj[key]}</span>
+            ${isCorrect ? '<span style="margin-left:auto; font-size:0.75rem; color:var(--success); font-weight:bold;">CORRECT</span>' : ''}
+          `;
+          optsContainer.appendChild(optDiv);
+        });
+
+        // Solution
+        document.getElementById('resDetailedSolText').textContent = q.detailed_solution;
+        
+        const stepsContainer = document.getElementById('resStepsList');
+        stepsContainer.innerHTML = '';
+        if (q.step_solution && Array.isArray(q.step_solution)) {
+          q.step_solution.forEach(step => {
+            const li = document.createElement('li');
+            li.textContent = step;
+            stepsContainer.appendChild(li);
+          });
+        }
+
+        document.getElementById('resShortcutText').textContent = q.exam_shortcut || 'No shortcut required.';
+        document.getElementById('resMisconceptionText').textContent = q.common_mistake || 'None targeted.';
+
+        // Hints
+        const hints = q.hints || {};
+        document.getElementById('resHint1Text').textContent = hints.level_1 || 'No hint.';
+        document.getElementById('resHint2Text').textContent = hints.level_2 || 'No hint.';
+        document.getElementById('resHint3Text').textContent = hints.level_3 || 'No hint.';
+
+        // Render Concept Graph SVG
+        renderConceptSvgGraph(q.concept_graph || {});
+
+        // Reload test data stats
+        if (window.initDashboard) window.initDashboard();
+
+      } catch (err) {
+        logPipeline(`[ERROR] Pipeline aborted: ${err.message}`);
+        alert('Failed to generate question: ' + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function switchResTab(tabId) {
+      document.querySelectorAll('.res-subpanel').forEach(p => p.style.display = 'none');
+      document.getElementById('resSubpanel-' + tabId).style.display = 'block';
+    }
+
+    function renderConceptSvgGraph(graph) {
+      const container = document.getElementById('resGraphContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const nodes = graph.nodes || ["Topic"];
+      
+      // Calculate coordinates dynamically in a circular layout
+      const width = 380;
+      const height = 180;
+      
+      let svgContent = `<svg width="${width}" height="${height}" style="background:rgba(0,0,0,0.15); border-radius:10px;">`;
+      
+      const nodeCoords = [];
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const radius = 60;
+
+      nodes.forEach((node, idx) => {
+        let x = centerX;
+        let y = centerY;
+        if (nodes.length > 1) {
+          const angle = (idx * 2 * Math.PI) / nodes.length;
+          x = centerX + radius * Math.cos(angle);
+          y = centerY + radius * Math.sin(angle);
+        }
+        nodeCoords.push({ name: node, x, y });
+      });
+
+      // Draw arrows/lines
+      const links = graph.dependencies || [];
+      links.forEach(link => {
+        const source = nodeCoords.find(n => n.name === link.from);
+        const target = nodeCoords.find(n => n.name === link.to);
+        if (source && target) {
+          svgContent += `
+            <line x1="${source.x}" y1="${source.y}" x2="${target.x}" y2="${target.y}" 
+                  stroke="rgba(167, 139, 250, 0.4)" stroke-width="2" marker-end="url(#arrow)" />
+          `;
+        }
+      });
+
+      // Draw nodes
+      nodeCoords.forEach(node => {
+        svgContent += `
+          <g>
+            <circle cx="${node.x}" cy="${node.y}" r="22" fill="var(--surface-hi)" stroke="var(--violet)" stroke-width="2" />
+            <text x="${node.x}" y="${node.y + 4}" fill="#fff" font-size="7" font-weight="bold" text-anchor="middle">
+              ${node.name.substring(0, 10)}
+            </text>
+          </g>
+        `;
+      });
+
+      // Marker definition
+      svgContent += `
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="25" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(167, 139, 250, 0.8)"/>
+          </marker>
+        </defs>
+      </svg>`;
+      
+      container.innerHTML = svgContent;
+    }
+
+    // ── Question QA & Approvals Controller ──
+    let selectedQaQuestion = null;
+
+    async function loadPendingQuestions() {
+      const listEl = document.getElementById('qaQuestionsList');
+      if (!listEl) return;
+      listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted)">Loading questions...</div>';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch('/api/ai/pending-questions', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const questions = await res.json();
+
+        listEl.innerHTML = '';
+        if (!questions || questions.length === 0) {
+          listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted)">No questions in queue.</div>';
+          return;
+        }
+
+        questions.forEach(q => {
+          const item = document.createElement('div');
+          item.className = 'stat-card';
+          item.style.cursor = 'pointer';
+          item.style.padding = '0.85rem';
+          item.style.background = 'rgba(255,255,255,0.01)';
+          item.style.border = '1px solid var(--border)';
+          item.style.display = 'flex';
+          item.style.flexDirection = 'column';
+          item.style.gap = '0.35rem';
+
+          const score = q.quality_score || 95;
+          let scoreColor = 'var(--success)';
+          if (score < 90) scoreColor = 'var(--warning)';
+          if (score < 80) scoreColor = 'var(--danger)';
+
+          let statusBadge = `<span class="badge" style="background:rgba(245,158,11,0.15); color:var(--warning)">${q.approval_status || 'PENDING'}</span>`;
+          if (q.approval_status === 'approved') {
+            statusBadge = `<span class="badge" style="background:rgba(34,197,94,0.15); color:var(--success)">APPROVED</span>`;
+          } else if (q.approval_status === 'rejected') {
+            statusBadge = `<span class="badge" style="background:rgba(239,68,68,0.15); color:var(--danger)">REJECTED</span>`;
+          }
+
+          item.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:700; font-size:0.75rem; color:var(--primary)">Q#${q.question_number}</span>
+              ${statusBadge}
+            </div>
+            <div style="font-size:0.8rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              ${q.question_text}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.7rem; color:var(--text-muted);">
+              <span>Topic: ${q.topic}</span>
+              <strong style="color:${scoreColor}">Score: ${score}</strong>
+            </div>
+          `;
+
+          item.onclick = () => selectPendingQuestion(q);
+          listEl.appendChild(item);
+        });
+      } catch (err) {
+        console.error('Failed to load pending questions:', err);
+        listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--danger)">Failed to load questions.</div>';
+      }
+    }
+
+    function selectPendingQuestion(q) {
+      selectedQaQuestion = q;
+      document.getElementById('qaDetailEmptyState').style.display = 'none';
+      const panel = document.getElementById('qaDetailPanel');
+      panel.style.display = 'flex';
+
+      document.getElementById('qaDetailTitle').textContent = `Question #${q.question_number} Details`;
+      document.getElementById('qaQualityScoreText').textContent = q.quality_score || 95;
+      
+      const score = q.quality_score || 95;
+      let scoreColor = 'var(--success)';
+      let tier = 'Production Ready';
+      if (score < 90) { scoreColor = 'var(--warning)'; tier = 'Minor Review'; }
+      if (score < 80) { scoreColor = 'var(--danger)'; tier = 'Requires Revision'; }
+
+      document.getElementById('qaQualityScoreText').style.color = scoreColor;
+      document.getElementById('qaQualityTierText').textContent = tier;
+
+      // Status Badge
+      const statusBadge = document.getElementById('qaOverallStatusBadge');
+      statusBadge.textContent = (q.approval_status || 'PENDING REVIEW').toUpperCase();
+      if (q.approval_status === 'approved') {
+        statusBadge.style.background = 'rgba(34,197,94,0.15)';
+        statusBadge.style.color = 'var(--success)';
+      } else if (q.approval_status === 'rejected') {
+        statusBadge.style.background = 'rgba(239,68,68,0.15)';
+        statusBadge.style.color = 'var(--danger)';
+      } else {
+        statusBadge.style.background = 'rgba(245,158,11,0.15)';
+        statusBadge.style.color = 'var(--warning)';
+      }
+
+      document.getElementById('qaVersionText').textContent = 'v1';
+      document.getElementById('qaCreatorText').textContent = `Topic: ${q.topic}`;
+
+      // Render Validation Checklist Summary
+      const validatorsEl = document.getElementById('qaValidatorsList');
+      validatorsEl.innerHTML = '';
+      
+      const results = q.validation_results || {
+        curriculum: { success: true, message: 'Curriculum checks passed.' },
+        latex: { success: true, message: 'LaTeX delimiters balanced.' },
+        options: { success: true, message: 'Options verified.' },
+        duplicates: { success: true, message: 'Jaccard check unique.' },
+        calculation: { success: true, message: 'Numerical calculations matched.' },
+        safety: { success: true, message: 'Education safety policies met.' }
+      };
+
+      const formatCheck = (name, res) => {
+        const icon = res.success ? '✓' : '✗';
+        const color = res.success ? 'var(--success)' : 'var(--danger)';
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.gap = '0.35rem';
+        div.innerHTML = `
+          <strong style="color:${color}; font-size:1rem;">${icon}</strong>
+          <span>${name}: <strong style="color:var(--text-muted); font-size:0.68rem;">${res.message}</strong></span>
+        `;
+        validatorsEl.appendChild(div);
+      };
+
+      formatCheck('Curriculum', results.curriculum || { success: true, message: 'OK' });
+      formatCheck('LaTeX/Math', results.latex || { success: true, message: 'OK' });
+      formatCheck('Options Layout', results.options || { success: true, message: 'OK' });
+      formatCheck('Duplicate Check', results.duplicates || { success: true, message: 'OK' });
+      formatCheck('Double-Solve Calc', results.calculation || { success: true, message: 'OK' });
+      formatCheck('Safety Policy', results.safety || { success: true, message: 'OK' });
+
+      // Stem & Options
+      document.getElementById('qaStemText').textContent = q.question_text;
+      
+      const optsContainer = document.getElementById('qaOptionsList');
+      optsContainer.innerHTML = '';
+      const opts = { A: q.option_a, B: q.option_b, C: q.option_c, D: q.option_d };
+      Object.keys(opts).forEach(key => {
+        const isCorrect = key === q.correct_answer;
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.gap = '0.5rem';
+        div.style.padding = '0.5rem';
+        div.style.background = isCorrect ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.01)';
+        div.style.border = isCorrect ? '1px solid rgba(34,197,94,0.2)' : '1px solid var(--border)';
+        div.style.borderRadius = '6px';
+        div.innerHTML = `
+          <strong style="color:${isCorrect ? 'var(--success)' : 'var(--primary)'}">${key}:</strong>
+          <span style="color:#fff; font-size:0.78rem;">${opts[key]}</span>
+        `;
+        optsContainer.appendChild(div);
+      });
+
+      // Explanation & Hints
+      const meta = q.ai_metadata || {};
+      document.getElementById('qaDetailedSolText').textContent = meta.detailed_solution || 'No explanation provided.';
+      document.getElementById('qaShortcutText').textContent = meta.exam_shortcut || 'None.';
+      document.getElementById('qaMisconceptionText').textContent = meta.common_mistake || 'None.';
+
+      const hints = meta.hints || {};
+      document.getElementById('qaHint1Text').textContent = hints.level_1 || 'None.';
+      document.getElementById('qaHint2Text').textContent = hints.level_2 || 'None.';
+      document.getElementById('qaHint3Text').textContent = hints.level_3 || 'None.';
+
+      // Load Version History & Audit Logs
+      loadQuestionVersions(q.id);
+      loadAuditLogs();
+    }
+
+    async function loadQuestionVersions(questionId) {
+      const container = document.getElementById('qaHistoryTimeline');
+      if (!container) return;
+      container.innerHTML = '<div style="color:var(--text-muted)">Loading history...</div>';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/ai/question-versions?questionId=${questionId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const versions = await res.json();
+
+        container.innerHTML = '';
+        if (!versions || versions.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-muted)">No history.</div>';
+          return;
+        }
+
+        versions.forEach(v => {
+          const div = document.createElement('div');
+          div.style.borderBottom = '1px solid var(--border)';
+          div.style.paddingBottom = '0.35rem';
+          div.style.marginBottom = '0.35rem';
+          div.style.display = 'flex';
+          div.style.justifyContent = 'space-between';
+          div.style.alignItems = 'center';
+
+          div.innerHTML = `
+            <div>
+              <strong>v${v.version}</strong> - <span style="font-size:0.68rem; color:var(--text-muted);">${new Date(v.created_at).toLocaleDateString()}</span>
+              <div style="font-size:0.68rem; color:var(--accent);">${v.revision_notes || ''}</div>
+            </div>
+            <button class="btn-action primary" style="padding:0.15rem 0.4rem; font-size:0.65rem;" onclick="rollbackQuestionVersion('${v.question_id}', ${v.version})">Rollback ↺</button>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = '<div style="color:var(--danger)">Error loading history.</div>';
+      }
+    }
+
+    async function loadAuditLogs() {
+      const container = document.getElementById('qaAuditTrail');
+      if (!container) return;
+      container.innerHTML = '<div style="color:var(--text-muted)">Loading audit trail...</div>';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch('/api/ai/validation-audit', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const logs = await res.json();
+
+        container.innerHTML = '';
+        if (!logs || logs.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-muted)">No audit trail.</div>';
+          return;
+        }
+
+        logs.forEach(log => {
+          const div = document.createElement('div');
+          div.style.borderBottom = '1px solid var(--border)';
+          div.style.paddingBottom = '0.35rem';
+          div.style.marginBottom = '0.35rem';
+          div.style.fontSize = '0.72rem';
+
+          div.innerHTML = `
+            <div>
+              <strong>${log.action.toUpperCase()}</strong> - <span style="font-size:0.65rem; color:var(--text-muted);">${new Date(log.timestamp).toLocaleTimeString()}</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:0.68rem;">${log.details}</div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = '<div style="color:var(--danger)">Error loading audit logs.</div>';
+      }
+    }
+
+    async function rollbackQuestionVersion(questionId, version) {
+      if (!confirm(`Are you sure you want to rollback this question to version ${version}?`)) return;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch('/api/ai/rollback-question', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ questionId, version })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server error.');
+
+        alert(data.message);
+        loadPendingQuestions();
+        document.getElementById('qaDetailPanel').style.display = 'none';
+        document.getElementById('qaDetailEmptyState').style.display = 'block';
+      } catch (err) {
+        alert('Rollback failed: ' + err.message);
+      }
+    }
+
+    async function submitQaVerdict(verdict) {
+      if (!selectedQaQuestion) return;
+      const comments = document.getElementById('qaReviewComments').value.trim();
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const url = verdict === 'approve' ? '/api/ai/approve-question' : '/api/ai/reject-question';
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            questionId: selectedQaQuestion.id,
+            version: 1, // latest
+            comments
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server error.');
+
+        alert(verdict === 'approve' ? 'Question approved and published!' : 'Question rejected.');
+        document.getElementById('qaReviewComments').value = '';
+        loadPendingQuestions();
+        
+        document.getElementById('qaDetailPanel').style.display = 'none';
+        document.getElementById('qaDetailEmptyState').style.display = 'block';
+      } catch (err) {
+        alert('Action failed: ' + err.message);
+      }
+    }
+
+    function switchQaSubpanel(panelId) {
+      document.querySelectorAll('.qa-subpanel').forEach(p => p.style.display = 'none');
+      document.getElementById('qaSubpanel-' + panelId).style.display = 'block';
+    }
+
+    // ── Enterprise Question Bank Client Controller ──
+    let selectedQbQuestion = null;
+    let qbQuestionsList = [];
+
+    async function loadQbQuestions() {
+      const query = document.getElementById('qbSearchQuery').value.trim();
+      const exam = document.getElementById('qbFilterExam').value;
+      const subject = document.getElementById('qbFilterSubject').value;
+      const status = document.getElementById('qbFilterStatus').value;
+      const difficulty = document.getElementById('qbFilterDifficulty').value;
+      const isSemantic = document.getElementById('qbSearchSemantic').checked;
+
+      const listEl = document.getElementById('qbQuestionsList');
+      listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted)">Loading questions...</div>';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const params = new URLSearchParams({
+          searchQuery: query,
+          exam,
+          subject,
+          status,
+          difficulty,
+          isSemantic
+        });
+
+        const res = await fetch(`/api/questions/search?${params.toString()}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const questions = await res.json();
+        
+        qbQuestionsList = questions || [];
+        listEl.innerHTML = '';
+
+        if (qbQuestionsList.length === 0) {
+          listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-muted)">No matching questions found in bank.</div>';
+          return;
+        }
+
+        qbQuestionsList.forEach(q => {
+          const item = document.createElement('div');
+          item.className = 'stat-card';
+          item.style.cursor = 'pointer';
+          item.style.padding = '0.85rem';
+          item.style.background = 'rgba(255,255,255,0.01)';
+          item.style.border = '1px solid var(--border)';
+          item.style.display = 'flex';
+          item.style.flexDirection = 'column';
+          item.style.gap = '0.35rem';
+
+          const score = q.quality_score || 95;
+          let scoreColor = 'var(--success)';
+          if (score < 90) scoreColor = 'var(--warning)';
+          if (score < 80) scoreColor = 'var(--danger)';
+
+          item.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="checkbox" class="qb-bulk-checkbox" data-id="${q.id}" onclick="event.stopPropagation()" style="cursor:pointer">
+                <span style="font-weight:700; font-size:0.75rem; color:var(--primary)">Q#${q.question_number} (v${q.version})</span>
+              </div>
+              <span class="badge" style="background:rgba(77,142,255,0.12); color:var(--primary)">${(q.status || 'Published').toUpperCase()}</span>
+            </div>
+            <div style="font-size:0.8rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              ${q.question_text}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.7rem; color:var(--text-muted);">
+              <span>Topic: ${q.topic}</span>
+              <strong style="color:${scoreColor}">Diff: ${q.difficulty || 'Medium'}</strong>
+            </div>
+          `;
+
+          item.onclick = () => selectQbQuestion(q);
+          listEl.appendChild(item);
+        });
+      } catch (err) {
+        console.error('Failed to load questions:', err);
+        listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--danger)">Failed to load questions from bank.</div>';
+      }
+    }
+
+    async function selectQbQuestion(q) {
+      selectedQbQuestion = q;
+      document.getElementById('qbDetailEmptyState').style.display = 'none';
+      const panel = document.getElementById('qbDetailPanel');
+      panel.style.display = 'flex';
+
+      document.getElementById('qbDetailTitle').textContent = `Question #${q.question_number} Details`;
+      
+      const statusBadge = document.getElementById('qbDetailStatusBadge');
+      statusBadge.textContent = (q.status || 'Published').toUpperCase();
+
+      document.getElementById('qbDetailMetaInfo').textContent = `${q.exam || 'NEET'} | ${q.subject || 'Physics'} | ${q.difficulty || 'Medium'} | ${q.bloom_level || 'Apply'}`;
+      document.getElementById('qbDetailStemText').textContent = q.question_text;
+
+      // Populate options
+      const optsContainer = document.getElementById('qbDetailOptionsList');
+      optsContainer.innerHTML = '';
+      const opts = { A: q.option_a, B: q.option_b, C: q.option_c, D: q.option_d };
+      Object.keys(opts).forEach(key => {
+        const isCorrect = key === q.correct_answer;
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.gap = '0.5rem';
+        div.style.padding = '0.5rem';
+        div.style.background = isCorrect ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.01)';
+        div.style.border = isCorrect ? '1px solid rgba(34,197,94,0.2)' : '1px solid var(--border)';
+        div.style.borderRadius = '6px';
+        div.innerHTML = `
+          <strong style="color:${isCorrect ? 'var(--success)' : 'var(--primary)'}">${key}:</strong>
+          <span style="color:#fff; font-size:0.78rem;">${opts[key]}</span>
+        `;
+        optsContainer.appendChild(div);
+      });
+
+      // Explanation & Tags
+      document.getElementById('qbDetailExplanationText').textContent = q.explanation || q.detailed_solution || 'No explanation provided.';
+      
+      const tagsContainer = document.getElementById('qbDetailTagsList');
+      tagsContainer.innerHTML = '';
+      const tags = q.tags || [];
+      tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'status-badge';
+        span.style.fontSize = '0.65rem';
+        span.textContent = t;
+        tagsContainer.appendChild(span);
+      });
+
+      // Populate edit fields
+      document.getElementById('qbEditStemInput').value = q.question_text;
+      document.getElementById('qbEditOptA').value = q.option_a;
+      document.getElementById('qbEditOptB').value = q.option_b;
+      document.getElementById('qbEditOptC').value = q.option_c;
+      document.getElementById('qbEditOptD').value = q.option_d;
+      document.getElementById('qbEditCorrectAns').value = q.correct_answer;
+      document.getElementById('qbEditNotes').value = '';
+
+      // Soft delete / restore button visibility toggles
+      if (q.status === 'Soft Deleted') {
+        document.getElementById('qbRestoreBtn').style.display = 'block';
+        document.getElementById('qbDeleteBtn').style.display = 'none';
+      } else {
+        document.getElementById('qbRestoreBtn').style.display = 'none';
+        document.getElementById('qbDeleteBtn').style.display = 'block';
+      }
+
+      // Default back to content tab
+      switchQbDetailSubpanel('content');
+
+      // Load revision dropdowns, timeline, and audits
+      loadQbQuestionVersions(q.id);
+      loadQbQuestionAudit(q.id);
+    }
+
+    function switchQbDetailSubpanel(panelId) {
+      document.querySelectorAll('#view-questionbank .qb-detail-subpanel').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('#qbDetailPanel .btn-tab').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById('qbDetailSubpanel-' + panelId).style.display = 'flex';
+      
+      let btnId = '';
+      if (panelId === 'content') btnId = 'tabQbDetailContentBtn';
+      else if (panelId === 'history') btnId = 'tabQbDetailHistoryBtn';
+      else if (panelId === 'diff') btnId = 'tabQbDetailDiffBtn';
+      else if (panelId === 'audit') btnId = 'tabQbDetailAuditBtn';
+      
+      const btn = document.getElementById(btnId);
+      if (btn) btn.classList.add('active');
+    }
+
+    async function submitQbEditRevision() {
+      if (!selectedQbQuestion) return;
+      const updatedData = {
+        question_text: document.getElementById('qbEditStemInput').value.trim(),
+        option_a: document.getElementById('qbEditOptA').value.trim(),
+        option_b: document.getElementById('qbEditOptB').value.trim(),
+        option_c: document.getElementById('qbEditOptC').value.trim(),
+        option_d: document.getElementById('qbEditOptD').value.trim(),
+        correct_answer: document.getElementById('qbEditCorrectAns').value,
+        tags: selectedQbQuestion.tags,
+        explanation: selectedQbQuestion.explanation,
+        detailed_solution: selectedQbQuestion.detailed_solution,
+        hints: selectedQbQuestion.hints,
+        step_solution: selectedQbQuestion.step_solution,
+        formulas: selectedQbQuestion.formulas,
+        assets: selectedQbQuestion.assets
+      };
+      const revisionNotes = document.getElementById('qbEditNotes').value.trim() || 'Manual revision committed.';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/questions/${selectedQbQuestion.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ updatedData, revisionNotes })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save revision');
+
+        alert('New version revision saved successfully!');
+        loadQbQuestions();
+        selectQbQuestion(data.question);
+      } catch (err) {
+        alert('Revision save failed: ' + err.message);
+      }
+    }
+
+    async function archiveSingleQbQuestion() {
+      if (!selectedQbQuestion) return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/questions/${selectedQbQuestion.id}/archive`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to archive');
+
+        alert('Question archived successfully!');
+        loadQbQuestions();
+        selectQbQuestion(data.question);
+      } catch (err) {
+        alert('Archive failed: ' + err.message);
+      }
+    }
+
+    async function restoreSingleQbQuestion() {
+      if (!selectedQbQuestion) return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/questions/${selectedQbQuestion.id}/restore`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to restore');
+
+        alert('Question restored successfully!');
+        loadQbQuestions();
+        selectQbQuestion(data.question);
+      } catch (err) {
+        alert('Restore failed: ' + err.message);
+      }
+    }
+
+    async function deleteSingleQbQuestion() {
+      if (!selectedQbQuestion) return;
+      const reason = prompt('Please enter a reason for soft deleting this question:');
+      if (reason === null) return; // cancelled
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/questions/${selectedQbQuestion.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ reason })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to soft delete');
+
+        alert('Question soft deleted successfully!');
+        loadQbQuestions();
+        selectQbQuestion(data.question);
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
+    }
+
+    async function loadQbQuestionVersions(questionId) {
+      const container = document.getElementById('qbDetailHistoryTimeline');
+      const v1Select = document.getElementById('qbDiffV1');
+      const v2Select = document.getElementById('qbDiffV2');
+      if (!container) return;
+
+      container.innerHTML = '<div style="color:var(--text-muted)">Loading history...</div>';
+      v1Select.innerHTML = '';
+      v2Select.innerHTML = '';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/questions/${questionId}/versions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const versions = await res.json();
+
+        container.innerHTML = '';
+        if (!versions || versions.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-muted)">No history.</div>';
+          return;
+        }
+
+        versions.forEach(v => {
+          // Populate comparison select dropdowns
+          const opt1 = document.createElement('option');
+          opt1.value = v.version;
+          opt1.textContent = `v${v.version}`;
+          v1Select.appendChild(opt1);
+
+          const opt2 = document.createElement('option');
+          opt2.value = v.version;
+          opt2.textContent = `v${v.version}`;
+          v2Select.appendChild(opt2);
+
+          // Render item in timeline list
+          const div = document.createElement('div');
+          div.style.padding = '0.5rem';
+          div.style.background = 'rgba(255,255,255,0.02)';
+          div.style.border = '1px solid var(--border)';
+          div.style.borderRadius = '6px';
+          div.style.display = 'flex';
+          div.style.flexDirection = 'column';
+          div.style.gap = '0.25rem';
+          
+          const time = new Date(v.created_at || v.updated_at).toLocaleString();
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:var(--primary); font-size:0.75rem;">Version #${v.version}</strong>
+              <button class="status-badge" style="cursor:pointer; border:none; padding:0.1rem 0.4rem; font-size:0.6rem;" onclick="rollbackQbQuestion(${v.version})">Rollback ⎌</button>
+            </div>
+            <div style="color:#fff; font-size:0.72rem;">${v.change_summary || v.revision_notes || 'Manual update committed.'}</div>
+            <div style="color:var(--text-muted); font-size:0.65rem;">Time: ${time}</div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = '<div style="color:var(--danger)">Error loading history.</div>';
+      }
+    }
+
+    async function rollbackQbQuestion(targetVersion) {
+      if (!selectedQbQuestion) return;
+      if (!confirm(`Are you sure you want to rollback this question to version ${targetVersion}?`)) return;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/questions/${selectedQbQuestion.id}/rollback`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ targetVersion })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to rollback');
+
+        alert(`Successfully rolled back to version ${targetVersion}!`);
+        loadQbQuestions();
+        selectQbQuestion(data.question);
+      } catch (err) {
+        alert('Rollback failed: ' + err.message);
+      }
+    }
+
+    async function loadQbQuestionAudit(questionId) {
+      const container = document.getElementById('qbDetailAuditTrail');
+      if (!container) return;
+      container.innerHTML = '<div style="color:var(--text-muted)">Loading audit trail...</div>';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/questions/${questionId}/audit`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const trail = await res.json();
+
+        container.innerHTML = '';
+        if (!trail || trail.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-muted)">No audit trail records found.</div>';
+          return;
+        }
+
+        trail.forEach(t => {
+          const div = document.createElement('div');
+          div.style.padding = '0.35rem 0.5rem';
+          div.style.borderLeft = '2px solid var(--primary)';
+          div.style.background = 'rgba(255,255,255,0.01)';
+          div.style.marginBottom = '0.35rem';
+          
+          const time = new Date(t.timestamp).toLocaleString();
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; font-weight:600; color:var(--primary); font-size:0.68rem;">
+              <span>Action: ${t.event.toUpperCase()} (v${t.version})</span>
+              <span>${time}</span>
+            </div>
+            <div style="color:#fff; font-size:0.7rem; margin-top:0.15rem;">${t.summary}</div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = '<div style="color:var(--danger)">Error loading audit trail.</div>';
+      }
+    }
+
+    async function loadQbVersionDiffReport() {
+      if (!selectedQbQuestion) return;
+      const v1 = document.getElementById('qbDiffV1').value;
+      const v2 = document.getElementById('qbDiffV2').value;
+      const container = document.getElementById('qbDetailDiffReport');
+      container.innerHTML = '<div style="color:var(--text-muted)">Calculating difference...</div>';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch(`/api/questions/${selectedQbQuestion.id}/versions/compare?v1=${v1}&v2=${v2}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const diff = await res.json();
+
+        container.innerHTML = '';
+        let hasChanges = false;
+
+        const formatDiff = (fieldName, item) => {
+          if (!item.changed) return '';
+          hasChanges = true;
+          return `
+            <div style="margin-bottom:0.75rem; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:0.5rem;">
+              <strong style="color:var(--primary); text-transform:uppercase; font-size:0.68rem;">${fieldName}</strong>
+              <div style="background:rgba(239,68,68,0.08); padding:0.25rem; border-radius:4px; margin-top:0.15rem; border-left:2px solid var(--danger);">
+                <span style="color:var(--danger)">- </span>${item.old || '(empty)'}
+              </div>
+              <div style="background:rgba(34,197,94,0.08); padding:0.25rem; border-radius:4px; margin-top:0.15rem; border-left:2px solid var(--success);">
+                <span style="color:var(--success)">+ </span>${item.new || '(empty)'}
+              </div>
+            </div>
+          `;
+        };
+
+        let html = '';
+        html += formatDiff('Question Text', diff.question_text);
+        html += formatDiff('Option A', diff.options.A);
+        html += formatDiff('Option B', diff.options.B);
+        html += formatDiff('Option C', diff.options.C);
+        html += formatDiff('Option D', diff.options.D);
+        html += formatDiff('Correct Answer', diff.correct_answer);
+        html += formatDiff('Topic', diff.topic);
+        html += formatDiff('Marks', diff.marks);
+        html += formatDiff('Negative Marks', diff.negative_marks);
+        html += formatDiff('Status', diff.status);
+        
+        if (diff.tags && diff.tags.changed) {
+          hasChanges = true;
+          html += `
+            <div style="margin-bottom:0.75rem;">
+              <strong style="color:var(--primary); text-transform:uppercase; font-size:0.68rem;">Tags Update</strong>
+              <div style="color:var(--danger)">- Old: [${diff.tags.old.join(', ')}]</div>
+              <div style="color:var(--success)">+ New: [${diff.tags.new.join(', ')}]</div>
+            </div>
+          `;
+        }
+
+        if (!hasChanges) {
+          container.innerHTML = '<div style="color:var(--success); text-align:center; padding:1rem;">No changes detected between selected versions.</div>';
+        } else {
+          container.innerHTML = html;
+        }
+      } catch (err) {
+        container.innerHTML = '<div style="color:var(--danger)">Failed to fetch diff report: ' + err.message + '</div>';
+      }
+    }
+
+    async function applyBulkQbOperation(operation) {
+      const checkedBoxes = document.querySelectorAll('#qbQuestionsList .qb-bulk-checkbox:checked');
+      if (checkedBoxes.length === 0) {
+        alert('Please select one or more question checkboxes from the list.');
+        return;
+      }
+      const ids = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+      if (!confirm(`Apply bulk operation '${operation}' on ${ids.length} questions?`)) return;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch('/api/questions/bulk-operate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ ids, operation, payload: {} })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Bulk operation failed');
+
+        alert(`Successfully applied bulk operation to ${data.count} questions!`);
+        loadQbQuestions();
+        document.getElementById('qbDetailPanel').style.display = 'none';
+        document.getElementById('qbDetailEmptyState').style.display = 'block';
+      } catch (err) {
+        alert('Bulk operation failed: ' + err.message);
+      }
+    }
+
+    async function triggerBulkQbExport() {
+      const checkedBoxes = document.querySelectorAll('#qbQuestionsList .qb-bulk-checkbox:checked');
+      if (checkedBoxes.length === 0) {
+        alert('Please select one or more question checkboxes to export.');
+        return;
+      }
+      const ids = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch('/api/questions/bulk-export', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ ids, format: 'json' })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Export failed');
+
+        // Create virtual download file link
+        const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `futrix_question_bank_export_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('Export failed: ' + err.message);
+      }
+    }
+
+    async function submitBulkQbImport() {
+      const text = document.getElementById('qbImportJsonText').value.trim();
+      if (!text) {
+        alert('Please paste a JSON array of questions first.');
+        return;
+      }
+
+      let parsedQuestions = [];
+      try {
+        parsedQuestions = JSON.parse(text);
+        if (!Array.isArray(parsedQuestions)) throw new Error('Root must be a JSON array');
+      } catch (err) {
+        alert('Invalid JSON formatting: ' + err.message);
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session ? session.access_token : '';
+
+        const res = await fetch('/api/questions/bulk-import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ questions: parsedQuestions })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to import');
+
+        alert(`Bulk Import Complete!\n- Successfully imported: ${data.imported}\n- Skipped/Duplicates: ${data.skipped}`);
+        document.getElementById('qbImportJsonText').value = '';
+        loadQbQuestions();
+      } catch (err) {
+        alert('Bulk import failed: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

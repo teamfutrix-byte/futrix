@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Active Challenges & Exams | Futrix Competitor</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0b0e14;
+      --sidebar-bg: #090b0f;
+      --surface:    #121620;
+      --surface-hi: #1a1f2c;
+      --border:     rgba(255,255,255,0.06);
+      --primary:    #adc6ff;
+      --primary-btn:#4d8eff;
+      --text:       #e1e2ec;
+      --text-muted: #8c909f;
+      --accent:     #ffa94d;
+      --teal:       #00e5d4;
+      --danger:     #ff5252;
+      --success:    #00e676;
+      
+      --purple:     #a78bfa;
+      --rose:       #fb7185;
+      --yellow:     #fcd34d;
+    }
+
+    html, body { 
+      height: 100%; 
+      font-family: 'Geist','Sora',sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ══════════════ TOP BAR ══════════════ */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(9,11,15,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 200;
+    }
+    .topbar-logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .topbar-logo span {
+      color: var(--primary);
+    }
+    
+    .topbar-nav {
+      display: none;
+      list-style: none;
+      align-items: center;
+      gap: 1.5rem;
+      margin-left: 2.5rem;
+      flex: 1;
+    }
+    @media(min-width: 900px) {
+      .topbar-nav {
+        display: flex;
+      }
+    }
+    .topbar-nav li a {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      padding: 0.4rem 0;
+      transition: color 0.2s;
+    }
+    .topbar-nav li a:hover {
+      color: var(--text);
+    }
+    .topbar-nav li a.active {
+      color: var(--text);
+    }
+    .topbar-nav li a.active::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary-btn);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .timer-display-top {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.03);
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .timer-display-top svg {
+      color: var(--primary-btn);
+    }
+    .user-avatar-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--surface-hi);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.2s;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .user-avatar-btn:hover { background: #2a3045; }
+
+    /* ══════════════ LAYOUT ══════════════ */
+    .layout {
+      display: flex;
+      height: 100vh;
+      padding-top: 56px;
+    }
+
+    /* ══════════════ SIDEBAR ══════════════ */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.2rem 0;
+      position: fixed;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Profile section */
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 1.2rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.8rem;
+    }
+    .profile-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-btn), var(--teal));
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .profile-info { overflow: hidden; }
+    .profile-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-level {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+
+    /* Nav items */
+    .nav-list {
+      flex: 1;
+      list-style: none;
+      padding: 0 0.6rem;
+    }
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      margin-bottom: 0.2rem;
+      position: relative;
+    }
+    .nav-item a:hover {
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+    }
+    .nav-item a.active {
+      background: rgba(77,142,255,0.1);
+      color: var(--primary);
+      border: 1px solid rgba(77,142,255,0.15);
+      font-weight: 600;
+    }
+    .nav-item a.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 3px;
+      background: var(--primary-btn);
+      border-radius: 0 4px 4px 0;
+    }
+    .nav-item a svg { flex-shrink: 0; }
+
+    /* Sidebar bottom upgrade card */
+    .sidebar-bottom {
+      padding: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+    .upgrade-card {
+      background: rgba(18,22,32,0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem;
+      margin-bottom: 0.8rem;
+      text-align: left;
+    }
+    .upgrade-title {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+    .btn-upgrade {
+      width: 100%;
+      padding: 0.55rem;
+      border-radius: 8px;
+      border: none;
+      background: var(--primary-btn);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-upgrade:hover { background: #3b76e0; transform: translateY(-1px); }
+
+    .bottom-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+    .bottom-links li a {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0.6rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .bottom-links li a:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+
+    /* ══════════════ MAIN CONTENT ══════════════ */
+    .main-content {
+      margin-left: 220px;
+      flex: 1;
+      padding: 1.8rem;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.8rem;
+      align-items: flex-start;
+    }
+    @media(min-width: 1100px) {
+      .main-content {
+        grid-template-columns: 1fr 300px;
+      }
+    }
+
+    /* ── LEFT: Main Challenges Portal ── */
+    .challenges-portal {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .portal-header {
+      margin-bottom: 0.5rem;
+    }
+    .portal-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .portal-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.9rem;
+    }
+    @media(min-width: 600px) {
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    .stat-card {
+      background: rgba(18,22,32,0.4);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 85px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .stat-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .stat-card.purple { border-color: rgba(167, 139, 250, 0.25); }
+    .stat-card.orange { border-color: rgba(255, 169, 77, 0.25); }
+    .stat-card.blue   { border-color: rgba(77, 142, 255, 0.25); }
+    .stat-card.rose   { border-color: rgba(251, 113, 133, 0.25); }
+
+    .stat-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .stat-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .stat-card.purple .stat-value { color: var(--purple); }
+    .stat-card.orange .stat-value { color: var(--accent); }
+    .stat-card.blue .stat-value   { color: var(--primary); }
+    .stat-card.rose .stat-value   { color: var(--rose); }
+
+    /* Challenge Of The Day */
+    .cotd-card {
+      background: radial-gradient(circle at 10% 20%, rgba(77, 142, 255, 0.08) 0%, rgba(18, 22, 32, 0.8) 80%);
+      border: 1px solid rgba(77, 142, 255, 0.15);
+      border-radius: 16px;
+      padding: 1.6rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    @media(min-width: 650px) {
+      .cotd-card {
+        grid-template-columns: 1fr 200px;
+      }
+    }
+    .cotd-card::before {
+      content: '';
+      position: absolute;
+      top: -20%; right: -10%;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(77, 142, 255, 0.08), transparent 70%);
+      filter: blur(20px);
+      pointer-events: none;
+    }
+    
+    .cotd-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+    .cotd-xp-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(77, 142, 255, 0.15);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid rgba(77, 142, 255, 0.2);
+    }
+    .cotd-timer {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .cotd-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 750;
+      line-height: 1.3;
+      margin-bottom: 0.9rem;
+      color: var(--text);
+    }
+    .cotd-details-row {
+      display: flex;
+      gap: 1.2rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.4rem;
+    }
+    .cotd-detail {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .cotd-detail svg {
+      color: var(--primary);
+    }
+    .btn-cotd {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, var(--primary-btn), #6fa3ff);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(77, 142, 255, 0.25);
+      transition: all 0.2s;
+    }
+    .btn-cotd:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(77, 142, 255, 0.4);
+    }
+    
+    /* Radar animation visual */
+    .radar-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .radar-svg {
+      width: 170px;
+      height: 170px;
+    }
+    .radar-ring.dashed {
+      fill: none;
+      stroke: rgba(77, 142, 255, 0.14);
+      stroke-width: 1.5;
+      stroke-dasharray: 4 4;
+    }
+    .radar-ring.solid {
+      fill: none;
+      stroke: rgba(77, 142, 255, 0.06);
+      stroke-width: 1.5;
+    }
+    .radar-line-grid {
+      stroke: rgba(255, 255, 255, 0.02);
+      stroke-width: 1;
+      stroke-dasharray: 2 4;
+    }
+    .radar-sweep {
+      stroke: var(--primary-btn);
+      stroke-width: 1.5;
+      opacity: 0.8;
+      transform-origin: 100px 100px;
+      animation: radar-sweep-anim 6s linear infinite;
+    }
+    @keyframes radar-sweep-anim {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .radar-blip {
+      fill: var(--teal);
+      stroke: rgba(0, 229, 212, 0.3);
+      stroke-width: 5;
+      animation: radar-blip-pulse 2.5s infinite ease-in-out;
+    }
+    .blip-2 {
+      fill: var(--accent);
+      stroke: rgba(255, 169, 77, 0.3);
+      animation-delay: 1.2s;
+    }
+    @keyframes radar-blip-pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); }
+    }
+
+    /* Filter Tabs */
+    .filter-tabs-wrap {
+      overflow-x: auto;
+      padding-bottom: 0.3rem;
+      margin: 0.5rem 0;
+      scrollbar-width: none; /* Hide scrollbar for Firefox */
+    }
+    .filter-tabs-wrap::-webkit-scrollbar {
+      display: none; /* Hide scrollbar for Chrome/Safari */
+    }
+    .tabs-list {
+      display: flex;
+      gap: 0.5rem;
+      list-style: none;
+      white-space: nowrap;
+    }
+    .tab-btn {
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--text);
+    }
+    .tab-btn.active {
+      background: var(--primary-btn);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 2px 10px rgba(77, 142, 255, 0.2);
+    }
+
+    /* Challenges Grid */
+    .challenges-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.2rem;
+    }
+    @media(min-width: 768px) {
+      .challenges-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .challenge-card {
+      background: rgba(18,22,32,0.4);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 250px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+    .challenge-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.1);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+    }
+    .card-top {
+      margin-bottom: 1.2rem;
+    }
+    .card-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .card-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+    .badge-daily {
+      background: rgba(173, 198, 255, 0.1);
+      color: var(--primary);
+    }
+    .badge-arena {
+      background: rgba(255, 169, 77, 0.1);
+      color: var(--accent);
+    }
+    .badge-special {
+      background: rgba(167, 139, 250, 0.1);
+      color: var(--purple);
+    }
+    .card-badge-status {
+      font-size: 0.72rem;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .card-status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+    .dot-orange {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+    .dot-purple {
+      background: var(--purple);
+      box-shadow: 0 0 8px var(--purple);
+    }
+    .card-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 0.4rem;
+    }
+    .card-subtitle {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      padding-top: 0.8rem;
+      margin-top: 0.8rem;
+    }
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .meta-item svg {
+      color: var(--primary);
+      opacity: 0.8;
+    }
+    .meta-item strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+    
+    .btn-start-card {
+      width: 100%;
+      margin-top: 1.2rem;
+      padding: 0.65rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
+    }
+    .btn-start-card:hover {
+      background: rgba(77, 142, 255, 0.1);
+      border-color: var(--primary-btn);
+      color: var(--primary);
+    }
+
+    /* ── RIGHT: Sidebar Panels ── */
+    .right-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+      width: 100%;
+    }
+
+    .sidebar-panel {
+      background: rgba(18,22,32,0.4);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.2rem;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding-bottom: 0.6rem;
+    }
+    .panel-header svg {
+      color: var(--primary-btn);
+    }
+
+    /* Upcoming Challenge Card */
+    .upcoming-inner {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: 10px;
+      padding: 0.9rem;
+    }
+    .upcoming-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .upcoming-time {
+      font-size: 0.78rem;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+      font-weight: 500;
+    }
+    .upcoming-faces-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .faces-stack {
+      display: flex;
+      align-items: center;
+    }
+    .face-avatar {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid var(--surface);
+      background: var(--surface-hi);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+      margin-right: -8px;
+    }
+    .faces-text {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Top Performers Today */
+    .performers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .performer-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+    }
+    .performer-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .performer-rank {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      width: 14px;
+      color: var(--text-muted);
+    }
+    .performer-item:nth-of-type(1) .performer-rank { color: var(--accent); }
+    .performer-item:nth-of-type(2) .performer-rank { color: var(--primary); }
+    .performer-item:nth-of-type(3) .performer-rank { color: var(--purple); }
+    
+    .performer-avatar {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #1f2535;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+    .performer-item:nth-of-type(1) .performer-avatar {
+      background: linear-gradient(135deg, #ffa94d, #ff7c00);
+      color: #fff;
+    }
+    .performer-name {
+      font-weight: 500;
+      color: var(--text);
+    }
+    .performer-xp {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Daily Mission Progress */
+    .mission-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      margin-bottom: 0.6rem;
+    }
+    .mission-pct {
+      color: var(--primary-btn);
+      font-weight: 600;
+    }
+    .mission-xp-bonus {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--success);
+      background: rgba(0, 230, 118, 0.08);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+    .mission-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.7rem;
+    }
+    .mission-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-btn), var(--teal));
+      width: 50%;
+      border-radius: 3px;
+    }
+    .mission-footer {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Your Progress Today */
+    .progress-center-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0;
+    }
+    .progress-ring-container {
+      position: relative;
+      width: 120px; height: 120px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 0.8rem;
+    }
+    .progress-ring-svg {
+      width: 120px; height: 120px;
+    }
+    .progress-ring-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.03);
+      stroke-width: 7;
+    }
+    .progress-ring-fill {
+      fill: none;
+      stroke: url(#progressGradRight);
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-dasharray: 301.6;
+      stroke-dashoffset: 60.3; /* 80% progress */
+      transform: rotate(-90deg);
+      transform-origin: 60px 60px;
+    }
+    .progress-ring-text {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .progress-ring-val {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .progress-ring-lbl {
+      font-size: 0.55rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .progress-desc-row {
+      text-align: center;
+      font-size: 0.82rem;
+    }
+    .progress-desc-xp {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+    .progress-desc-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* ══════════════ SIDEBAR TOGGLE (mobile) ══════════════ */
+    .sidebar-toggle {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 1rem;
+      z-index: 300;
+      background: var(--surface-hi);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.4rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-toggle { display: flex; }
+      .sidebar-overlay.open { display: block; }
+      .main-content { margin-left: 0; padding: 1.2rem; }
+    }
+    @keyframes slideDownFade {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── OTP / UPI Payment Modal CSS ── */
+    .otp-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 10, 16, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+      overflow-y: auto;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .otp-modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .otp-modal-content {
+      background: rgba(18, 22, 33, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 2.5rem;
+      width: 90%;
+      max-width: 440px;
+      position: relative;
+      margin: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .otp-modal-overlay.show .otp-modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .otp-modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .otp-modal-close:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .otp-modal-header h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+    }
+
+    .otp-modal-header p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0 0 2rem 0;
+    }
+
+    .otp-modal-header p strong {
+      color: var(--primary);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div style="display: flex; align-items: center;">
+      <a href="#" class="topbar-logo">Fut<span>rix</span></a>
+      <ul class="topbar-nav">
+        <li><a href="instruction.html">Dashboard</a></li>
+        <li><a href="active-exams.html" class="active">Active Exams</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+      </ul>
+    </div>
+    <div class="topbar-right">
+      <div class="timer-display-top">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="timerDisplay">00:00:00</span>
+      </div>
+      <div class="user-avatar-btn" id="topUserBtn">FP</div>
+    </div>
+  </header>
+
+  <!-- Sidebar Toggle (mobile) -->
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <!-- Profile block -->
+      <div class="sidebar-profile">
+        <div class="profile-avatar" id="profileInitial">FP</div>
+        <div class="profile-info">
+          <div class="profile-name" id="profileName">Futrix Competitor</div>
+          <div class="profile-level">XP: <span id="sidebarXP">12,400</span></div>
+        </div>
+      </div>
+      <!-- League Progression Widget -->
+      <div class="league-widget" style="padding: 0 1.2rem 1.2rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+          <span id="leagueBadge" style="font-size: 1.2rem;">🟫</span>
+          <div>
+            <div id="leagueName" style="font-size: 0.85rem; font-weight: 700; color: #fff; line-height: 1.2;">Bronze League</div>
+            <div id="leagueNextText" style="font-size: 0.72rem; color: var(--text-muted);">Next: Silver (150 XP)</div>
+          </div>
+        </div>
+        <div class="league-bar" style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 0.25rem;">
+          <div id="leagueBarFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #4d8eff, #6fa3ff); border-radius: 3px; transition: width 0.4s ease;"></div>
+        </div>
+        <div id="leagueAdvanceXp" style="font-size: 0.68rem; color: var(--text-muted); text-align: right;">150 XP needed</div>
+      </div>
+
+      <!-- Navigation links -->
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="instruction.html">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="active-exams.html" class="active">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Active Exams
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="performance.html">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Performance
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="leaderboard.html">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Leaderboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="arena.html">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            PvP Arena
+          </a>
+        </li>
+      </ul>
+
+      <!-- Pro Upgrade + bottom links -->
+      <div class="sidebar-bottom">
+        <div class="upgrade-card">
+          <div class="upgrade-title">Maximize your gains</div>
+          <button class="btn-upgrade" onclick="alert('Upgrade to Pro features coming soon!')">Upgrade to Pro</button>
+        </div>
+        <ul class="bottom-links">
+          <li><a href="#">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Help
+          </a></li>
+          <li><a href="/features/auth/login.html" id="logoutBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+          </a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Section -->
+    <main class="main-content">
+      
+      <!-- LEFT Column: Challenges Portal -->
+      <section class="challenges-portal">
+        <div class="portal-header">
+          <h1 class="portal-title">🔥 Active Challenges & Exams</h1>
+          <p class="portal-desc">Choose an active challenge, earn XP, improve your rank, and climb the FUTRIX leaderboard.</p>
+        </div>
+
+        <!-- Announcement / Beta Notice Banner -->
+        <div class="announcement-banner" id="testingNoticeBanner" style="
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(18, 22, 32, 0.9) 100%);
+          border: 1px solid rgba(239, 68, 68, 0.25);
+          border-radius: 12px;
+          padding: 1rem 1.2rem;
+          margin-bottom: 1.2rem;
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 1rem;
+          position: relative;
+          backdrop-filter: blur(10px);
+          animation: slideDownFade 0.45s ease;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        ">
+          <div style="display: flex; gap: 0.8rem; align-items: flex-start;">
+            <span style="font-size: 1.3rem; margin-top: 0.15rem; filter: drop-shadow(0 0 5px var(--danger));">⚠️</span>
+            <div>
+              <h4 style="font-family: 'Sora', sans-serif; font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem;">
+                Portal Testing Phase Active
+              </h4>
+              <div class="update-card-body" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; padding: 0.5rem 0.8rem;">
+                The FUTRIX exam portal is currently in a testing phase. All features, mock tests, and analytics will be fully live and operational very soon.
+              </div>
+            </div>
+          </div>
+          <button id="btnCloseNotice" style="
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.1rem;
+            line-height: 1;
+            transition: color 0.2s;
+            margin-top: -0.25rem;
+          " onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-muted)'">×</button>
+        </div>
+
+        <!-- Row of 4 Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card purple">
+            <span class="stat-label">Available Exams</span>
+            <span class="stat-value">12</span>
+          </div>
+          <div class="stat-card orange">
+            <span class="stat-label">Available XP</span>
+            <span class="stat-value" id="displayAvailableXP">780 XP</span>
+          </div>
+          <div class="stat-card blue">
+            <span class="stat-label">Current Rank</span>
+            <span class="stat-value" id="displayRank">S Rank</span>
+          </div>
+          <div class="stat-card rose">
+            <span class="stat-label">7 Day Streak</span>
+            <span class="stat-value" id="displayStreak">7 Days</span>
+          </div>
+        </div>
+
+        <!-- Challenge of the Day -->
+        <div class="cotd-card">
+          <div>
+            <div class="cotd-meta">
+              <span class="cotd-xp-badge">+100 XP</span>
+              <div class="cotd-timer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span id="cotdCountdown">05h 21m 45s</span>
+              </div>
+            </div>
+            <h2 class="cotd-title">🏆 Challenge Of The Day:<br>FUTRIX Elite Battle Arena</h2>
+            <div class="cotd-details-row">
+              <div class="cotd-detail">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>1,243 Students</span>
+              </div>
+              <div class="cotd-detail">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>Level 40+ Recommended</span>
+              </div>
+            </div>
+            <button class="btn-cotd" onclick="window.location.href='/features/leaderboard/arena.html'">
+              🚀 Enter Battle Arena ⚡
+            </button>
+          </div>
+
+          <!-- Radar Visual Animation -->
+          <div class="radar-visual">
+            <svg class="radar-svg" width="200" height="200" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="80" class="radar-ring dashed" />
+              <circle cx="100" cy="100" r="55" class="radar-ring dashed" />
+              <circle cx="100" cy="100" r="30" class="radar-ring solid" />
+              <line x1="100" y1="20" x2="100" y2="180" class="radar-line-grid" />
+              <line x1="20" y1="100" x2="180" y2="100" class="radar-line-grid" />
+              <!-- Scanning sweep line -->
+              <line x1="100" y1="100" x2="100" y2="20" class="radar-sweep" />
+              <!-- Radar dots / targets -->
+              <circle cx="70" cy="80" r="4.5" class="radar-blip" />
+              <circle cx="130" cy="120" r="3.5" class="radar-blip blip-2" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container" id="examsSearchContainer" style="margin-bottom: 1.2rem; position: relative;">
+          <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem; pointer-events: none;">🔍</span>
+          <input type="text" id="examSearchInput" placeholder="Search your exam center (e.g. NEET, JEE)" style="
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(18, 22, 32, 0.6);
+            color: var(--text);
+            font-family: 'Geist', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+            outline: none;
+          " onfocus="this.style.borderColor='var(--primary-btn)'; this.style.boxShadow='0 0 10px rgba(77, 142, 255, 0.15)';" onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none';" />
+          <button id="btnClearSearch" style="
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none;
+            transition: color 0.2s;
+          " onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-muted)'">×</button>
+        </div>
+
+        <!-- First View: Grid of Exam Category Centers -->
+        <div id="examsListView" class="challenges-grid">
+          
+
+          <!-- Exam Centers will be dynamically rendered here -->
+
+
+
+        </div>
+
+        <!-- Second View: Sub-view detailing category-wise tests (Initially Hidden) -->
+        <div id="testsDetailView" style="display: none; flex-direction: column; gap: 1.5rem;">
+          
+          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.8rem; flex-wrap: wrap; gap: 0.8rem;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <button id="btnBackToExams" style="
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid var(--border);
+                color: var(--text);
+                padding: 0.45rem 0.9rem;
+                border-radius: 8px;
+                cursor: pointer;
+                font-family: 'Sora', sans-serif;
+                font-size: 0.8rem;
+                font-weight: 600;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 0.35rem;
+              " onmouseover="this.style.background='rgba(77, 142, 255, 0.08)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.03)'">
+                ← Back to Streams
+              </button>
+              <h2 id="testsDetailTitle" style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: var(--text); line-height: 1.2;">Exam Test Center</h2>
+            </div>
+            <span id="registeredBadge" style="
+              font-size: 0.72rem;
+              font-weight: 700;
+              color: var(--success);
+              background: rgba(0, 230, 118, 0.08);
+              border: 1px solid rgba(0, 230, 118, 0.2);
+              padding: 0.25rem 0.6rem;
+              border-radius: 6px;
+            ">Active Stream</span>
+          </div>
+
+          <div id="lockNotice" style="display: none; background: rgba(255, 169, 77, 0.08); border: 1px solid rgba(255, 169, 77, 0.2); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.82rem; color: #ffa94d; line-height: 1.5; align-items: center; display: flex; gap: 0.5rem; width: 100%;">
+            <span>⚠️</span>
+            <span>This exam stream is currently locked. Showing preview. All tests inside are <strong>Coming Soon</strong>.</span>
+          </div>
+
+          <!-- Tabs for test types: Topic-wise, Subject-wise, Series-wise, Full Test -->
+          <div class="filter-tabs-wrap">
+            <ul class="tabs-list" id="testTypeTabs">
+              <li><button class="tab-btn active" data-type="all">All Tests</button></li>
+              <li><button class="tab-btn" data-type="topic">Topic-Wise</button></li>
+              <li><button class="tab-btn" data-type="subject">Subject-Wise</button></li>
+              <li><button class="tab-btn" data-type="series">Series-Wise</button></li>
+              <li><button class="tab-btn" data-type="full">Full Mock Tests</button></li>
+            </ul>
+          </div>
+
+          <!-- Dynamic Tests Container -->
+          <div class="challenges-grid" id="testsDynamicGrid">
+            <!-- Populated via Javascript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT Column: Sidebar Panels -->
+      <aside class="right-sidebar">
+        
+        <!-- Panel 1: Upcoming Challenge -->
+        <div class="sidebar-panel">
+          <div class="panel-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Upcoming Challenge
+          </div>
+          <div class="upcoming-inner">
+            <h4 class="upcoming-title">Data Interpretation Pro</h4>
+            <div class="upcoming-time" id="upcomingTimer">Unlocks in 03:45:12</div>
+            <div class="upcoming-faces-row">
+              <div class="faces-stack">
+                <div class="face-avatar" style="background:#ffa94d; color:#121620">A</div>
+                <div class="face-avatar" style="background:#adc6ff; color:#121620">B</div>
+                <div class="face-avatar" style="background:#00e5d4; color:#121620">K</div>
+              </div>
+              <span class="faces-text">85 Interested</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Top Performers Today -->
+        <div class="sidebar-panel">
+          <div class="panel-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Top Performers Today
+          </div>
+          <div class="performers-list">
+            <div class="performer-item">
+              <div class="performer-left">
+                <span class="performer-rank">1</span>
+                <div class="performer-avatar">🏆</div>
+                <span class="performer-name">Neo_X</span>
+              </div>
+              <span class="performer-xp">1,450 XP</span>
+            </div>
+            <div class="performer-item">
+              <div class="performer-left">
+                <span class="performer-rank">2</span>
+                <div class="performer-avatar" style="background: rgba(173,198,255,0.2); color: var(--primary);">🥈</div>
+                <span class="performer-name">Stellar_01</span>
+              </div>
+              <span class="performer-xp">1,210 XP</span>
+            </div>
+            <div class="performer-item">
+              <div class="performer-left">
+                <span class="performer-rank">3</span>
+                <div class="performer-avatar" style="background: rgba(167,139,250,0.2); color: var(--purple);">🥉</div>
+                <span class="performer-name">Cortex_IA</span>
+              </div>
+              <span class="performer-xp">1,180 XP</span>
+            </div>
+            <div class="performer-item">
+              <div class="performer-left">
+                <span class="performer-rank">4</span>
+                <div class="performer-avatar">AH</div>
+                <span class="performer-name">Apex_Hunter</span>
+              </div>
+              <span class="performer-xp">980 XP</span>
+            </div>
+            <div class="performer-item">
+              <div class="performer-left">
+                <span class="performer-rank">5</span>
+                <div class="performer-avatar">ZE</div>
+                <span class="performer-name">Zenith</span>
+              </div>
+              <span class="performer-xp">940 XP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3: Daily Mission Progress -->
+        <div class="sidebar-panel">
+          <div class="panel-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            Daily Mission Progress
+          </div>
+          <div class="mission-info">
+            <span class="mission-pct">1/2 challenges complete</span>
+            <span class="mission-xp-bonus">+20 XP Bonus</span>
+          </div>
+          <div class="mission-bar">
+            <div class="mission-bar-fill"></div>
+          </div>
+          <p class="mission-footer">Complete one more challenge to claim today's bonus!</p>
+        </div>
+
+        <!-- Panel 4: Your Progress Today -->
+        <div class="sidebar-panel">
+          <div class="panel-header">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 22h20L12 2z"/></svg>
+            Your Progress Today
+          </div>
+          <div class="progress-center-wrap">
+            <div class="progress-ring-container">
+              <svg class="progress-ring-svg" width="120" height="120">
+                <defs>
+                  <linearGradient id="progressGradRight" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#4d8eff" />
+                    <stop offset="100%" stop-color="#00e5d4" />
+                  </linearGradient>
+                </defs>
+                <circle class="progress-ring-bg" cx="60" cy="60" r="48" />
+                <circle class="progress-ring-fill" cx="60" cy="60" r="48" id="myProgressRing" />
+              </svg>
+              <div class="progress-ring-text">
+                <span class="progress-ring-val" id="progressPercent">80%</span>
+                <span class="progress-ring-lbl">Progress</span>
+              </div>
+            </div>
+            <div class="progress-desc-row">
+              <div class="progress-desc-xp" id="myProgressText">320 / 400 XP</div>
+              <div class="progress-desc-sub" id="myRemainingXPText">80 XP to S+ Rank</div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </main>
+  </div>
+
+  <!-- UPI Payment Modal -->
+  <div id="paymentModal" class="otp-modal-overlay">
+    <div class="otp-modal-content" style="max-width: 440px; padding: 2.2rem 2rem;">
+      <button type="button" class="otp-modal-close" id="closePaymentModalBtn">&times;</button>
+      <div class="otp-modal-header" style="text-align: center; margin-bottom: 1.2rem;">
+        <div style="font-size: 2.8rem; margin-bottom: 0.5rem;">💳</div>
+        <h2 style="font-size: 1.4rem; font-weight: 750; color: #fff; margin-bottom: 0.3rem; font-family: 'Sora', sans-serif;" id="paymentModalTitle">Pay &amp; Unlock Test</h2>
+        <p id="paymentModalSeriesTitle" style="font-size: 0.88rem; color: var(--primary); font-weight: 600; margin-bottom: 0;">Topic: Loading...</p>
+      </div>
+      
+      <!-- Invoice Breakdown -->
+      <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.4rem; text-align: left; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.55rem;">
+        <div style="display: flex; justify-content: space-between; color: var(--text-muted);" id="invoiceBaseRow">
+          <span>Test Access Fee:</span>
+          <span style="color: var(--text); font-weight: 500;" id="invoiceBaseFee">₹9.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; color: var(--text-muted);" id="invoiceGstRow">
+          <span>GST (18%):</span>
+          <span style="color: var(--text); font-weight: 500;" id="invoiceGst">₹1.62</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; color: var(--text-muted); border-bottom: 1px dashed var(--border); padding-bottom: 0.55rem;" id="invoicePgRow">
+          <span>Platform Charges:</span>
+          <span style="color: var(--text); font-weight: 500;" id="invoicePgCharge">₹0.99</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-weight: 700; font-family: 'Sora', sans-serif; font-size: 0.92rem; color: var(--accent); margin-top: 0.2rem;">
+          <span>Total Payable:</span>
+          <span id="invoiceTotal">₹11.61</span>
+        </div>
+      </div>
+
+      <!-- Pass Guarantee Badge -->
+      <div id="paymentPassGuaranteeBadge" style="display: none; background: rgba(74, 222, 128, 0.05); border: 1px solid rgba(74, 222, 128, 0.2); border-radius: 10px; padding: 0.6rem 0.8rem; font-size: 0.76rem; color: #4ade80; text-align: center; margin-bottom: 1.2rem; font-weight: 500;">
+        🛡️ <strong>100% PASS GUARANTEE</strong>: Achieve a 90% mastery rating on all high-yield topics, or get a full refund!
+      </div>
+
+      <!-- Scan & Pay -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem;">
+        <div style="background: white; padding: 0.8rem; border-radius: 12px; display: inline-block; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+          <img id="paymentQRCode" src="" alt="Scan to Pay QR Code" style="display: block; width: 170px; height: 170px;" />
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); text-align: center; max-width: 280px; line-height: 1.4;">
+          Scan QR with Google Pay, PhonePe, Paytm, or BHIM to pay instantly.
+        </div>
+      </div>
+
+      <!-- Form Inputs for Validation -->
+      <div style="display: flex; flex-direction: column; gap: 0.95rem; margin-bottom: 1.6rem; text-align: left;">
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label for="payTransactionId" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">12-Digit Transaction UTR / Ref ID</label>
+          <input type="text" id="payTransactionId" placeholder="e.g. 518928374829" maxlength="12" style="
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-hi);
+            color: #fff;
+            font-family: 'Geist', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+          " />
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+          <label for="paySenderUpi" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sender UPI ID or Mobile Number</label>
+          <input type="text" id="paySenderUpi" placeholder="e.g. name@upi or 9876543210" style="
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-hi);
+            color: #fff;
+            font-family: 'Geist', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+          " />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+        <button type="button" id="confirmPaymentBtn" class="btn-start ready" style="width: 100%; padding: 0.85rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; font-family: 'Sora', sans-serif; font-size: 0.92rem; background: var(--primary-btn); color: #fff; border: none; cursor: pointer; transition: all 0.2s;">
+          Submit for Verification
+          <span id="paymentSpinner" style="display: none; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.8s linear infinite;"></span>
+        </button>
+        <div style="font-size: 0.72rem; color: var(--teal); text-align: center; font-weight: 500;">
+          ⚠️ Test series will unlock automatically within 10-15 minutes after verification.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="supabase-js.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase-client.js"></script>
+  <script src="/features/student/onboarding-client.js"></script>
+  <script src="floating-ai-mentor.js"></script>
+  <script>
+    /* ── Auth Guard: redirect to login if not logged in or not student ── */
+    const userRaw = sessionStorage.getItem('futrix_user');
+    if (!userRaw) {
+      window.location.href = '/features/auth/login.html';
+    }
+    const user = JSON.parse(userRaw || '{}');
+    if (user.role !== 'student') {
+      window.location.href = '/features/auth/login.html';
+    }
+    const name = user.name || 'Futrix Competitor';
+    const xp = parseFloat(user.xp || 12400);
+
+    /* ── Populate User Info ── */
+    document.getElementById('profileName').textContent = name;
+    function loadAvatar() {
+      const avatarData = localStorage.getItem('futrix_avatar_' + user.id);
+      const profileInitial = document.getElementById('profileInitial');
+      if (profileInitial) {
+        if (avatarData) {
+          profileInitial.textContent = '';
+          profileInitial.style.backgroundImage = `url(${avatarData})`;
+          profileInitial.style.backgroundSize = 'cover';
+          profileInitial.style.backgroundPosition = 'center';
+        } else {
+          profileInitial.textContent = name.charAt(0).toUpperCase();
+          profileInitial.style.backgroundImage = 'none';
+        }
+      }
+    }
+    loadAvatar();
+    document.getElementById('topUserBtn').textContent = name.substring(0, 2).toUpperCase();
+
+    // Format XP for sidebar display
+    document.getElementById('sidebarXP').textContent = xp.toLocaleString('en-US', {maximumFractionDigits: 0});
+
+    function updateLeagueWidget(xp) {
+      let currentLeague = 'Bronze';
+      let nextLeague = 'Silver';
+      let minXp = 0;
+      let maxXp = 2500;
+      let badge = '🟫';
+      let color = '#a36845';
+
+      if (xp >= 75000) {
+        currentLeague = 'Legend';
+        nextLeague = '';
+        minXp = 75000;
+        maxXp = 75000;
+        badge = '👑';
+        color = '#a78bfa';
+      } else if (xp >= 30000) {
+        currentLeague = 'Diamond';
+        nextLeague = 'Legend';
+        minXp = 30000;
+        maxXp = 75000;
+        badge = '🔷';
+        color = '#38bdf8';
+      } else if (xp >= 10000) {
+        currentLeague = 'Gold';
+        nextLeague = 'Diamond';
+        minXp = 10000;
+        maxXp = 30000;
+        badge = '🟨';
+        color = '#facc15';
+      } else if (xp >= 2500) {
+        currentLeague = 'Silver';
+        nextLeague = 'Gold';
+        minXp = 2500;
+        maxXp = 10000;
+        badge = '⬜';
+        color = '#a1a1aa';
+      }
+
+      const leagueBadgeEl = document.getElementById('leagueBadge');
+      const leagueNameEl = document.getElementById('leagueName');
+      const leagueNextTextEl = document.getElementById('leagueNextText');
+      const leagueBarFillEl = document.getElementById('leagueBarFill');
+      const leagueAdvanceXpEl = document.getElementById('leagueAdvanceXp');
+
+      if (leagueBadgeEl) leagueBadgeEl.textContent = badge;
+      if (leagueNameEl) {
+        leagueNameEl.textContent = currentLeague + ' League';
+        leagueNameEl.style.color = color;
+      }
+      
+      if (currentLeague === 'Legend') {
+        if (leagueNextTextEl) leagueNextTextEl.textContent = 'Maximum League Reached!';
+        if (leagueBarFillEl) {
+          leagueBarFillEl.style.width = '100%';
+          leagueBarFillEl.style.background = 'linear-gradient(90deg, #a78bfa, #c084fc)';
+        }
+        if (leagueAdvanceXpEl) leagueAdvanceXpEl.textContent = 'Ultimate Competitor 🚀';
+      } else {
+        const range = maxXp - minXp;
+        const progress = xp - minXp;
+        const pct = Math.max(0, Math.min(100, Math.round((progress / range) * 100)));
+        
+        if (leagueNextTextEl) leagueNextTextEl.textContent = `Next: ${nextLeague} (${maxXp} XP)`;
+        if (leagueBarFillEl) {
+          leagueBarFillEl.style.width = pct + '%';
+          leagueBarFillEl.style.background = `linear-gradient(90deg, #4d8eff, ${color})`;
+        }
+        if (leagueAdvanceXpEl) {
+          const remaining = Math.ceil(maxXp - xp);
+          leagueAdvanceXpEl.textContent = `${remaining} XP to advance`;
+        }
+      }
+    }
+    updateLeagueWidget(xp);
+
+    // Populate stat cards available XP based on user's current session XP
+    document.getElementById('displayAvailableXP').textContent = xp.toLocaleString('en-US', {maximumFractionDigits: 0}) + ' XP';
+
+    // Rank grade based on XP
+    function getGrade(xp) {
+      if (xp >= 15000) return 'S+';
+      if (xp >= 10000) return 'S';
+      if (xp >= 5000) return 'A+';
+      if (xp >= 2000) return 'A';
+      if (xp >= 1000) return 'B+';
+      if (xp >= 500) return 'B';
+      return 'C';
+    }
+    const grade = getGrade(xp);
+    document.getElementById('displayRank').textContent = grade + ' Rank';
+
+    // Set streak dynamically
+    const streakVal = parseInt(user.streak !== undefined ? user.streak : 1);
+    const displayStreakEl = document.getElementById('displayStreak');
+    if (displayStreakEl) {
+      displayStreakEl.textContent = streakVal + (streakVal === 1 ? ' Day' : ' Days');
+    }
+
+    // Update 'Your Progress Today' dynamically
+    // Let's assume today's goal is 400 XP, and user has earned some amount
+    // Let's calculate based on current XP
+    // e.g. User has XP = 12400. Let's make it look like they earned 320 XP today.
+    // If user's session XP changed (e.g. from taking a test in exam.html), we can increment it!
+    const baseXP = 12080; // assume they started the day with 12080 XP
+    let todayEarned = Math.max(0, xp - baseXP);
+    if (todayEarned === 0) todayEarned = 320; // default mockup value
+    if (todayEarned > 400) todayEarned = 400;
+    
+    const targetXP = 400;
+    const progressPercent = Math.round((todayEarned / targetXP) * 100);
+    const remainingXP = Math.max(0, targetXP - todayEarned);
+
+    document.getElementById('progressPercent').textContent = progressPercent + '%';
+    document.getElementById('myProgressText').textContent = todayEarned + ' / ' + targetXP + ' XP';
+    
+    const nextGradeMap = {
+      'C': { next: 'B', limit: 500 },
+      'B': { next: 'B+', limit: 1000 },
+      'B+': { next: 'A', limit: 2000 },
+      'A': { next: 'A+', limit: 5000 },
+      'A+': { next: 'S', limit: 10000 },
+      'S': { next: 'S+', limit: 15000 },
+      'S+': { next: 'Elite Max', limit: 99999 }
+    };
+    
+    const nextGradeInfo = nextGradeMap[grade] || { next: 'S+', limit: 15000 };
+    const xpToNextGrade = Math.max(0, nextGradeInfo.limit - xp);
+    if (xpToNextGrade > 0) {
+      document.getElementById('myRemainingXPText').textContent = xpToNextGrade.toLocaleString('en-US', {maximumFractionDigits: 0}) + ' XP to ' + nextGradeInfo.next + ' Rank';
+    } else {
+      document.getElementById('myRemainingXPText').textContent = 'Highest Rank Achieved! ⚡';
+    }
+
+    // Set SVG progress stroke dashoffset
+    // radius is 48, circumference is 2 * PI * 48 = 301.59
+    const circumference = 2 * Math.PI * 48;
+    const fillPercent = progressPercent / 100;
+    const strokeDashoffset = circumference - (fillPercent * circumference);
+    document.getElementById('myProgressRing').style.strokeDashoffset = strokeDashoffset;
+
+    /* ── Live Topbar Timer (counts up) ── */
+    let seconds = 0;
+    function formatTime(s) {
+      const h = String(Math.floor(s / 3600)).padStart(2,'0');
+      const m = String(Math.floor((s % 3600) / 60)).padStart(2,'0');
+      const sec = String(s % 60).padStart(2,'0');
+      return `${h}:${m}:${sec}`;
+    }
+    setInterval(() => {
+      seconds++;
+      document.getElementById('timerDisplay').textContent = formatTime(seconds);
+    }, 1000);
+
+    /* ── Countdown Timer for Challenge of the Day ── */
+    let cotdSeconds = 5 * 3600 + 21 * 60 + 45; // 05h 21m 45s
+    const cotdCountdownEl = document.getElementById('cotdCountdown');
+    
+    function formatCOTD(totalSecs) {
+      const h = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
+      const m = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
+      const s = String(totalSecs % 60).padStart(2, '0');
+      return `${h}h ${m}m ${s}s`;
+    }
+    
+    const cotdTimer = setInterval(() => {
+      if (cotdSeconds <= 0) {
+        clearInterval(cotdTimer);
+        cotdCountdownEl.textContent = 'Challenge Expired!';
+      } else {
+        cotdSeconds--;
+        cotdCountdownEl.textContent = formatCOTD(cotdSeconds);
+      }
+    }, 1000);
+
+    /* ── Countdown Timer for Upcoming Challenge ── */
+    let upcomingSeconds = 3 * 3600 + 45 * 60 + 12; // 03:45:12
+    const upcomingTimerEl = document.getElementById('upcomingTimer');
+    
+    function formatUpcoming(totalSecs) {
+      const h = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
+      const m = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
+      const s = String(totalSecs % 60).padStart(2, '0');
+      return `Unlocks in ${h}:${m}:${s}`;
+    }
+    
+    const upcomingTimer = setInterval(() => {
+      if (upcomingSeconds <= 0) {
+        clearInterval(upcomingTimer);
+        upcomingTimerEl.textContent = 'Unlocked Now!';
+      } else {
+        upcomingSeconds--;
+        upcomingTimerEl.textContent = formatUpcoming(upcomingSeconds);
+      }
+    }, 1000);
+
+    let examCategories = [];
+    let liveTestsList = [];
+    let isProUser = false;
+    let selectedTest = null;
+    let isUpgradeToProFlow = false;
+
+    // ── Dynamic Locking/Unlocking based on Registered Exam Stream ──
+    const registeredPrep = (user.preparation || 'NEET').trim();
+    const cleanPrep = registeredPrep.toUpperCase();
+    
+    // Show a small subtext in the header about their registered stream
+    const portalDesc = document.querySelector('.portal-desc');
+    if (portalDesc) {
+      portalDesc.innerHTML = `Choose an active challenge, earn XP, improve your rank, and climb the FUTRIX leaderboard.<br><span style="color: var(--teal); font-weight: 600; font-size: 0.82rem; display: block; margin-top: 0.4rem;">🎯 Your Registered Exam Stream: ${registeredPrep}</span>`;
+    }
+
+    function renderExamCenters(categories) {
+      const view = document.getElementById('examsListView');
+      if (!view) return;
+      view.innerHTML = '';
+      
+      categories.forEach(cat => {
+        const card = document.createElement('div');
+        card.className = 'challenge-card exam-category-card';
+        card.setAttribute('data-exam-id', cat.name);
+        
+        const badgeColor = cat.name === 'NEET' 
+          ? 'background: rgba(167, 139, 250, 0.1); color: var(--purple);' 
+          : cat.name === 'JEE' 
+            ? 'background: rgba(255, 169, 77, 0.1); color: var(--accent);' 
+            : 'background: rgba(0, 229, 212, 0.1); color: var(--teal);';
+            
+        const badgeClass = cat.name === 'NEET' ? 'badge-special' : 'badge-daily';
+        
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-badge-row">
+              <span class="card-badge ${badgeClass}" style="${badgeColor}">${cat.name} Stream</span>
+              <span class="card-badge-status" id="main-status-${cat.name}">
+                <span class="card-status-dot"></span>
+                Active Now
+              </span>
+            </div>
+            <h3 class="card-title">${cat.display_name || cat.name} Test Center</h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; margin-top: 0.4rem;">
+              ${cat.display_name || cat.name} mock exams, topic practices and subject boosters.
+            </p>
+          </div>
+          <div>
+            <div class="card-meta-list">
+              <div class="meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                <span id="active-count-${cat.name}"><strong>-</strong> Active Tests</span>
+              </div>
+              <div class="meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                <span id="coming-count-${cat.name}">- Tests Coming Soon</span>
+              </div>
+            </div>
+            <button class="btn-start-card btn-open-exam" data-exam-id="${cat.name}">Open ${cat.name} Center →</button>
+          </div>
+        `;
+        
+        // Bind clicks dynamically
+        const openAction = () => openExamDetailView(cat.name);
+        const btn = card.querySelector('.btn-open-exam');
+        if (btn) btn.onclick = openAction;
+        card.onclick = (e) => {
+          if (e.target.classList.contains('btn-open-exam')) return;
+          openAction();
+        };
+        
+        view.appendChild(card);
+      });
+    }
+
+    function updateStreamCountsAndStatus() {
+      examCategories.forEach(cat => {
+        const stream = cat.name;
+        const streamTests = liveTestsList.filter(t => (t.examType || '').toUpperCase().trim() === stream.toUpperCase().trim()) || [];
+        const activeCount = streamTests.filter(t => t.hasQuestions !== false).length;
+        const comingCount = streamTests.filter(t => t.hasQuestions === false).length;
+        
+        const activeEl = document.getElementById('active-count-' + stream);
+        const comingEl = document.getElementById('coming-count-' + stream);
+        
+        if (activeEl) activeEl.innerHTML = `<strong>${activeCount}</strong> Active Tests`;
+        if (comingEl) comingEl.innerHTML = `${comingCount} Tests Coming Soon`;
+        
+        const statusEl = document.getElementById('main-status-' + stream);
+        if (statusEl) {
+          const isMatched = (cleanPrep === stream.toUpperCase().trim());
+          if (isMatched && activeCount > 0) {
+            statusEl.innerHTML = `<span class="card-status-dot"></span>Active Now`;
+            statusEl.style.color = 'var(--success)';
+            const dot = statusEl.querySelector('.card-status-dot');
+            if (dot) {
+              dot.className = 'card-status-dot';
+              dot.style.background = 'var(--success)';
+              dot.style.boxShadow = '0 0 8px var(--success)';
+            }
+          } else {
+            statusEl.innerHTML = `<span class="card-status-dot dot-orange"></span>Coming Soon`;
+            statusEl.style.color = 'var(--accent)';
+            const dot = statusEl.querySelector('.card-status-dot');
+            if (dot) {
+              dot.className = 'card-status-dot dot-orange';
+              dot.style.background = 'var(--accent)';
+              dot.style.boxShadow = '0 0 8px var(--accent)';
+            }
+          }
+        }
+      });
+      
+      // Update overall available exams stat card: sum of active tests for registered stream
+      const myActiveTests = liveTestsList.filter(t => (t.examType || '').toUpperCase().trim() === cleanPrep && t.hasQuestions !== false);
+      const totalExamsEl = document.querySelector('.stat-card.purple .stat-value');
+      if (totalExamsEl) {
+        totalExamsEl.textContent = myActiveTests.length;
+      }
+    }
+
+    /* ── Sub-view rendering and switching ── */
+    let currentSelectedExam = null;
+
+    function renderTests(examId, typeFilter, isUnlocked) {
+      const grid = document.getElementById('testsDynamicGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      
+      const tests = liveTestsList.filter(t => (t.examType || '').toUpperCase().trim() === examId.toUpperCase().trim()) || [];
+      const filtered = typeFilter === 'all' ? tests : tests.filter(t => (t.testType || 'topic').toLowerCase().trim() === typeFilter);
+      
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+            No tests available in this category yet.
+          </div>
+        `;
+        return;
+      }
+      
+      filtered.forEach(test => {
+        let testTitle = test.topic;
+        
+        const card = document.createElement('div');
+        card.className = 'challenge-card';
+        card.style.minHeight = '230px';
+        
+        const testType = (test.testType || 'topic').toLowerCase().trim();
+        const badgeColorStyle = testType === 'topic' ? 'background: rgba(173, 198, 255, 0.1); color: var(--primary);' :
+                                testType === 'subject' ? 'background: rgba(255, 169, 77, 0.1); color: var(--accent);' :
+                                testType === 'series' ? 'background: rgba(167, 139, 250, 0.1); color: var(--purple);' :
+                                'background: rgba(0, 229, 212, 0.1); color: var(--teal);';
+        
+        const typeLabel = testType === 'topic' ? 'Topic-Wise' :
+                          testType === 'subject' ? 'Subject-Wise' :
+                          testType === 'series' ? 'Series-Wise' : 'Full Mock';
+        
+        let statusHTML = '';
+        let btnHTML = '';
+        
+        if (test.hasQuestions === false) {
+          // Coming Soon
+          statusHTML = `
+            <span class="card-badge-status" style="color: var(--accent);">
+              <span class="card-status-dot dot-orange"></span>
+              Coming Soon
+            </span>
+          `;
+          btnHTML = `<button class="btn-start-card" disabled style="
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            width: 100%;
+            margin-top: 1.2rem;
+          ">🔒 Coming Soon</button>`;
+        } else if (test.isUnlocked) {
+          // Active & Unlocked
+          statusHTML = `
+            <span class="card-badge-status" style="color: var(--success);">
+              <span class="card-status-dot"></span>
+              Active Now
+            </span>
+          `;
+          btnHTML = `<button class="btn-start-card btn-start-test-action" style="
+            background: rgba(77, 142, 255, 0.1);
+            border-color: var(--primary-btn);
+            color: var(--primary);
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1.2rem;
+          ">🚀 Start Challenge</button>`;
+        } else {
+          // Locked / Expired (Needs payment)
+          const basePrice = parseFloat(test.price || 9.00);
+          const gst = basePrice * 0.18;
+          const pgCharge = basePrice * 0.11;
+          const totalAmount = basePrice + gst + pgCharge;
+          
+          statusHTML = `
+            <span class="card-badge-status" style="color: var(--danger);">
+              <span class="card-status-dot" style="background: var(--danger); box-shadow: 0 0 8px var(--danger);"></span>
+              Expired / Locked
+            </span>
+          `;
+          btnHTML = `
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.2rem; width: 100%;">
+              <button class="btn-start-card btn-upgrade-pro-card" style="
+                background: linear-gradient(135deg, #4d8eff 0%, #a78bfa 100%);
+                color: #fff;
+                border: none;
+                cursor: pointer;
+                width: 100%;
+                font-weight: 700;
+                padding: 0.6rem;
+                border-radius: 8px;
+                font-size: 0.8rem;
+              ">Access Free with FUTRIX Pro</button>
+              <button class="btn-start-card btn-unlock-test-action" style="
+                background: transparent;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #fff;
+                cursor: pointer;
+                width: 100%;
+                font-weight: 600;
+                padding: 0.6rem;
+                border-radius: 8px;
+                font-size: 0.8rem;
+              ">Unlock This Test (₹${totalAmount.toFixed(2)})</button>
+            </div>
+          `;
+        }
+        
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-badge-row">
+              <span class="card-badge" style="${badgeColorStyle}">${typeLabel}</span>
+              ${statusHTML}
+            </div>
+            <h3 class="card-title">${testTitle}</h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; margin-top: 0.4rem;">
+              ${test.seriesId} - Learn and test your skills in ${testTitle}.
+            </p>
+          </div>
+          <div>
+            <div class="card-meta-list" style="margin-top: 0.5rem; padding-top: 0.5rem;">
+              <div class="meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                <span><strong>${test.maxMarks || 15}</strong> Questions</span>
+              </div>
+              <div class="meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span><strong>${test.duration}</strong> Minutes</span>
+              </div>
+              <div class="meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span><strong>+${test.xpReward || 100} XP</strong> Reward</span>
+              </div>
+            </div>
+            ${btnHTML}
+          </div>
+        `;
+        
+        if (test.isUnlocked && test.hasQuestions !== false) {
+          const btn = card.querySelector('.btn-start-test-action');
+          if (btn) {
+            btn.onclick = () => {
+              sessionStorage.setItem('futrix_selected_test', JSON.stringify({
+                seriesId: test.seriesId,
+                title: test.topic,
+                questions: test.maxMarks || 15,
+                duration: test.duration,
+                maxMarks: test.maxMarks || 15,
+                xp: test.xpReward || 100
+              }));
+              window.location.href = '/features/tests/instruction.html';
+            };
+          }
+        } else if (!test.isUnlocked && test.hasQuestions !== false) {
+          const btnUnlock = card.querySelector('.btn-unlock-test-action');
+          if (btnUnlock) {
+            btnUnlock.onclick = () => {
+              selectedTest = test;
+              openPaymentModal(false);
+            };
+          }
+          const btnPro = card.querySelector('.btn-upgrade-pro-card');
+          if (btnPro) {
+            btnPro.onclick = () => {
+              window.location.href = '/features/tests/pricing.html';
+            };
+          }
+        }
+        
+        grid.appendChild(card);
+      });
+    }
+
+    function openExamDetailView(examId) {
+      currentSelectedExam = examId;
+      
+      const tabBtns = document.querySelectorAll('#testTypeTabs .tab-btn');
+      tabBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-type') === 'all');
+      });
+      
+      const titleEl = document.getElementById('testsDetailTitle');
+      const registeredBadge = document.getElementById('registeredBadge');
+      const lockNotice = document.getElementById('lockNotice');
+      
+      let isMatched = (cleanPrep === examId.toUpperCase().trim());
+      const cat = examCategories.find(c => c.name.toUpperCase().trim() === examId.toUpperCase().trim());
+      let displayTitle = cat ? `${cat.display_name || cat.name} Test Center` : `${examId} Exam Test Center`;
+      
+      if (titleEl) titleEl.textContent = displayTitle;
+      
+      if (isMatched) {
+        registeredBadge.style.display = 'inline-block';
+        registeredBadge.textContent = '🎯 Active Stream';
+        registeredBadge.style.color = 'var(--success)';
+        registeredBadge.style.background = 'rgba(0, 230, 118, 0.08)';
+        registeredBadge.style.borderColor = 'rgba(0, 230, 118, 0.2)';
+        lockNotice.style.display = 'none';
+      } else {
+        registeredBadge.style.display = 'inline-block';
+        registeredBadge.textContent = '🌐 Other Stream';
+        registeredBadge.style.color = 'var(--primary)';
+        registeredBadge.style.background = 'rgba(77, 142, 255, 0.08)';
+        registeredBadge.style.borderColor = 'rgba(77, 142, 255, 0.2)';
+        lockNotice.style.display = 'flex';
+        lockNotice.querySelector('span:nth-child(2)').innerHTML = `You are viewing the <strong>${examId}</strong> stream. Free tests are unlocked, and paid tests can be unlocked.`;
+        lockNotice.querySelector('span:nth-child(1)').textContent = 'ℹ️';
+        lockNotice.style.color = 'var(--primary)';
+        lockNotice.style.borderColor = 'rgba(77, 142, 255, 0.2)';
+        lockNotice.style.background = 'rgba(77, 142, 255, 0.08)';
+      }
+      
+      renderTests(examId, 'all', isMatched);
+      
+      document.getElementById('examsSearchContainer').style.display = 'none';
+      document.getElementById('examsListView').style.display = 'none';
+      document.getElementById('testsDetailView').style.display = 'flex';
+    }
+
+    // Bind back button
+    document.getElementById('btnBackToExams').onclick = () => {
+      document.getElementById('testsDetailView').style.display = 'none';
+      document.getElementById('examsSearchContainer').style.display = 'block';
+      document.getElementById('examsListView').style.display = 'grid';
+      currentSelectedExam = null;
+      
+      // Keep search filters matching what's in input if not empty
+      const searchInput = document.getElementById('examSearchInput');
+      if (searchInput && searchInput.value) {
+        searchInput.dispatchEvent(new Event('input'));
+      }
+    };
+
+    // Bind type filter tabs inside sub-view
+    const testTypeBtns = document.querySelectorAll('#testTypeTabs .tab-btn');
+    testTypeBtns.forEach(btn => {
+      btn.onclick = () => {
+        testTypeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const typeFilter = btn.getAttribute('data-type');
+        const isMatched = (cleanPrep === currentSelectedExam.toUpperCase().trim());
+        renderTests(currentSelectedExam, typeFilter, isMatched);
+      };
+    });
+
+    /* ── Search Bar Filter and Redirect Logic ── */
+    const searchInput = document.getElementById('examSearchInput');
+    const btnClearSearch = document.getElementById('btnClearSearch');
+
+    searchInput.addEventListener('input', () => {
+      const val = searchInput.value.trim().toLowerCase();
+      
+      // Toggle clear button visibility
+      btnClearSearch.style.display = val ? 'block' : 'none';
+      
+      const categoryCards = document.querySelectorAll('.exam-category-card');
+      categoryCards.forEach(card => {
+        const examId = card.getAttribute('data-exam-id').toLowerCase();
+        const title = card.querySelector('.card-title').textContent.toLowerCase();
+        const desc = card.querySelector('p').textContent.toLowerCase();
+        
+        let isMatched = title.includes(val) || desc.includes(val) || examId.includes(val);
+        card.style.display = isMatched ? 'flex' : 'none';
+      });
+    });
+
+    btnClearSearch.addEventListener('click', () => {
+      searchInput.value = '';
+      btnClearSearch.style.display = 'none';
+      const categoryCards = document.querySelectorAll('.exam-category-card');
+      categoryCards.forEach(card => card.style.display = 'flex');
+      searchInput.focus();
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const categoryCards = document.querySelectorAll('.exam-category-card');
+        const visibleCards = Array.from(categoryCards).filter(c => c.style.display !== 'none');
+        if (visibleCards.length === 1) {
+          const examId = visibleCards[0].getAttribute('data-exam-id');
+          openExamDetailView(examId);
+        }
+      }
+    });
+
+    /* ── Close Testing Notice Banner ── */
+    const closeNoticeBtn = document.getElementById('btnCloseNotice');
+    const testingNoticeBanner = document.getElementById('testingNoticeBanner');
+    if (closeNoticeBtn && testingNoticeBanner) {
+      closeNoticeBtn.addEventListener('click', () => {
+        testingNoticeBanner.style.display = 'none';
+      });
+    }
+
+    /* ── Logout ── */
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem('futrix_user');
+      window.location.href = '/features/auth/login.html';
+    });
+
+    // Close Notice Banner listener
+    document.getElementById('btnCloseNotice').addEventListener('click', () => {
+      document.getElementById('testingNoticeBanner').style.display = 'none';
+    });
+
+    /* ── UPI Payment Modal Handlers ── */
+     async function openPaymentModal(isProUpgrade = false) {
+      let basePrice = 19.00;
+      let gatewayKey = "";
+      let gatewayType = "";
+
+      try {
+        const res = await fetch('/api/premium/settings');
+        if (res.ok) {
+          const data = await res.json();
+          const settings = data.settings || {};
+          
+          const type = settings.payment_gateway_type;
+          const key = settings.payment_gateway_key;
+          
+          // Strict validation: check if credential fields are filled and not Mock Gateway
+          if (!type || type === 'Mock Gateway' || type === 'Mock' || !key || key.trim() === '' || key.includes('rzp_test_mockKey123')) {
+            alert('Admin is not accepting payments at the moment. Please wait or contact at email teamfutrix@gmail.com');
+            return;
+          }
+
+          gatewayKey = key;
+          gatewayType = type;
+          
+          // Use dynamic plan_single_test price if defined
+          if (!isProUpgrade && settings.plan_single_test) {
+            basePrice = parseFloat(settings.plan_single_test);
+          }
+        } else {
+          alert('Admin is not accepting payments at the moment. Please wait or contact at email teamfutrix@gmail.com');
+          return;
+        }
+      } catch (err) {
+        alert('Admin is not accepting payments at the moment. Please wait or contact at email teamfutrix@gmail.com');
+        return;
+      }
+
+      isUpgradeToProFlow = isProUpgrade;
+      
+      // Clear inputs
+      document.getElementById('payTransactionId').value = '';
+      document.getElementById('paySenderUpi').value = '';
+      
+      const qrImg = document.getElementById('paymentQRCode');
+      qrImg.src = '';
+      
+      let seriesTitle = '';
+      let lockId = '';
+      
+      if (isProUpgrade) {
+        // pro flow fallback pricing setup
+        basePrice = 99.00;
+        seriesTitle = "FUTRIX PRO Tier Membership";
+        lockId = "PRO";
+        
+        document.getElementById('paymentModalTitle').textContent = "Upgrade to Futrix Pro";
+        document.getElementById('paymentModalSeriesTitle').textContent = "Package: Pro Monthly Membership (₹99)";
+        document.getElementById('paymentPassGuaranteeBadge').style.display = 'block';
+        
+        document.getElementById('invoiceBaseFee').textContent = "₹99.00";
+        document.getElementById('invoiceGst').textContent = "₹0.00";
+        document.getElementById('invoicePgCharge').textContent = "₹0.00";
+        document.getElementById('invoiceTotal').textContent = "₹99.00";
+      } else {
+        document.getElementById('paymentPassGuaranteeBadge').style.display = 'none';
+        if (!selectedTest) return;
+        seriesTitle = `Series: ${selectedTest.seriesId} - ${selectedTest.topic}`;
+        lockId = selectedTest.seriesId;
+        
+        document.getElementById('paymentModalTitle').textContent = "Pay & Unlock Test Series";
+        document.getElementById('paymentModalSeriesTitle').textContent = seriesTitle;
+        
+        document.getElementById('invoiceBaseFee').textContent = `₹${basePrice.toFixed(2)}`;
+        document.getElementById('invoiceGst').textContent = "₹0.00";
+        document.getElementById('invoicePgCharge').textContent = "₹0.00";
+        document.getElementById('invoiceTotal').textContent = `₹${basePrice.toFixed(2)}`;
+      }
+      
+      const amountStr = basePrice.toFixed(2);
+      const pa = gatewayKey;
+      const pn = "Futrix";
+      const cu = "INR";
+      
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(pa)}&pn=${encodeURIComponent(pn)}&am=${encodeURIComponent(amountStr)}&cu=${encodeURIComponent(cu)}&tn=${encodeURIComponent(lockId)}`;
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}`;
+      
+      document.getElementById('paymentModal').classList.add('show');
+    }
+
+    document.getElementById('closePaymentModalBtn').onclick = () => {
+      document.getElementById('paymentModal').classList.remove('show');
+    };
+    
+    document.getElementById('paymentModal').onclick = (e) => {
+      if (e.target === document.getElementById('paymentModal')) {
+        document.getElementById('paymentModal').classList.remove('show');
+      }
+    };
+
+    // Confirm payment verification button click
+    document.getElementById('confirmPaymentBtn').onclick = async () => {
+      const transactionId = document.getElementById('payTransactionId').value.trim();
+      const senderUpi = document.getElementById('paySenderUpi').value.trim();
+      
+      if (!/^\d{12}$/.test(transactionId)) {
+        alert('Please enter a valid 12-digit numeric transaction UTR/Transaction ID.');
+        return;
+      }
+      
+      const phoneRegex = /^[6-9]\d{9}$/;
+      const upiRegex = /^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+$/;
+      if (!phoneRegex.test(senderUpi) && !upiRegex.test(senderUpi)) {
+        alert('Please enter a valid Sender UPI ID (e.g. name@upi) or a 10-digit Mobile Number.');
+        return;
+      }
+      
+      const confirmBtn = document.getElementById('confirmPaymentBtn');
+      const spinner = document.getElementById('paymentSpinner');
+      
+      confirmBtn.disabled = true;
+      if (spinner) spinner.style.display = 'inline-block';
+      
+      const unlockId = isUpgradeToProFlow ? 'PRO' : selectedTest.seriesId;
+      
+      let amountVal = 11.61;
+      if (isUpgradeToProFlow) {
+        amountVal = 99.00;
+      } else {
+        const basePrice = (selectedTest.price !== undefined) ? parseFloat(selectedTest.price) : 9.00;
+        amountVal = basePrice + (basePrice * 0.18) + (basePrice * 0.11);
+      }
+      
+      const amountStr = amountVal.toFixed(2);
+      
+      try {
+        const token = sessionStorage.getItem('futrix_token') || '';
+        const res = await fetch('/api/premium/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            planKey: 'plan_single_test',
+            seriesId: selectedTest.seriesId,
+            paymentDetails: {
+              transactionId: transactionId,
+              senderUpi: senderUpi,
+              gateway: 'UPI ID'
+            }
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server payment verification failed.');
+
+        confirmBtn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
+        
+        alert('Payment verified! Single Test Pass is now active for 30 days.');
+        document.getElementById('paymentModal').classList.remove('show');
+        
+        // Reload dynamic catalog list
+        await loadExamsCatalog();
+      } catch (err) {
+        confirmBtn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
+        console.error('Error unlocking series:', err);
+        alert('Unable to reach verification server: ' + err.message);
+      }
+    };
+
+    // Bind sidebar Upgrade to Pro button click
+    const proSidebarBtn = document.querySelector('.btn-upgrade');
+    if (proSidebarBtn) {
+      proSidebarBtn.removeAttribute('onclick');
+      proSidebarBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/features/tests/pricing.html';
+      });
+    }
+
+    async function loadDynamicSidebarStats() {
+      // 1. Fetch Top Performers Today (from getLeaderboard)
+      try {
+        const leaderboard = await getSupabaseLeaderboard();
+        if (leaderboard && leaderboard.length > 0) {
+          const performersList = document.querySelector('.performers-list');
+          if (performersList) {
+            performersList.innerHTML = '';
+            const topUsers = leaderboard.slice(0, 5);
+            topUsers.forEach((u, idx) => {
+              const item = document.createElement('div');
+              item.className = 'performer-item';
+              const initial = u.name.charAt(0).toUpperCase();
+              const badge = idx === 0 ? '🏆' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : initial;
+              item.innerHTML = `
+                <div class="performer-left">
+                  <span class="performer-rank">${idx + 1}</span>
+                  <div class="performer-avatar" style="${idx === 1 ? 'background: rgba(173,198,255,0.2); color: var(--primary);' : idx === 2 ? 'background: rgba(167,139,250,0.2); color: var(--purple);' : ''}">${badge}</div>
+                  <span class="performer-name">${u.name}</span>
+                </div>
+                <span class="performer-xp">${Math.round(u.xp).toLocaleString('en-US')} XP</span>
+              `;
+              performersList.appendChild(item);
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load dynamic performers:', err);
+      }
+
+      // 2. Fetch User Performance & Daily Progress
+      try {
+        const attempts = await getSupabasePerformance(user.id);
+        if (attempts) {
+          const todayStr = new Date().toDateString();
+          const attemptsToday = attempts.filter(att => new Date(att.createdAt).toDateString() === todayStr).length;
+          
+          const missionPctEl = document.querySelector('.mission-info .mission-pct');
+          const fillEl = document.querySelector('.mission-bar-fill');
+          const footerEl = document.querySelector('.mission-footer');
+          
+          const targetChallenges = 2;
+          if (missionPctEl) {
+            missionPctEl.textContent = `${attemptsToday}/${targetChallenges} challenges complete`;
+          }
+          const progressPercent = Math.min(100, Math.round((attemptsToday / targetChallenges) * 100));
+          if (fillEl) {
+            fillEl.style.width = progressPercent + '%';
+          }
+          if (footerEl) {
+            if (attemptsToday >= targetChallenges) {
+              footerEl.textContent = '🎉 Daily mission complete! You earned +20 XP Bonus!';
+              footerEl.style.color = 'var(--success)';
+            } else {
+              const remain = targetChallenges - attemptsToday;
+              footerEl.textContent = `Complete ${remain} more challenge${remain > 1 ? 's' : ''} to claim today's bonus!`;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load dynamic daily progress:', err);
+      }
+
+      // 3. Update Upcoming Challenge
+      try {
+        const upcomingInner = document.querySelector('.upcoming-inner');
+        if (upcomingInner && liveTestsList && liveTestsList.length > 0) {
+          const comingSoonTests = liveTestsList.filter(t => (t.examType || '').toUpperCase().trim() === cleanPrep && !t.hasQuestions);
+          if (comingSoonTests.length > 0) {
+            const nextTest = comingSoonTests[0];
+            upcomingInner.innerHTML = `
+              <h4 class="upcoming-title">${nextTest.topicChapter}</h4>
+              <div class="upcoming-time" id="upcomingTimer">Unlocks in 02h 45m</div>
+              <div class="upcoming-faces-row">
+                <div class="faces-stack">
+                  <div class="face-avatar" style="background:#ffa94d; color:#121620">A</div>
+                  <div class="face-avatar" style="background:#adc6ff; color:#121620">B</div>
+                  <div class="face-avatar" style="background:#00e5d4; color:#121620">K</div>
+                </div>
+                <span class="faces-text">Stream: ${nextTest.examType}</span>
+              </div>
+            `;
+          } else {
+            upcomingInner.innerHTML = `
+              <h4 class="upcoming-title">FUTRIX Mega Arena Showdown</h4>
+              <div class="upcoming-time">Unlocked!</div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">All stream tests are currently live. Go battle!</p>
+            `;
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load upcoming challenge:', err);
+      }
+    }
+
+    // Dynamic catalog fetch function
+    async function loadExamsCatalog() {
+      // 1. Stale Phase
+      const cachedList = sessionStorage.getItem('futrix_series_list');
+      const cachedIsPro = sessionStorage.getItem('futrix_is_pro');
+      if (cachedList) {
+        try {
+          liveTestsList = JSON.parse(cachedList);
+          isProUser = (cachedIsPro === 'true');
+          updateStreamCountsAndStatus();
+          if (currentSelectedExam) {
+            renderTests(currentSelectedExam, getActiveFilterType(), (cleanPrep === currentSelectedExam.toUpperCase().trim()));
+          }
+          loadDynamicSidebarStats();
+        } catch (e) {
+          console.error('Error loading cached series list:', e);
+        }
+      }
+
+      // 2. Revalidate Phase from Supabase
+      try {
+        const seriesList = await getSupabaseSeriesList(user.id);
+        if (seriesList && seriesList.length > 0) {
+          liveTestsList = seriesList;
+          isProUser = !!user.is_pro;
+          
+          sessionStorage.setItem('futrix_series_list', JSON.stringify(liveTestsList));
+          sessionStorage.setItem('futrix_is_pro', isProUser ? 'true' : 'false');
+          
+          updateStreamCountsAndStatus();
+          if (currentSelectedExam) {
+            renderTests(currentSelectedExam, getActiveFilterType(), (cleanPrep === currentSelectedExam.toUpperCase().trim()));
+          }
+          loadDynamicSidebarStats();
+        }
+      } catch (err) {
+        console.error('Error in background fetch:', err);
+      }
+    }
+
+    function getActiveFilterType() {
+      const activeTab = document.querySelector('#testTypeTabs .tab-btn.active');
+      return activeTab ? activeTab.getAttribute('data-type') : 'all';
+    }
+
+    async function initPage() {
+      try {
+        examCategories = await getExamCategories();
+        renderExamCenters(examCategories);
+      } catch (err) {
+        console.error('Error fetching exam categories:', err);
+      }
+      await loadExamsCatalog();
+    }
+
+    initPage();
+
+    /* ── Sidebar Toggle (Mobile) ── */
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const toggleBtn = document.getElementById('sidebarToggle');
+
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  </script>
+</body>
+</html>

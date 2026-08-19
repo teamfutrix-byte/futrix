@@ -1,0 +1,3086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Lab | FUTRIX Cognitive Learning Platform</title>
+  <meta name="description" content="AI-powered Memory Lab: Train your brain, remember longer, and track retention using spaced repetition calculations." />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Design System Tokens -->
+  <link rel="stylesheet" href="/features/memory-lab/design-system.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: 
+        radial-gradient(circle at 5% 5%, rgba(56, 128, 247, 0.08) 0%, transparent 35%),
+        radial-gradient(circle at 95% 95%, rgba(0, 229, 212, 0.04) 0%, transparent 35%),
+        var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ══════════════ TOP BAR ══════════════ */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: var(--sidebar-color);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 200;
+      box-shadow: var(--glass-shadow);
+    }
+    .topbar-logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+      color: var(--text-color);
+      text-decoration: none;
+    }
+    .topbar-logo span { color: var(--primary-color); }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* ══════════════ LAYOUT ══════════════ */
+    .layout {
+      display: flex;
+      height: 100vh;
+      padding-top: 60px;
+    }
+
+    /* ══════════════ SIDEBAR ══════════════ */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--sidebar-color);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 0;
+      position: fixed;
+      top: 60px;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      overflow-y: auto;
+    }
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 1.5rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 0.8rem;
+    }
+    .profile-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-color), var(--teal-color));
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .profile-info { overflow: hidden; }
+    .profile-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-level { font-size: 0.7rem; color: var(--text-muted-color); }
+
+    .league-widget {
+      padding: 0 1.5rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1rem;
+    }
+    .league-bar {
+      width: 100%; height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.35rem;
+    }
+    .league-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--primary-color), var(--teal-color));
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .nav-list { flex: 1; list-style: none; padding: 0 0.8rem; }
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-muted-color);
+      text-decoration: none;
+      transition: all 0.2s;
+      margin-bottom: 0.25rem;
+    }
+    .nav-item a:hover { background: rgba(255, 255, 255, 0.03); color: var(--text-color); }
+    .nav-item a.active {
+      background: var(--primary-glow);
+      color: var(--primary-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .sidebar-bottom { padding: 1rem; border-top: 1px solid var(--border-color); }
+    .btn-upgrade {
+      width: 100%; padding: 0.75rem; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--primary-color), var(--teal-color));
+      color: #03050a; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; margin-bottom: 0.5rem; transition: all 0.2s;
+    }
+    .btn-upgrade:hover { transform: translateY(-1px); }
+
+    /* ══════════════ MAIN CONTENT ══════════════ */
+    .main-content {
+      margin-left: 240px;
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 280px 1fr 340px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .panel-card {
+      background: var(--surface-color);
+      backdrop-filter: var(--blur-token);
+      -webkit-backdrop-filter: var(--blur-token);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--glass-shadow);
+      margin-bottom: 1.5rem;
+      box-shadow: var(--glow-effect);
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .card-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ── GOAL SELECTOR ── */
+    .goal-select-row { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+    .goal-select-row label { font-size: 0.75rem; color: var(--text-muted-color); text-transform: uppercase; font-weight: 600; }
+    .goal-select {
+      background: var(--surface-hi-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-color);
+      padding: 0.65rem;
+      font-size: 0.85rem;
+      font-family: 'Geist', sans-serif;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ── FLASHCARD ── */
+    .flashcard-deck {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .flashcard-container {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 520px;
+      aspect-ratio: 1.55 / 1;
+      cursor: pointer;
+      position: relative;
+    }
+    .flashcard {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .flashcard.flipped { transform: rotateY(180deg); }
+    
+    .card-face {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 20px;
+      padding: 2.2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border-color);
+      background: var(--surface-color);
+      backdrop-filter: var(--blur-token);
+      -webkit-backdrop-filter: var(--blur-token);
+      box-shadow: var(--glass-shadow);
+    }
+    .card-back { transform: rotateY(180deg); background: rgba(30, 41, 59, 0.6); }
+
+    .card-header { display: flex; justify-content: space-between; align-items: center; }
+    .card-category { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal-color); font-weight: 750; }
+    .card-badge { font-size: 0.72rem; background: rgba(255,255,255,0.06); padding: 0.2rem 0.6rem; border-radius: 50px; color: var(--text-muted-color); }
+    .card-body { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1.2rem 0; }
+    .card-text { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 600; line-height: 1.5; color: var(--text-color); }
+    .card-footer { font-size: 0.72rem; color: var(--text-muted-color); text-align: center; }
+
+    /* Confidence Ratings */
+    .confidence-row {
+      display: flex;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 520px;
+    }
+    .btn-confidence {
+      flex: 1; padding: 0.8rem 0.5rem; border-radius: 12px; border: none;
+      font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; color: #fff; transition: all 0.2s;
+    }
+    .btn-confidence.hard { background: rgba(255, 77, 77, 0.15); border: 1px solid rgba(255, 77, 77, 0.25); color: #ff6b6b; }
+    .btn-confidence.medium { background: rgba(255, 169, 77, 0.15); border: 1px solid rgba(255, 169, 77, 0.25); color: var(--accent-color); }
+    .btn-confidence.easy { background: rgba(0, 230, 118, 0.15); border: 1px solid rgba(0, 230, 118, 0.25); color: var(--success-color); }
+    
+    .btn-confidence.hard:hover { background: #ff4d4d; color: #fff; }
+    .btn-confidence.medium:hover { background: var(--accent-color); color: #03050a; }
+    .btn-confidence.easy:hover { background: var(--success-color); color: #03050a; }
+
+    /* Forms */
+    .form-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 0.6rem 0.8rem;
+      border-radius: var(--radius-md);
+      color: var(--text-color);
+      width: 100%;
+      outline: none;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+    }
+    [data-theme="light"] .form-input {
+      background: rgba(0, 0, 0, 0.02);
+      color: #1f2937;
+    }
+
+    /* Memory Health Circular progress style */
+    .circular-progress {
+      position: relative;
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: conic-gradient(var(--success-color) 0%, rgba(255,255,255,0.05) 0%);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .circular-progress::before {
+      content: '';
+      position: absolute;
+      width: 114px; height: 114px;
+      border-radius: 50%;
+      background: #0d1222;
+    }
+    [data-theme="light"] .circular-progress::before {
+      background: #f4f6f9;
+    }
+    .progress-value {
+      position: relative;
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-color);
+    }
+
+    /* Welcome Assessment components */
+    .assessment-overlay {
+      position: fixed;
+      inset: 0; background: rgba(3, 5, 10, 0.92);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .assessment-overlay.show { opacity: 1; pointer-events: auto; }
+    .assessment-content {
+      position: relative;
+      background: #0d1222; border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px; padding: 2.5rem; width: 90%; max-width: 600px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6); text-align: center;
+    }
+    .opt-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 1.5rem; }
+    .btn-opt {
+      width: 100%; padding: 0.9rem; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);
+      color: var(--text-color); font-family: 'Geist', sans-serif; font-size: 0.88rem;
+      text-align: left; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-opt:hover { background: rgba(255,255,255,0.06); border-color: var(--primary-color); }
+
+    .assess-progress {
+      height: 6px; width: 100%; background: rgba(255,255,255,0.06);
+      border-radius: 3px; overflow: hidden; margin-bottom: 1.8rem;
+    }
+    .assess-progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--primary-color), var(--teal-color));
+      border-radius: 3px; transition: width 0.3s ease;
+    }
+
+    .badge-unlocked-card {
+      background: linear-gradient(135deg, rgba(255, 169, 77, 0.15) 0%, rgba(255,255,255,0.02) 100%);
+      border: 1px solid rgba(255, 169, 77, 0.25);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-top: 0.75rem;
+    }
+
+    .queue-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .queue-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.8rem 1rem; background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-color); border-radius: 10px;
+    }
+    .queue-info { display: flex; flex-direction: column; gap: 0.2rem; }
+    .queue-item-title { font-size: 0.88rem; font-weight: 600; color: var(--text-color); }
+    .queue-item-desc { font-size: 0.75rem; color: var(--text-muted-color); }
+    .queue-item-tag { font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(56, 128, 247, 0.1); color: var(--primary-color); }
+
+    .mistake-list { display: flex; flex-direction: column; gap: 0.8rem; max-height: 280px; overflow-y: auto; padding-right: 0.2rem; }
+    .mistake-item {
+      padding: 0.85rem; background: rgba(255, 77, 77, 0.03);
+      border: 1px solid rgba(255, 77, 77, 0.15); border-radius: 10px;
+    }
+    .mistake-q { font-size: 0.82rem; font-weight: 600; color: var(--text-color); margin-bottom: 0.4rem; }
+    .mistake-ans { font-size: 0.78rem; color: var(--success-color); }
+
+    /* ── GAMIFIED PERSONAL FLASHCARDS ── */
+    .personal-flashcard-wrap {
+      perspective: 1200px;
+      width: 100%;
+      max-width: 520px;
+      aspect-ratio: 1.58 / 1;
+      margin: 1.5rem auto;
+      cursor: pointer;
+    }
+    .personal-flashcard {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .personal-flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+    .personal-card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 24px;
+      padding: 2.2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1.5px solid var(--border-color);
+      background: linear-gradient(135deg, rgba(26, 32, 44, 0.8), rgba(17, 20, 28, 0.9));
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s;
+    }
+    .personal-card-face.card-front {
+      border-color: rgba(0, 210, 255, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 210, 255, 0.05);
+    }
+    .personal-card-face.card-back {
+      transform: rotateY(180deg);
+      border-color: rgba(0, 230, 118, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 230, 118, 0.05);
+    }
+    .personal-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .personal-card-subject {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--teal-color);
+      text-shadow: 0 0 10px rgba(0, 229, 212, 0.3);
+    }
+    .personal-card-badge {
+      font-size: 0.72rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted-color);
+    }
+    .personal-card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1rem 0;
+    }
+    .personal-card-q {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      line-height: 1.45;
+      color: #fff;
+    }
+    .personal-card-a {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: var(--success-color);
+      text-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
+    }
+    .personal-card-footer {
+      font-size: 0.75rem;
+      color: var(--text-muted-color);
+      text-align: center;
+    }
+
+    /* Deck list layout */
+    .deck-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 0.6rem;
+    }
+    .deck-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+    .deck-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .deck-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .deck-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted-color);
+    }
+    .deck-badges {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .deck-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      min-width: 32px;
+      text-align: center;
+    }
+    .deck-badge.blue {
+      color: #00d2ff;
+      background: rgba(0, 210, 255, 0.08);
+      border: 1px solid rgba(0, 210, 255, 0.15);
+    }
+    .deck-badge.red {
+      color: #ff4d4d;
+      background: rgba(255, 77, 77, 0.08);
+      border: 1px solid rgba(255, 77, 77, 0.15);
+    }
+    .deck-badge.green {
+      color: #00e676;
+      background: rgba(0, 230, 118, 0.08);
+      border: 1px solid rgba(0, 230, 118, 0.15);
+    }
+
+    /* Confetti Particle Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <a href="instruction.html" class="topbar-logo">Fut<span>rix</span></a>
+    <div class="topbar-right">
+      <span style="font-size: 0.8rem; background: rgba(56, 128, 247, 0.1); color: var(--primary-color); padding: 0.3rem 0.8rem; border-radius: 20px; font-weight: 750; border: 1px solid var(--border-color);">Memory Lab Active</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-profile">
+        <div class="profile-avatar" id="profileInitial">FP</div>
+        <div class="profile-info">
+          <div class="profile-name" id="profileName">Futrix Competitor</div>
+          <div class="profile-level">XP: <span id="sidebarXP">0</span></div>
+        </div>
+      </div>
+      <!-- League Progress -->
+      <div class="league-widget">
+        <div style="font-size: 0.72rem; color: var(--text-muted-color); margin-bottom: 0.4rem; font-weight: 600;">LEAGUE PROGRESS</div>
+        <div class="league-bar"><div class="league-bar-fill" id="leagueBarFill"></div></div>
+        <div id="leagueName" style="font-size: 0.72rem; color: var(--primary-color); font-weight: 700;">Bronze League</div>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item"><a href="instruction.html">Dashboard</a></li>
+        <li class="nav-item"><a href="active-exams.html">Active Exams</a></li>
+        <li class="nav-item"><a href="performance.html">Performance</a></li>
+        <li class="nav-item"><a href="leaderboard.html">Leaderboard</a></li>
+        <li class="nav-item"><a href="arena.html">PvP Arena</a></li>
+        <li class="nav-item"><a href="memory-lab.html" class="active">Memory Lab</a></li>
+        <li class="nav-item"><a href="roadmap.html">Roadmap</a></li>
+      </ul>
+      <div class="sidebar-bottom">
+        <!-- Theme switcher block -->
+        <div style="margin-bottom:0.75rem; display:flex; gap:0.35rem; justify-content:center;">
+          <button class="btn-theme" onclick="setTheme('dark')" style="padding:0.3rem 0.5rem; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:var(--text-color); cursor:pointer;">Dark</button>
+          <button class="btn-theme" onclick="setTheme('light')" style="padding:0.3rem 0.5rem; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:var(--text-color); cursor:pointer;">Light</button>
+          <button class="btn-theme" onclick="setTheme('premium')" style="padding:0.3rem 0.5rem; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:var(--text-color); cursor:pointer;">Neon</button>
+        </div>
+        <button class="btn-upgrade" onclick="window.location.href='/features/tests/pricing.html'">Upgrade to Pro</button>
+      </div>
+    </aside>
+
+    <!-- Main Grid -->
+    <main class="main-content">
+      
+      <!-- LEFT COLUMN: Goals, Streaks & Configs -->
+      <div class="animate-slide">
+        <div class="panel-card">
+          <div class="card-title">🎯 Goal Configuration</div>
+          <div class="goal-select-row">
+            <label for="targetExam">Target Exam</label>
+            <select id="targetExam" class="goal-select">
+              <option value="NEET 2027">NEET 2027</option>
+              <option value="NEET 2028">NEET 2028</option>
+              <option value="JEE Main">JEE Main</option>
+              <option value="JEE Advanced">JEE Advanced</option>
+            </select>
+          </div>
+          <div class="goal-select-row">
+            <label for="targetScore">Target Score</label>
+            <select id="targetScore" class="goal-select">
+              <option value="450">450+</option>
+              <option value="550">550+</option>
+              <option value="650">650+</option>
+              <option value="700">700+</option>
+            </select>
+          </div>
+          <button id="btnSaveGoal" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: none; background: var(--primary-glow); color: var(--primary-color); font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; margin-top: 0.4rem;">Save Goal</button>
+          
+          <!-- Reduced motion & sound switches -->
+          <div style="margin-top:0.8rem; display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" id="reducedMotionToggle" onchange="toggleMotionMode()" style="cursor:pointer;" />
+            <label for="reducedMotionToggle" style="font-size:0.75rem; color:var(--text-muted-color); cursor:pointer;">Reduced Motion</label>
+          </div>
+          <div style="margin-top:0.4rem; display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" id="audioPackToggle" style="cursor:pointer;" checked />
+            <label for="audioPackToggle" style="font-size:0.75rem; color:var(--text-muted-color); cursor:pointer;">Audio FX (Synth)</label>
+          </div>
+          <div style="margin-top:0.4rem; display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" id="bgMusicToggle" onchange="toggleBgMusic()" style="cursor:pointer;" />
+            <label for="bgMusicToggle" style="font-size:0.75rem; color:var(--text-muted-color); cursor:pointer;">Study BGM (Synth)</label>
+          </div>
+          <div id="bgmVolumeRow" style="margin-top:0.4rem; display:none; flex-direction:column; gap:0.2rem;">
+            <label for="bgMusicVolume" style="font-size:0.68rem; color:var(--text-muted-color);">BGM Volume</label>
+            <input type="range" id="bgMusicVolume" min="0" max="1" step="0.05" value="0.3" oninput="updateBgmVolume()" style="width:100%; cursor:pointer;" />
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="card-title">🔥 Daily Streak</div>
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <span class="fire-glow" style="font-size: 2.2rem; display:inline-block;">🔥</span>
+            <div>
+              <div style="font-family:'Sora',sans-serif; font-size:1.40rem; font-weight:800;" id="streakCount">1 Day</div>
+              <div style="font-size:0.75rem; color:var(--text-muted-color);">Keep practicing to retain your learning streak!</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="card-title">🧠 Memory Health</div>
+          <div class="meter-container">
+            <div class="circular-progress" id="memoryMeter">
+              <span class="progress-value" id="memoryValue">0%</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted-color); max-width: 200px; line-height: 1.4;">Memory health score tracks your retention strength and decay speeds.</p>
+          </div>
+        </div>
+
+        <div class="panel-card" id="badgeContainer" style="display: none;">
+          <div class="card-title">🏆 Earned Badges</div>
+          <div class="badge-unlocked-card">
+            <span style="font-size: 1.8rem;">🎖️</span>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">Founding Competitor</div>
+              <div style="font-size: 0.72rem; color: var(--accent-color);">Early FUTRIX Adapter Reward</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER COLUMN: Interactive Flashcards -->
+      <div class="flashcard-deck animate-slide" style="animation-delay: 0.1s;">
+        <!-- Global Search Bar component -->
+        <div class="panel-card" style="width: 100%; max-width: 520px; padding: var(--space-8); margin-bottom: 0;">
+          <input type="text" id="global-search" class="form-input" placeholder="🔍 Search flashcards, wrong questions, or topics..." onkeyup="filterMemoryDashboard()" />
+        </div>
+
+        <!-- System Flashcard visualizer -->
+        <div class="flashcard-container" id="flashcardWrap" style="width: 100%; max-width: 520px;">
+          <div class="flashcard" id="flashcard">
+            <!-- Front -->
+            <div class="card-face" id="flashcard-front-face">
+              <div class="card-header">
+                <span class="card-category" id="cardCategory">General</span>
+                <span class="card-badge" id="cardType">Concept</span>
+              </div>
+              <div class="card-body">
+                <p class="card-text" id="cardFrontText">Loading Spaced Revision Queue...</p>
+              </div>
+              <div class="card-footer">Tap / Click Card to Reveal Answer</div>
+            </div>
+            <!-- Back -->
+            <div class="card-face card-back" id="flashcard-back-face">
+              <div class="card-header">
+                <span class="card-category" style="color: var(--success-color);">Answer</span>
+                <span class="card-badge" style="background: rgba(0, 230, 118, 0.08); border: 1px solid rgba(0, 230, 118, 0.15); color: var(--success-color);">Correct</span>
+              </div>
+              <div class="card-body">
+                <p class="card-text" id="cardBackText" style="color: var(--success-color);">Loading...</p>
+              </div>
+              <div class="card-footer">Rate your recall to schedule next revision</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confidence Ratings -->
+        <div class="confidence-row" id="confidenceRow" style="width: 100%; max-width: 520px; margin-top: -0.5rem; display: none;">
+          <button class="btn-confidence hard" onclick="rateCard('hard')">Again</button>
+          <button class="btn-confidence medium" onclick="rateCard('good')">Good</button>
+          <button class="btn-confidence easy" onclick="rateCard('easy')">Easy</button>
+        </div>
+
+        <!-- Import / Seed default cards button -->
+        <button id="btnImportCards" style="display: none; width: 100%; max-width: 520px; padding: 0.75rem; font-size: 0.82rem; font-weight: 700; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--primary-color), var(--teal-color)); color: #03050a; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 229, 212, 0.25);">Seed Default Revision Cards ⚡</button>
+
+        <!-- PERSONAL FLASHCARDS PANEL (ANKI SRS UPGRADE - UNIFIED) -->
+        <div id="personalCardsPanel" style="display: flex; width: 100%; max-width: 520px; flex-direction: column; gap: 1rem;">
+          
+          <!-- Deck Overview Screen -->
+          <div id="personalDecksView" style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+              <h3 style="font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 800; color: #fff;">📇 Personal Mastery Decks</h3>
+              <button onclick="togglePersonalBrowseMode(true)" style="padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.04); color: var(--text-color); cursor: pointer;">🔍 Browse Cards</button>
+            </div>
+            
+            <div id="decksListContainer" style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+              <!-- Rendered dynamically (Decks with counts) -->
+            </div>
+
+            <!-- Global Actions Row -->
+            <div style="display: flex; gap: 0.5rem; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.8rem; width: 100%; margin-top: 0.5rem;">
+              <button onclick="openNewFolderModal()" style="flex: 1; padding: 0.6rem; font-size: 0.8rem; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.04); color: var(--text-color); cursor: pointer;">📁 Create Deck</button>
+              <button onclick="openNewCardModal()" style="flex: 1; padding: 0.6rem; font-size: 0.8rem; font-weight: 700; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--primary-color), var(--teal-color)); color: #03050a; cursor: pointer;">➕ Add Card</button>
+            </div>
+          </div>
+
+          <!-- Active Study Screen -->
+          <div id="personalStudyView" style="display: none; flex-direction: column; align-items: center; gap: 1rem; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+              <div style="display: flex; flex-direction: column;">
+                <span id="studyDeckBreadcrumb" style="font-size: 0.72rem; color: var(--teal-color); font-weight: 700; text-transform: uppercase;">Biology :: Genetics</span>
+                <span id="studyProgressText" style="font-size: 0.8rem; color: var(--text-muted-color); font-weight: 600; margin-top: 0.1rem;">Remaining: 3 New, 1 Learn, 4 Due</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button id="btnFlashcardVoiceToggle" onclick="window.toggleFlashcardVoice()" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; font-weight: 700; border-radius: 6px; border: 1px solid var(--teal-color); background: rgba(0, 229, 212, 0.05); color: var(--teal-color); cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+                  🔊 Voice: On
+                </button>
+                <button onclick="exitStudyMode()" style="padding: 0.35rem 0.7rem; font-size: 0.75rem; font-weight: 700; border-radius: 6px; border: 1px solid rgba(255,77,77,0.2); background: rgba(255,77,77,0.05); color: #ff6b6b; cursor: pointer;">Exit</button>
+              </div>
+            </div>
+
+            <!-- 3D Flippable Card -->
+            <div class="personal-flashcard-wrap" id="personalCardWrap">
+              <div class="personal-flashcard" id="personalCard">
+                <!-- Front -->
+                <div class="personal-card-face card-front" onclick="flipPersonalCard()">
+                  <div class="personal-card-header">
+                    <span class="personal-card-subject" id="personalCardSubject">Biology</span>
+                    <span class="personal-card-badge" id="personalCardDifficulty">Medium</span>
+                  </div>
+                  <div class="personal-card-body">
+                    <p class="personal-card-q" id="personalCardFrontText">Loading Question...</p>
+                  </div>
+                  <div class="personal-card-footer">Press SPACEBAR or click card to flip</div>
+                </div>
+                <!-- Back -->
+                <div class="personal-card-face card-back" onclick="flipPersonalCard()">
+                  <div class="personal-card-header">
+                    <span class="personal-card-subject" style="color: var(--success-color); text-shadow: 0 0 10px rgba(0, 230, 118, 0.3);">Answer</span>
+                    <span class="personal-card-badge" id="personalCardTypeBadge">Basic</span>
+                  </div>
+                  <div class="personal-card-body" style="justify-content: flex-start; gap: 0.6rem; overflow-y: auto; text-align: center;">
+                    <p class="personal-card-a" id="personalCardBackText">Loading Answer...</p>
+                    <div id="personalCardMnemonicBox" style="display: none; width: 100%; font-size: 0.78rem; text-align: left; padding: 0.5rem 0.75rem; border-radius: 8px; background: rgba(255, 169, 77, 0.06); border: 1px solid rgba(255, 169, 77, 0.15); color: var(--accent-color);">
+                      💡 <strong>Mnemonic:</strong> <span id="personalCardMnemonicText"></span>
+                    </div>
+                    <div id="personalCardExplanationBox" style="display: none; width: 100%; font-size: 0.75rem; text-align: left; padding: 0.5rem 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); color: var(--text-muted-color);">
+                      📘 <strong>Explanation:</strong> <span id="personalCardExplanationText"></span>
+                    </div>
+                  </div>
+                  <div class="personal-card-footer">Rate your recall to schedule next review</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div id="studyControlsRow" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+              <!-- Show Answer Button -->
+              <button id="btnPersonalShowAnswer" onclick="flipPersonalCard()" style="width: 100%; padding: 0.9rem; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--primary-color), var(--teal-color)); color: #03050a; font-family: 'Sora', sans-serif; font-weight: 750; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 229, 212, 0.25);">
+                Show Answer (Space)
+              </button>
+
+              <!-- Ratings Buttons (Again, Hard, Good, Easy) -->
+              <div id="personalRatingsRow" style="display: none; width: 100%; gap: 0.4rem;">
+                <button onclick="rateActivePersonalCard('again')" class="btn-confidence" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: rgba(255, 77, 77, 0.05); border: 1px solid rgba(255, 77, 77, 0.25); color: #ff6b6b; border-radius: 10px; cursor: pointer;">
+                  <span style="font-size: 0.65rem; opacity: 0.7; font-weight: 600; text-transform: uppercase;">Again</span>
+                  <span id="interval-again" style="font-size: 0.8rem; font-weight: 800; margin-top: 0.1rem;">< 1m</span>
+                </button>
+                <button onclick="rateActivePersonalCard('hard')" class="btn-confidence" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: rgba(255, 169, 77, 0.05); border: 1px solid rgba(255, 169, 77, 0.25); color: var(--accent-color); border-radius: 10px; cursor: pointer;">
+                  <span style="font-size: 0.65rem; opacity: 0.7; font-weight: 600; text-transform: uppercase;">Hard</span>
+                  <span id="interval-hard" style="font-size: 0.8rem; font-weight: 800; margin-top: 0.1rem;">12h</span>
+                </button>
+                <button onclick="rateActivePersonalCard('good')" class="btn-confidence" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: rgba(56, 128, 247, 0.05); border: 1px solid rgba(56, 128, 247, 0.25); color: var(--primary-color); border-radius: 10px; cursor: pointer;">
+                  <span style="font-size: 0.65rem; opacity: 0.7; font-weight: 600; text-transform: uppercase;">Good</span>
+                  <span id="interval-good" style="font-size: 0.8rem; font-weight: 800; margin-top: 0.1rem;">1d</span>
+                </button>
+                <button onclick="rateActivePersonalCard('easy')" class="btn-confidence" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: rgba(0, 230, 118, 0.05); border: 1px solid rgba(0, 230, 118, 0.25); color: var(--success-color); border-radius: 10px; cursor: pointer;">
+                  <span style="font-size: 0.65rem; opacity: 0.7; font-weight: 600; text-transform: uppercase;">Easy</span>
+                  <span id="interval-easy" style="font-size: 0.8rem; font-weight: 800; margin-top: 0.1rem;">4d</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Management Actions Row -->
+            <div id="studyCardManagementActions" style="display: flex; gap: 0.5rem; justify-content: center; width: 100%; margin-top: 0.2rem;">
+              <button onclick="editCurrentStudyCard()" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.04); color: var(--text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                ✏️ Edit Card
+              </button>
+              <button onclick="deleteCurrentStudyCard()" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; font-weight: 700; border-radius: 8px; border: 1px solid rgba(255,77,77,0.2); background: rgba(255,77,77,0.05); color: #ff6b6b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem;">
+                🗑️ Delete Card
+              </button>
+            </div>
+
+            <!-- Custom Study Button -->
+            <button onclick="triggerCustomStudyPersonal()" style="background: transparent; border: none; color: var(--teal-color); font-size: 0.75rem; font-weight: 700; cursor: pointer; text-decoration: underline; margin-top: 0.2rem;">Custom Study (Review Ahead / Forgot)</button>
+          </div>
+
+          <!-- Browse / Manage Cards Screen -->
+          <div id="personalBrowseView" style="display: none; flex-direction: column; gap: 0.8rem; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+              <h4 style="font-family: 'Sora', sans-serif; font-size: 0.92rem; font-weight: 800; color: #fff;">🗂️ Browse Memory Cards</h4>
+              <button onclick="togglePersonalBrowseMode(false)" style="padding: 0.3rem 0.6rem; font-size: 0.72rem; font-weight: 700; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.04); color: var(--text-color); cursor: pointer;">Back to Decks</button>
+            </div>
+            
+            <div style="display: flex; gap: 0.4rem; width: 100%;">
+              <button onclick="openImportModal()" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.04); color: var(--text-color); cursor: pointer;">📥 Import CSV</button>
+              <button onclick="exportPersonalCardsCSV()" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.04); color: var(--text-color); cursor: pointer;">📤 Export CSV</button>
+              <button onclick="openAiGeneratorModal()" style="flex: 1; padding: 0.5rem; font-size: 0.75rem; font-weight: 700; border-radius: 8px; border: 1px solid rgba(0, 229, 212, 0.25); background: rgba(0, 229, 212, 0.08); color: var(--text-color); cursor: pointer;">✨ AI Generate</button>
+            </div>
+
+            <!-- Deck Scope Selector -->
+            <div style="display: flex; gap: 0.4rem; width: 100%; margin-top: 0.5rem; margin-bottom: 0.2rem;">
+              <select id="selFolderScope" class="form-input" style="flex: 1; font-size: 0.8rem; padding: 0.5rem;" onchange="renderPersonalCards()"></select>
+            </div>
+
+            <!-- Search Cards Sub-Bar -->
+            <input type="text" id="personalCardsSearch" class="form-input" placeholder="🔍 Search cards in this view..." onkeyup="renderPersonalCards()" style="font-size: 0.8rem; padding: 0.5rem 0.8rem;" />
+
+            <!-- The list of scrollable cards for managing them -->
+            <div id="personalCardsList" style="display: flex; flex-direction: column; gap: 0.8rem; width: 100%; max-height: 400px; overflow-y: auto; padding-right: 0.2rem;">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Revision Queue & Notebook -->
+      <div class="animate-slide" style="animation-delay: 0.2s;">
+        <div class="panel-card">
+          <div class="card-title">📅 Spaced Revision Queue</div>
+          <div class="queue-list" id="queueList">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="card-title">📓 Mistake Notebook</div>
+          <div class="mistake-list" id="mistakeList">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="card-title">📈 Community Milestones</div>
+          <div style="display: flex; flex-direction: column; gap: 0.7rem; font-size: 0.88rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted-color);">Questions Solved:</span>
+              <strong id="commQuestions" style="color: var(--text-color);">0</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted-color);">Tests Completed:</span>
+              <strong id="commTests" style="color: var(--text-color);">0</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted-color);">Total Competitor XP:</span>
+              <strong id="commXP" style="color: var(--accent-color);">0 XP</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Diagnostic Evaluation 15 MCQ Popup Modal -->
+  <div class="assessment-overlay" id="assessmentOverlay">
+    <div class="assessment-content">
+      <button onclick="dismissAssessment()" style="position: absolute; top: 1.2rem; right: 1.2rem; background: transparent; border: none; color: var(--text-muted-color); font-size: 1.5rem; cursor: pointer; transition: color 0.2s; line-height: 1;" title="Skip Diagnostic" onmouseover="this.style.color='#ff4d4d'" onmouseout="this.style.color='var(--text-muted-color)'">&times;</button>
+      <h2 style="font-family: 'Sora', sans-serif; font-size: 1.45rem; font-weight: 800; color: #fff; margin-bottom: 0.35rem;">📝 Diagnostic Welcome Assessment</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted-color); margin-bottom: 1.5rem;">Complete this quick 15-question quiz (5 Physics, 5 Chemistry, 5 Biology) to calibrate your starting level and track recommended parameters.</p>
+      
+      <div class="assess-progress">
+        <div class="assess-progress-fill" id="assessProgressFill"></div>
+      </div>
+      
+      <div style="text-align: left; background: rgba(0,0,0,0.25); padding: 1.3rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <div id="assessQNum" style="font-size: 0.75rem; color: var(--primary-color); font-weight: 750; text-transform: uppercase; margin-bottom: 0.5rem;">Question 1 of 15</div>
+        <p id="assessQText" style="font-size: 0.98rem; font-weight: 600; color: #fff; line-height: 1.4;"></p>
+        
+        <div class="opt-grid" id="assessOptGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase Scripts -->
+  <script src="/supabase-js.js"></script>
+  <script src="/supabase-client.js"></script>
+  <script src="/config/appConfig.js"></script>
+  <script src="/utils/helpers.js"></script>
+  <script src="/services/api.js"></script>
+  <script src="/floating-ai-mentor.js"></script>
+
+  <script>
+    // Theme Engine sync
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('futrix_theme', theme);
+    }
+    const savedTheme = localStorage.getItem('futrix_theme') || 'dark';
+    setTheme(savedTheme);
+
+    // Reduced Motion setting
+    function toggleMotionMode() {
+      const active = document.getElementById('reducedMotionToggle').checked;
+      if (active) {
+        document.documentElement.setAttribute('data-motion', 'reduced');
+        localStorage.setItem('futrix_motion', 'reduced');
+      } else {
+        document.documentElement.removeAttribute('data-motion');
+        localStorage.setItem('futrix_motion', 'normal');
+      }
+    }
+    const savedMotion = localStorage.getItem('futrix_motion') || 'normal';
+    if (savedMotion === 'reduced') {
+      document.getElementById('reducedMotionToggle').checked = true;
+      document.documentElement.setAttribute('data-motion', 'reduced');
+    }
+
+    // Synthesized Sound Effects
+    function playSynthBeep(freq, type) {
+      if (!document.getElementById('audioPackToggle')?.checked) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq || 440, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      } catch (e) {
+        console.warn('Audio synth blocked by policy:', e);
+      }
+    }
+
+    // Victory Confetti Particle Cannon
+    function triggerConfetti() {
+      if (localStorage.getItem('futrix_motion') === 'reduced') return;
+
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'fixed';
+      canvas.style.inset = '0';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '9999';
+      document.body.appendChild(canvas);
+      
+      const ctx = canvas.getContext('2d');
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+      
+      const colors = ['#8ab4f8', '#00e5d4', '#ffa94d', '#10b981', '#ff4d4d'];
+      const particles = Array.from({ length: 120 }, () => ({
+        x: width / 2,
+        y: height + 20,
+        vx: (Math.random() - 0.5) * 16,
+        vy: -Math.random() * 16 - 12,
+        size: Math.random() * 6 + 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 12
+      }));
+      
+      function update() {
+        ctx.clearRect(0, 0, width, height);
+        let active = false;
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.38; // gravity
+          p.rotation += p.rotationSpeed;
+          
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation * Math.PI / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+          
+          if (p.y < height + 60) active = true;
+        });
+        
+        if (active) {
+          requestAnimationFrame(update);
+        } else {
+          canvas.remove();
+        }
+      }
+      
+      update();
+    }
+
+    // Dopamine Floating XP bubble pop
+    function spawnXpBurst(text) {
+      if (localStorage.getItem('futrix_motion') === 'reduced') return;
+
+      const wrap = document.getElementById('flashcardWrap');
+      const rect = wrap.getBoundingClientRect();
+      
+      const el = document.createElement('div');
+      el.className = 'xp-burst';
+      el.textContent = text;
+      el.style.left = (rect.width / 2) + 'px';
+      el.style.top = (rect.height / 2) + 'px';
+      
+      wrap.appendChild(el);
+      setTimeout(() => el.remove(), 1000);
+    }
+
+    // Local Session Check
+    const user = JSON.parse(sessionStorage.getItem('futrix_user') || '{}');
+    if (!user.name || user.role !== 'student') {
+      window.location.href = '/features/auth/login.html';
+    }
+
+    document.getElementById('profileName').textContent = user.name || 'Futrix Competitor';
+    function loadAvatar() {
+      const avatarData = localStorage.getItem('futrix_avatar_' + user.id);
+      const profileInitial = document.getElementById('profileInitial');
+      if (profileInitial) {
+        if (avatarData) {
+          profileInitial.textContent = '';
+          profileInitial.style.backgroundImage = `url(${avatarData})`;
+          profileInitial.style.backgroundSize = 'cover';
+          profileInitial.style.backgroundPosition = 'center';
+        } else {
+          profileInitial.textContent = (user.name || 'C').charAt(0).toUpperCase();
+          profileInitial.style.backgroundImage = 'none';
+        }
+      }
+    }
+    loadAvatar();
+    document.getElementById('sidebarXP').textContent = parseFloat(user.xp || 0).toLocaleString();
+
+    // League Widget
+    function updateLeagueWidget() {
+      const currentXp = parseFloat(user.xp || 0);
+      const th = window.FUTRIX_CONFIG.LEAGUE_THRESHOLDS;
+      let badge = '🟫';
+      let league = 'Bronze League';
+      let progressPercent = 0;
+
+      if (currentXp >= th.Legend) {
+        badge = '👑';
+        league = 'Legend League';
+        progressPercent = 100;
+      } else if (currentXp >= th.Diamond) {
+        badge = '🔷';
+        league = 'Diamond League';
+        progressPercent = ((currentXp - th.Diamond) / (th.Legend - th.Diamond)) * 100;
+      } else if (currentXp >= th.Gold) {
+        badge = '🟨';
+        league = 'Gold League';
+        progressPercent = ((currentXp - th.Gold) / (th.Diamond - th.Gold)) * 100;
+      } else if (currentXp >= th.Silver) {
+        badge = '⬜';
+        league = 'Silver League';
+        progressPercent = ((currentXp - th.Silver) / (th.Gold - th.Silver)) * 100;
+      } else {
+        progressPercent = (currentXp / th.Silver) * 100;
+      }
+
+      document.getElementById('leagueName').textContent = badge + " " + league;
+      document.getElementById('leagueBarFill').style.width = Math.min(100, Math.max(0, progressPercent)) + '%';
+    }
+    updateLeagueWidget();
+
+    // Welcome Assessment questions
+    const ASSESSMENT_QUESTIONS = [
+      { question: "What is the SI unit of electric charge?", opts: ["Ampere", "Volt", "Coulomb", "Ohm"], correct: "Coulomb", subject: "Physics" },
+      { question: "Which law states that current is directly proportional to voltage?", opts: ["Ohm's Law", "Coulomb's Law", "Faraday's Law", "Newton's Law"], correct: "Ohm's Law", subject: "Physics" },
+      { question: "What is the escape velocity of Earth?", opts: ["11.2 km/s", "8.2 km/s", "5.6 km/s", "2.4 km/s"], correct: "11.2 km/s", subject: "Physics" },
+      { question: "What type of lens is used to correct myopia?", opts: ["Convex", "Concave", "Cylindrical", "Bifocal"], correct: "Concave", subject: "Physics" },
+      { question: "What is the approximate value of gravitational acceleration g?", opts: ["9.8 m/s^2", "8.9 m/s^2", "11.2 m/s^2", "7.4 m/s^2"], correct: "9.8 m/s^2", subject: "Physics" },
+      { question: "What is the pH of pure water?", opts: ["5", "7", "9", "12"], correct: "7", subject: "Chemistry" },
+      { question: "Which gas is commonly known as laughing gas?", opts: ["Carbon dioxide", "Nitrous oxide", "Methane", "Sulphur dioxide"], correct: "Nitrous oxide", subject: "Chemistry" },
+      { question: "What is the chemical formula of baking soda?", opts: ["Na2CO3", "NaHCO3", "NaOH", "NaCl"], correct: "NaHCO3", subject: "Chemistry" },
+      { question: "Which element has the atomic number 1?", opts: ["Helium", "Hydrogen", "Lithium", "Oxygen"], correct: "Hydrogen", subject: "Chemistry" },
+      { question: "What type of bond is formed by sharing of electron pairs?", opts: ["Ionic", "Covalent", "Hydrogen", "Metallic"], correct: "Covalent", subject: "Chemistry" },
+      { question: "Which cell organelle is the powerhouse of the cell?", opts: ["Nucleus", "Ribosome", "Mitochondria", "Lysosome"], correct: "Mitochondria", subject: "Biology" },
+      { question: "How many chromosomes do typical human somatic cells have?", opts: ["23", "46", "48", "52"], correct: "46", subject: "Biology" },
+      { question: "Which pigment gives plants their green color?", opts: ["Hemoglobin", "Carotene", "Chlorophyll", "Xanthophyll"], correct: "Chlorophyll", subject: "Biology" },
+      { question: "What is the main structural component of plant cell walls?", opts: ["Peptidoglycan", "Cellulose", "Chitin", "Starch"], correct: "Cellulose", subject: "Biology" },
+      { question: "Which blood group is known as the universal donor?", opts: ["A positive", "B negative", "O negative", "AB positive"], correct: "O negative", subject: "Biology" }
+    ];
+
+    let currentAssessIdx = 0;
+    let assessScore = 0;
+
+    window.dismissAssessment = function() {
+      document.getElementById('assessmentOverlay').classList.remove('show');
+      localStorage.setItem('diagnostic_dismissed', 'true');
+    }
+
+    async function initGoalsAndAssessment() {
+      if (localStorage.getItem('diagnostic_dismissed') === 'true') {
+        document.getElementById('assessmentOverlay').classList.remove('show');
+      }
+      try {
+        const goal = await FUTRIX_API.getUserGoals(user.id);
+        if (goal) {
+          document.getElementById('targetExam').value = goal.target_exam || 'NEET 2027';
+          document.getElementById('targetScore').value = String(goal.target_score || '550');
+          if (goal.badge_awarded) {
+            document.getElementById('badgeContainer').style.display = 'block';
+          }
+        } else {
+          if (localStorage.getItem('diagnostic_dismissed') !== 'true') {
+            document.getElementById('assessmentOverlay').classList.add('show');
+            loadAssessmentQuestion(0);
+          }
+        }
+      } catch (err) {
+        console.error('Error initializing goals:', err);
+      }
+    }
+
+    function loadAssessmentQuestion(idx) {
+      if (idx >= ASSESSMENT_QUESTIONS.length) {
+        finishAssessment();
+        return;
+      }
+      currentAssessIdx = idx;
+      const q = ASSESSMENT_QUESTIONS[idx];
+      document.getElementById('assessQNum').textContent = `Question ${idx + 1} of 15 (${q.subject})`;
+      document.getElementById('assessQText').textContent = q.question;
+      
+      const fill = document.getElementById('assessProgressFill');
+      fill.style.width = ((idx / ASSESSMENT_QUESTIONS.length) * 100) + '%';
+
+      const optGrid = document.getElementById('assessOptGrid');
+      optGrid.innerHTML = '';
+      q.opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-opt';
+        btn.textContent = opt;
+        btn.onclick = () => {
+          if (opt === q.correct) {
+            assessScore++;
+            playSynthBeep(650, 'triangle');
+          } else {
+            playSynthBeep(250, 'sawtooth');
+          }
+          loadAssessmentQuestion(idx + 1);
+        };
+        optGrid.appendChild(btn);
+      });
+    }
+
+    async function finishAssessment() {
+      document.getElementById('assessmentOverlay').classList.remove('show');
+      localStorage.setItem('diagnostic_dismissed', 'true');
+      
+      let track = 'Biology Core Boost';
+      if (assessScore >= 12) {
+        track = 'Chemistry & Physics Drills';
+      }
+
+      const predictedScore = Math.round((assessScore / 15) * 720);
+      const targetExam = 'NEET 2027';
+      const targetScore = predictedScore >= 600 ? 700 : 550;
+
+      // Celebrate Victory Confetti
+      triggerConfetti();
+      playSynthBeep(880, 'sine');
+
+      try {
+        await FUTRIX_API.saveUserGoals(user.id, {
+          target_exam: targetExam,
+          target_score: targetScore,
+          assessment_score: assessScore,
+          recommended_track: track,
+          badge_awarded: true
+        });
+        alert(`Diagnostic Complete! 🎉\nEstimated Score: ${predictedScore}/720\nRecommended track: ${track}\n"Founding Competitor" Badge Unlocked!`);
+        location.reload();
+      } catch (err) {
+        alert('Failed to save assessment goal: ' + err.message);
+      }
+    }
+
+    document.getElementById('btnSaveGoal').onclick = async () => {
+      const exam = document.getElementById('targetExam').value;
+      const score = parseInt(document.getElementById('targetScore').value);
+
+      try {
+        await FUTRIX_API.saveUserGoals(user.id, {
+          target_exam: exam,
+          target_score: score
+        });
+        playSynthBeep(520, 'sine');
+        alert('Goal configuration updated successfully!');
+      } catch (err) {
+        alert('Failed to save goals: ' + err.message);
+      }
+    };
+
+    // ── FLASHCARD 3D CONTROLLER ──
+    const flashcardWrap = document.getElementById('flashcardWrap');
+    const flashcard = document.getElementById('flashcard');
+    let isFlipped = false;
+
+    flashcardWrap.onclick = () => {
+      isFlipped = !isFlipped;
+      flashcard.classList.toggle('flipped', isFlipped);
+      playSynthBeep(320, 'sine');
+    };
+
+    let dueCards = [];
+    let currentCardIndex = 0;
+
+    async function getAuthToken() {
+      const user = JSON.parse(sessionStorage.getItem('futrix_user') || '{}');
+      if (user.id === '99999999-9999-9999-9999-999999999999') {
+        return 'mock-student-token';
+      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        return session ? session.access_token : '';
+      } catch (_) {
+        return '';
+      }
+    }
+
+    async function loadSpacedRevisionQueue() {
+      try {
+        const listEl = document.getElementById('queueList');
+        listEl.innerHTML = `
+          <div class="skeleton-loader" style="height: 60px; border-radius: 10px; margin-bottom: 0.5rem;"></div>
+          <div class="skeleton-loader" style="height: 60px; border-radius: 10px; margin-bottom: 0.5rem;"></div>
+        `;
+
+        const token = await getAuthToken();
+        const statsRes = await fetch('/api/memory/dashboard', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const dashboard = await statsRes.json();
+        
+        updateMemoryMeter(dashboard.retentionRate);
+        document.getElementById('streakCount').textContent = `${dashboard.dailyStreak || 1} Day` + (dashboard.dailyStreak > 1 ? 's' : '');
+
+        const queue = await FUTRIX_API.getRevisionQueue(user.id);
+        listEl.innerHTML = '';
+
+        if (!queue || queue.length === 0) {
+          listEl.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">📭</div>
+              <div class="empty-title">Queue Catch-up Complete!</div>
+              <div class="empty-desc">All memory scheduled tasks are completed. Tap below to populate default deck.</div>
+            </div>
+          `;
+          document.getElementById('btnImportCards').style.display = 'block';
+          document.getElementById('cardFrontText').textContent = 'Flashcard queue is empty. Click button below to populate default deck.';
+          return;
+        }
+
+        dueCards = queue;
+        document.getElementById('btnImportCards').style.display = 'none';
+
+        currentCardIndex = 0;
+        displayCurrentCard();
+
+        queue.forEach(item => {
+          const cardTitle = item.flashcards ? item.flashcards.title : (item.question_text || 'Revision Item');
+          const subject = item.flashcards ? item.flashcards.category : (item.subject || 'General');
+          
+          const div = document.createElement('div');
+          div.className = 'queue-item';
+          div.innerHTML = `
+            <div class="queue-info">
+              <span class="queue-item-title">${cardTitle}</span>
+              <span class="queue-item-desc">Next: ${new Date(item.next_revision_at).toLocaleDateString()}</span>
+            </div>
+            <span class="queue-item-tag">${subject}</span>
+          `;
+          listEl.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Error loading spaced revision queue:', err);
+      }
+    }
+
+    function displayCurrentCard() {
+      const confRow = document.getElementById('confidenceRow');
+      if (dueCards.length === 0 || currentCardIndex >= dueCards.length) {
+        document.getElementById('cardFrontText').textContent = '🎉 All caught up! No more Memory Lab tasks due today.';
+        document.getElementById('cardBackText').textContent = 'Good job! Check back tomorrow for next schedules.';
+        document.getElementById('cardCategory').textContent = 'COMPLETED';
+        document.getElementById('cardType').textContent = 'SUCCESS';
+        if (confRow) confRow.style.display = 'none';
+        return;
+      }
+
+      const item = dueCards[currentCardIndex];
+      const card = item.flashcards;
+
+      document.getElementById('cardCategory').textContent = card ? card.category : (item.subject || 'General');
+      document.getElementById('cardType').textContent = card ? card.type : 'Mistake';
+      document.getElementById('cardFrontText').textContent = card ? card.front_content : item.question_text;
+      document.getElementById('cardBackText').textContent = card ? card.back_content : `Correct Answer: ${item.correct_answer}`;
+      
+      isFlipped = false;
+      if (flashcard) {
+        flashcard.classList.remove('flipped');
+      }
+      if (confRow) {
+        confRow.style.display = 'flex';
+      }
+    }
+
+    document.getElementById('btnImportCards').onclick = async () => {
+      try {
+        const cards = await FUTRIX_API.getFlashcards(20);
+        if (cards && cards.length > 0) {
+          for (const card of cards) {
+            await FUTRIX_API.addRevisionQueueCard({
+              user_id: user.id,
+              card_id: card.id,
+              interval_day: 1,
+              next_revision_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            });
+          }
+          playSynthBeep(520, 'sine');
+          alert('Seeded default flashcards into your Memory Lab queue!');
+          loadSpacedRevisionQueue();
+        }
+      } catch (err) {
+        alert('Failed to seed flashcards: ' + err.message);
+      }
+    };
+
+    // Spacing rate logic
+    async function rateCard(rating) {
+      if (dueCards.length === 0 || currentCardIndex >= dueCards.length) return;
+
+      const item = dueCards[currentCardIndex];
+      const token = await getAuthToken();
+
+      // Trigger micro-interaction burst and synth sound
+      if (rating === 'easy') {
+        spawnXpBurst('+15 XP');
+        playSynthBeep(660, 'sine');
+      } else if (rating === 'medium') {
+        spawnXpBurst('+10 XP');
+        playSynthBeep(520, 'sine');
+      } else {
+        spawnXpBurst('+5 XP');
+        playSynthBeep(320, 'sine');
+      }
+
+      // Optimistic glass skeleton loading frames
+      document.getElementById('flashcard-front-face').classList.add('skeleton-loader');
+      document.getElementById('flashcard-back-face').classList.add('skeleton-loader');
+
+      try {
+        const res = await fetch('/api/memory/revision', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            queueId: item.id,
+            rating: rating
+          })
+        });
+
+        if (!res.ok) throw new Error('Rating failed');
+        
+        currentCardIndex++;
+        displayCurrentCard();
+        loadSpacedRevisionQueue();
+      } catch (err) {
+        alert('Failed to rate card: ' + err.message);
+      } finally {
+        document.getElementById('flashcard-front-face').classList.remove('skeleton-loader');
+        document.getElementById('flashcard-back-face').classList.remove('skeleton-loader');
+      }
+    }
+
+    // Circular progress count-up
+    function updateMemoryMeter(score) {
+      const val = score || 0;
+      const valueEl = document.getElementById('memoryValue');
+      
+      let start = 0;
+      const duration = 800; // ms
+      const startTime = performance.now();
+      
+      function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = progress * (2 - progress);
+        const currentVal = Math.round(ease * val);
+        
+        valueEl.textContent = currentVal + '%';
+        document.getElementById('memoryMeter').style.background = `conic-gradient(var(--success-color) ${currentVal}%, rgba(255,255,255,0.05) ${currentVal}%)`;
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    // Load Mistake Notebook
+    async function loadMistakeNotebook() {
+      try {
+        const mistakeList = document.getElementById('mistakeList');
+        const wrongQuestions = [
+          { question: "What is the escape velocity of Earth?", answer: "11.2 km/s", subject: "Physics" },
+          { question: "Which pigment gives plants their green color?", answer: "Chlorophyll", subject: "Biology" }
+        ];
+
+        mistakeList.innerHTML = '';
+        wrongQuestions.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'mistake-item';
+          div.setAttribute('data-searchable', (item.question + ' ' + item.answer + ' ' + item.subject).toLowerCase());
+          div.innerHTML = `
+            <div class="mistake-q">${item.question}</div>
+            <div class="mistake-ans" style="display: block;">Correct Answer: ${item.answer}</div>
+          `;
+          mistakeList.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Error loading mistake notebook:', err);
+      }
+    }
+
+    // Global instant search
+    function filterMemoryDashboard() {
+      const query = document.getElementById('global-search').value.toLowerCase().trim();
+      
+      // Filter Spaced Revision Queue
+      const queueItems = document.querySelectorAll('#queueList .queue-item');
+      let visibleQueueCount = 0;
+      queueItems.forEach(item => {
+        const title = item.querySelector('.queue-item-title').textContent.toLowerCase();
+        const tag = item.querySelector('.queue-item-tag').textContent.toLowerCase();
+        if (title.includes(query) || tag.includes(query)) {
+          item.style.display = 'flex';
+          visibleQueueCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      // Filter Mistake Notebook
+      const mistakeItems = document.querySelectorAll('#mistakeList .mistake-item');
+      let visibleMistakeCount = 0;
+      mistakeItems.forEach(item => {
+        const searchable = item.getAttribute('data-searchable') || '';
+        if (searchable.includes(query)) {
+          item.style.display = 'block';
+          visibleMistakeCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      // Show search no matches
+      const qList = document.getElementById('queueList');
+      if (visibleQueueCount === 0 && queueItems.length > 0) {
+        let noResults = document.getElementById('queue-search-no-results');
+        if (!noResults) {
+          noResults = document.createElement('div');
+          noResults.id = 'queue-search-no-results';
+          noResults.className = 'empty-state';
+          noResults.style.padding = '1rem';
+          noResults.innerHTML = `
+            <div class="empty-icon" style="font-size:1.5rem; margin-bottom:0.25rem;">🔍</div>
+            <div class="empty-title" style="font-size:0.8rem;">No queue matches</div>
+          `;
+          qList.appendChild(noResults);
+        }
+      } else {
+        const noResults = document.getElementById('queue-search-no-results');
+        if (noResults) noResults.remove();
+      }
+    }
+
+    // Load Community Stats
+    async function loadCommunityStats() {
+      try {
+        const attempts = await FUTRIX_API.getAllAttemptsSummary();
+        let solved = 0;
+        let completedTests = 0;
+        if (attempts) {
+          completedTests = attempts.length;
+          attempts.forEach(a => {
+            solved += (parseInt(a.correct_answers || 0) + parseInt(a.wrong_answers || 0));
+          });
+        }
+
+        const profiles = await FUTRIX_API.getAllProfilesXp();
+        let totalXp = 0;
+        if (profiles) {
+          profiles.forEach(p => {
+            totalXp += parseFloat(p.xp_balance || 0);
+          });
+        }
+
+        document.getElementById('commQuestions').textContent = (solved + 24800).toLocaleString();
+        document.getElementById('commTests').textContent = (completedTests + 1200).toLocaleString();
+        document.getElementById('commXP').textContent = (Math.round(totalXp) + 480000).toLocaleString() + ' XP';
+      } catch (err) {
+        console.error('Error loading community stats:', err);
+      }
+    }
+
+    async function generateMnemonicForCurrentCard() {
+      if (dueCards.length === 0 || currentCardIndex >= dueCards.length) {
+        alert('No active flashcard loaded.');
+        return;
+      }
+      const item = dueCards[currentCardIndex];
+      const card = item.flashcards;
+      const title = card ? card.title : (item.question_text || 'Concept');
+      const subject = card ? card.category : (item.subject || 'General');
+      
+      const query = `Generate a smart, memorable educational mnemonic to help me remember this concept: "${title}". Details: "${card ? card.back_content : item.explanation || ''}". Make it interactive and easy to recall.`;
+      
+      if (window.triggerMentorAi) {
+        window.triggerMentorAi(query, 'mnemonic', subject, '');
+      } else {
+        alert('AI Mentor Widget is not loaded.');
+      }
+    }
+
+    async function generateMemoryTrickForCurrentCard() {
+      if (dueCards.length === 0 || currentCardIndex >= dueCards.length) {
+        alert('No active flashcard loaded.');
+        return;
+      }
+      const item = dueCards[currentCardIndex];
+      const card = item.flashcards;
+      const title = card ? card.title : (item.question_text || 'Concept');
+      const subject = card ? card.category : (item.subject || 'General');
+      
+      const query = `Suggest an interactive memory trick, association, or visual cue to help me remember the formula/fact: "${title}". Details: "${card ? card.back_content : item.explanation || ''}". Make it short, crisp, and easy to retain.`;
+      
+      if (window.triggerMentorAi) {
+        window.triggerShotMentorAi(query, 'memory_trick', subject, '');
+      } else {
+        alert('AI Mentor Widget is not loaded.');
+      }
+    }
+
+    // ══════════════ PERSONAL MEMORY CARDS LOGIC ══════════════
+    let activeMemoryTab = 'smart';
+    let personalFolders = [];
+    let personalCards = [];
+    let personalQueue = [];
+    let studyQueue = [];
+    let studyIndex = 0;
+    let activeStudyDeck = null;
+    let isPersonalFlipped = false;
+    let personalBrowseMode = false;
+    let aiDrafts = [];
+
+    // Synthesized Audio System
+    let bgMusicInterval = null;
+    let bgMusicCtx = null;
+    
+    function playAudioFx(type) {
+      if (!document.getElementById('audioPackToggle')?.checked) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (type === 'success') {
+          // Double chime
+          const now = audioCtx.currentTime;
+          const osc1 = audioCtx.createOscillator();
+          const osc2 = audioCtx.createOscillator();
+          const gain1 = audioCtx.createGain();
+          const gain2 = audioCtx.createGain();
+          
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(523.25, now); // C5
+          gain1.gain.setValueAtTime(0.04, now);
+          gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+          osc1.connect(gain1);
+          gain1.connect(audioCtx.destination);
+          
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(659.25, now + 0.12); // E5
+          gain2.gain.setValueAtTime(0.04, now + 0.12);
+          gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+          osc2.connect(gain2);
+          gain2.connect(audioCtx.destination);
+          
+          osc1.start(now);
+          osc1.stop(now + 0.3);
+          osc2.start(now + 0.12);
+          osc2.stop(now + 0.42);
+        } else if (type === 'again') {
+          // Descending buzz sweep
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.linearRampToValueAtTime(110, now + 0.35);
+          gain.gain.setValueAtTime(0.02, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(now + 0.35);
+        } else if (type === 'flip') {
+          // Click pop
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+          gain.gain.setValueAtTime(0.03, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(now + 0.08);
+        } else if (type === 'victory') {
+          // Ascending major arpeggio fanfare
+          const now = audioCtx.currentTime;
+          const notes = [261.63, 329.63, 392.00, 523.25, 659.25]; // C4, E4, G4, C5, E5
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+            gain.gain.setValueAtTime(0.04, now + idx * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.1 + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.1);
+            osc.stop(now + idx * 0.1 + 0.4);
+          });
+        }
+      } catch (e) {
+        console.warn('Audio synth failed:', e);
+      }
+    }
+
+    window.toggleBgMusic = function() {
+      const enabled = document.getElementById('bgMusicToggle')?.checked;
+      const volRow = document.getElementById('bgmVolumeRow');
+      if (volRow) volRow.style.display = enabled ? 'flex' : 'none';
+      if (enabled) {
+        startBgMusic();
+      } else {
+        stopBgMusic();
+      }
+    }
+
+    function startBgMusic() {
+      if (bgMusicInterval) return;
+      try {
+        bgMusicCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const chords = [
+          [261.63, 329.63, 392.00], // C major
+          [349.23, 440.00, 523.25], // F major
+          [392.00, 493.88, 587.33], // G major
+          [329.63, 392.00, 493.88]  // E minor
+        ];
+        let chordIdx = 0;
+        bgMusicInterval = setInterval(() => {
+          if (!document.getElementById('bgMusicToggle')?.checked) return;
+          const volume = parseFloat(document.getElementById('bgMusicVolume')?.value || 0.3) * 0.02;
+          const now = bgMusicCtx.currentTime;
+          const notes = chords[chordIdx];
+          notes.forEach((freq, i) => {
+            const osc = bgMusicCtx.createOscillator();
+            const gain = bgMusicCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + i * 0.1);
+            gain.gain.setValueAtTime(volume, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.2);
+            osc.connect(gain);
+            gain.connect(bgMusicCtx.destination);
+            osc.start(now + i * 0.1);
+            osc.stop(now + 3.2);
+          });
+          chordIdx = (chordIdx + 1) % chords.length;
+        }, 4000);
+      } catch (e) {
+        console.warn('BGM initialization failed:', e);
+      }
+    }
+
+    function stopBgMusic() {
+      if (bgMusicInterval) {
+        clearInterval(bgMusicInterval);
+        bgMusicInterval = null;
+      }
+    }
+
+    window.updateBgmVolume = function() {
+      // Handled dynamically on next chord trigger
+    }
+
+    // Confetti particles drawing
+    function triggerConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      let particles = [];
+      for (let i = 0; i < 80; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2 + 100,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 0.7) * 16,
+          color: `hsl(${Math.random() * 360}, 90%, 60%)`,
+          size: Math.random() * 8 + 4,
+          alpha: 1
+        });
+      }
+      
+      function frame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.35; // gravity
+          p.alpha -= 0.015;
+          if (p.alpha > 0) {
+            active = true;
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+            ctx.restore();
+          }
+        });
+        if (active) requestAnimationFrame(frame);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      frame();
+    }
+
+    let platformQueue = [];
+
+    async function loadFolders() {
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/memory/personal/folders', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        personalFolders = await res.json();
+        
+        const selParent = document.getElementById('newFolderParent');
+        const selForm = document.getElementById('cardFormFolder');
+        const selScope = document.getElementById('selFolderScope');
+        
+        selParent.innerHTML = '<option value="">📁 None (Root Deck)</option>';
+        selForm.innerHTML = '<option value="">📁 None (Unsorted)</option>';
+        
+        // Retain deck scope selection
+        const prevScope = selScope ? selScope.value : '';
+        if (selScope) {
+          selScope.innerHTML = '<option value="">📁 All Mastery Decks</option>';
+          selScope.innerHTML += '<option value="default">📁 Unsorted Cards</option>';
+        }
+        
+        personalFolders.forEach(folder => {
+          selParent.innerHTML += `<option value="${folder.id}">📁 ${folder.name}</option>`;
+          selForm.innerHTML += `<option value="${folder.id}">📁 ${folder.name}</option>`;
+          if (selScope) {
+            selScope.innerHTML += `<option value="${folder.id}">📁 ${folder.name}</option>`;
+          }
+        });
+        if (selScope) selScope.value = prevScope;
+      } catch (err) {
+        console.error('Error loading folders:', err);
+      }
+    }
+
+    async function loadPersonalCards() {
+      try {
+        const token = await getAuthToken();
+        const searchVal = document.getElementById('global-search').value;
+        
+        let url = '/api/memory/personal/cards?';
+        if (searchVal) url += `search=${encodeURIComponent(searchVal)}&`;
+        
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        personalCards = await res.json();
+        
+        // Fetch active revision queue to determine counts
+        const queueData = await FUTRIX_API.getRevisionQueue(user.id) || [];
+        personalQueue = queueData.filter(item => item.personal_card_id !== null);
+        platformQueue = queueData.filter(item => item.personal_card_id === null);
+
+        if (!personalBrowseMode) {
+          renderPersonalDecks();
+        } else {
+          renderPersonalCards();
+        }
+      } catch (err) {
+        console.error('Error loading personal cards:', err);
+      }
+    }
+
+    function renderPersonalDecks() {
+      document.getElementById('personalDecksView').style.display = 'flex';
+      document.getElementById('personalStudyView').style.display = 'none';
+      document.getElementById('personalBrowseView').style.display = 'none';
+
+      const container = document.getElementById('decksListContainer');
+      container.innerHTML = '';
+
+      const counts = calculateDeckCounts();
+
+      // Render Smart / Platform Revisions Deck at the top
+      const smartDeck = counts['smart'];
+      if (smartDeck.total > 0) {
+        container.appendChild(createDeckItemElement('🧠 Platform Revisions (Smart Deck)', 'smart', smartDeck));
+      }
+
+      // Render Unsorted cards deck
+      const unsorted = counts['default'];
+      if (unsorted.total > 0) {
+        container.appendChild(createDeckItemElement('Default / Unsorted Cards', 'default', unsorted));
+      }
+
+      // Render folder decks
+      personalFolders.forEach(folder => {
+        const folderCounts = counts[folder.id] || { new: 0, learn: 0, due: 0, total: 0 };
+        container.appendChild(createDeckItemElement(folder.name, folder.id, folderCounts));
+      });
+
+      if (container.children.length === 0 && smartDeck.total === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 2rem; border: 1px dashed var(--border-color); border-radius: 12px; background: rgba(255,255,255,0.01);">
+            <div class="empty-icon">📇</div>
+            <div class="empty-title" style="margin-top:0.5rem; font-weight:700;">No Decks Available</div>
+            <div class="empty-desc" style="font-size:0.75rem; color:var(--text-muted-color); margin-top:0.25rem;">Create a deck or add cards to start.</div>
+          </div>
+        `;
+      }
+    }
+
+    function createDeckItemElement(name, deckId, info) {
+      const div = document.createElement('div');
+      div.className = 'deck-item';
+      const isSystemDeck = deckId === 'smart' || deckId === 'default';
+      div.innerHTML = `
+        <div class="deck-info">
+          <span class="deck-name" style="cursor: pointer;" onclick="browseDeckCards('${deckId}')" title="Click to browse cards in this deck">📁 ${name}</span>
+          <span class="deck-meta">Total Cards: ${info.total}</span>
+        </div>
+        <div class="deck-badges">
+          ${info.new > 0 ? `<span class="deck-badge blue" title="New Cards">${info.new}</span>` : ''}
+          ${info.learn > 0 ? `<span class="deck-badge red" title="Learning Cards">${info.learn}</span>` : ''}
+          ${info.due > 0 ? `<span class="deck-badge green" title="Due Reviews">${info.due}</span>` : ''}
+          <button onclick="startStudyDeck('${deckId}')" style="margin-left: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.75rem; font-weight: 800; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--primary-color), var(--teal-color)); color:#03050a; cursor:pointer;">⚡ Study</button>
+          ${!isSystemDeck ? `
+            <button onclick="openEditFolderModal('${deckId}')" style="margin-left: 0.25rem; background:transparent; border:none; color:var(--text-muted-color); cursor:pointer; font-size:0.9rem;" title="Edit Deck">✏️</button>
+            <button onclick="deleteFolder('${deckId}')" style="margin-left: 0.25rem; background:transparent; border:none; color:#ff4d4d; cursor:pointer; font-size:0.9rem;" title="Delete Deck">🗑️</button>
+          ` : ''}
+        </div>
+      `;
+      return div;
+    }
+
+    function calculateDeckCounts() {
+      const counts = {};
+      personalFolders.forEach(f => {
+        counts[f.id] = { new: 0, learn: 0, due: 0, total: 0 };
+      });
+      counts['default'] = { new: 0, learn: 0, due: 0, total: 0 };
+      counts['smart'] = { new: 0, learn: 0, due: 0, total: 0 };
+
+      const now = new Date();
+      personalCards.forEach(card => {
+        const fId = card.folder_id || 'default';
+        if (!counts[fId]) {
+          counts[fId] = { new: 0, learn: 0, due: 0, total: 0 };
+        }
+        
+        const rq = personalQueue.find(item => item.personal_card_id === card.id);
+        if (!rq) {
+          counts[fId].new++;
+        } else {
+          const state = rq.card_state || 'new';
+          const isDue = new Date(rq.next_revision_at) <= now;
+          if (state === 'new') counts[fId].new++;
+          else if (state === 'learning' || state === 'relearning') counts[fId].learn++;
+          else if (state === 'review') {
+            if (isDue) counts[fId].due++;
+          }
+        }
+        counts[fId].total++;
+      });
+
+      // Calculate platform revision cards counts
+      platformQueue.forEach(rq => {
+        const state = rq.card_state || 'new';
+        const isDue = new Date(rq.next_revision_at) <= now;
+        if (state === 'new') counts['smart'].new++;
+        else if (state === 'learning' || state === 'relearning') counts['smart'].learn++;
+        else if (state === 'review') {
+          if (isDue) counts['smart'].due++;
+        }
+        counts['smart'].total++;
+      });
+
+      return counts;
+    }
+
+    window.togglePersonalBrowseMode = function(active) {
+      personalBrowseMode = active;
+      if (active) {
+        document.getElementById('personalDecksView').style.display = 'none';
+        document.getElementById('personalStudyView').style.display = 'none';
+        document.getElementById('personalBrowseView').style.display = 'flex';
+        renderPersonalCards();
+      } else {
+        loadPersonalCards();
+      }
+    }
+
+    function renderPersonalCards() {
+      const container = document.getElementById('personalCardsList');
+      container.innerHTML = '';
+      
+      const search = document.getElementById('personalCardsSearch')?.value.toLowerCase() || '';
+      const scope = document.getElementById('selFolderScope')?.value || '';
+      
+      const filtered = personalCards.filter(c => {
+        if (scope === 'default') {
+          if (c.folder_id) return false;
+        } else if (scope) {
+          if (c.folder_id !== scope) return false;
+        }
+        if (!search) return true;
+        return c.question.toLowerCase().includes(search) || c.answer.toLowerCase().includes(search);
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 1.5rem; text-align: center;">
+            <div style="font-size:0.75rem; color:var(--text-muted-color);">No cards found matching filters.</div>
+          </div>
+        `;
+        return;
+      }
+      
+      filtered.forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'panel-card';
+        div.style.padding = '1.2rem';
+        div.style.marginBottom = '0.5rem';
+        div.style.width = '100%';
+        div.style.background = 'rgba(255,255,255,0.02)';
+        div.style.border = `1px solid ${card.is_pinned ? 'var(--primary-color)' : 'var(--border-color)'}`;
+        
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.6rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <span class="queue-item-tag" style="background:rgba(0, 229, 212, 0.1); color:var(--teal-color); font-weight:700;">${card.subject || 'General'}</span>
+              <span style="font-size:0.7rem; color:var(--text-muted-color);">${card.difficulty || 'medium'}</span>
+            </div>
+            <div style="display:flex; gap:0.35rem;">
+              <button onclick="togglePinCard('${card.id}', ${card.is_pinned})" style="background:transparent; border:none; color:${card.is_pinned ? 'var(--primary-color)' : 'var(--text-muted-color)'}; cursor:pointer; font-size:0.85rem;" title="Pin Card">📌</button>
+              <button onclick="duplicateCard('${card.id}')" style="background:transparent; border:none; color:var(--text-muted-color); cursor:pointer; font-size:0.85rem;" title="Duplicate Card">👥</button>
+              <button onclick="openEditCardModal('${card.id}')" style="background:transparent; border:none; color:var(--text-muted-color); cursor:pointer; font-size:0.85rem;" title="Edit Card">✏️</button>
+              <button onclick="deleteCard('${card.id}')" style="background:transparent; border:none; color:#ff4d4d; cursor:pointer; font-size:0.85rem;" title="Delete Card">🗑️</button>
+            </div>
+          </div>
+          <div style="font-family:'Sora',sans-serif; font-size:0.95rem; font-weight:600; color:#fff; margin-bottom:0.4rem;">Q: ${card.question}</div>
+          <div style="font-size:0.85rem; color:var(--success-color); font-weight:500; margin-bottom:0.4rem;">A: ${card.answer}</div>
+          ${card.mnemonic ? `<div style="font-size:0.75rem; background:rgba(255, 169, 77, 0.08); border:1px solid rgba(255, 169, 77, 0.15); padding:0.4rem; border-radius:6px; color:var(--accent-color); margin-top:0.4rem;">💡 Mnemonic: ${card.mnemonic}</div>` : ''}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Spaced Repetition Study Engine (Anki SM-2 Workflow)
+    window.startStudyDeck = function(deckId) {
+      activeStudyDeck = deckId;
+      
+      const deckName = deckId === 'default' ? 'Unsorted Cards' : (personalFolders.find(f => f.id === deckId)?.name || 'Default Deck');
+      document.getElementById('studyDeckBreadcrumb').textContent = `Deck :: ${deckName}`;
+      
+      compileStudyQueue(deckId);
+      
+      if (studyQueue.length === 0) {
+        playAudioFx('victory');
+        alert("Awesome! All cards in this deck are completed for today! 🎉");
+        return;
+      }
+
+      document.getElementById('personalDecksView').style.display = 'none';
+      document.getElementById('personalBrowseView').style.display = 'none';
+      document.getElementById('personalStudyView').style.display = 'flex';
+      
+      studyIndex = 0;
+      showActiveStudyCard();
+    }
+
+    function compileStudyQueue(deckId) {
+      const now = new Date();
+      studyQueue = [];
+
+      if (deckId === 'smart') {
+        platformQueue.forEach(rq => {
+          const state = rq.card_state || 'new';
+          const isDue = new Date(rq.next_revision_at) <= now;
+          
+          const cardObj = {
+            id: rq.id,
+            question: rq.question_text || (rq.flashcards ? rq.flashcards.title : 'Revision Item'),
+            answer: rq.answer_text || (rq.flashcards ? rq.flashcards.back_content : 'No answer provided.'),
+            subject: rq.subject || (rq.flashcards ? rq.flashcards.category : 'General'),
+            difficulty: rq.flashcards ? rq.flashcards.difficulty : 'medium',
+            card_type: rq.flashcards ? rq.flashcards.type : 'Concept',
+            mnemonic: rq.flashcards ? rq.flashcards.mnemonic : null,
+            explanation: rq.flashcards ? rq.flashcards.explanation : null
+          };
+
+          if (state === 'new') {
+            studyQueue.push({ card: cardObj, queueItem: rq, state: 'new', ord: 2 });
+          } else if (state === 'learning' || state === 'relearning') {
+            studyQueue.push({ card: cardObj, queueItem: rq, state: state, ord: 1 });
+          } else if (state === 'review' && isDue) {
+            studyQueue.push({ card: cardObj, queueItem: rq, state: 'review', ord: 0 });
+          }
+        });
+      } else {
+        const deckCards = personalCards.filter(c => deckId === 'default' ? !c.folder_id : c.folder_id === deckId);
+        deckCards.forEach(c => {
+          const rq = personalQueue.find(item => item.personal_card_id === c.id);
+          if (!rq) {
+            studyQueue.push({ card: c, queueItem: null, state: 'new', ord: 2 });
+          } else {
+            const state = rq.card_state || 'new';
+            const isDue = new Date(rq.next_revision_at) <= now;
+            if (state === 'new') {
+              studyQueue.push({ card: c, queueItem: rq, state: 'new', ord: 2 });
+            } else if (state === 'learning' || state === 'relearning') {
+              studyQueue.push({ card: c, queueItem: rq, state: state, ord: 1 });
+            } else if (state === 'review' && isDue) {
+              studyQueue.push({ card: c, queueItem: rq, state: 'review', ord: 0 });
+            }
+          }
+        });
+      }
+      studyQueue.sort((a, b) => a.ord - b.ord);
+    }
+
+    window.flashcardVoiceEnabled = true;
+
+    window.toggleFlashcardVoice = function() {
+      window.flashcardVoiceEnabled = !window.flashcardVoiceEnabled;
+      const btn = document.getElementById('btnFlashcardVoiceToggle');
+      if (btn) {
+        btn.innerHTML = window.flashcardVoiceEnabled ? '🔊 Voice: On' : '🔇 Voice: Off';
+        btn.style.borderColor = window.flashcardVoiceEnabled ? 'var(--teal-color)' : 'var(--border-color)';
+        btn.style.color = window.flashcardVoiceEnabled ? 'var(--teal-color)' : 'var(--text-muted-color)';
+        btn.style.background = window.flashcardVoiceEnabled ? 'rgba(0, 229, 212, 0.05)' : 'rgba(255,255,255,0.02)';
+      }
+      if (!window.flashcardVoiceEnabled) {
+        window.speechSynthesis.cancel();
+      }
+    };
+
+    function findIndianMaleVoice(lang) {
+      const voices = window.speechSynthesis.getVoices();
+      const maleKeywords = ['madhur', 'prabhat', 'ravi', 'rishi', 'male', 'guy', 'man'];
+      
+      let langVoices = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(lang.toLowerCase().slice(0, 2)));
+      
+      if (lang.toLowerCase().startsWith('en')) {
+        const indianEnglishVoices = voices.filter(v => v.lang.toLowerCase().replace('_', '-').startsWith('en-in'));
+        if (indianEnglishVoices.length > 0) {
+          langVoices = indianEnglishVoices;
+        }
+      }
+      
+      let matchedVoice = langVoices.find(v => {
+        const nameLower = v.name.toLowerCase();
+        return maleKeywords.some(kw => nameLower.includes(kw));
+      });
+      
+      if (matchedVoice) return matchedVoice;
+      if (langVoices.length > 0) return langVoices[0];
+      
+      const indianVoices = voices.filter(v => v.lang.toLowerCase().replace('_', '-').includes('-in'));
+      if (indianVoices.length > 0) return indianVoices[0];
+      
+      return null;
+    }
+
+    function preprocessTextForTTS(text, lang) {
+      if (!text) return "";
+      
+      let clean = text
+        .replace(/<[^>]*>/g, '')
+        .replace(/[\*\_\`\#\-]/g, '')
+        .replace(/\$\$(.*?)\$\$/g, '$1')
+        .replace(/\$(.*?)\$/g, '$1')
+        .replace(/\\text\{(.*?)\}/g, '$1')
+        .replace(/\\vec\{(.*?)\}/g, '$1 vector')
+        .replace(/\\rightarrow/g, 'leads to')
+        .trim();
+      
+      if (lang.startsWith('hi')) {
+        clean = clean.replace(/FUTRIX\s+AI/gi, 'फ्यूट्रिक्स एआई');
+        clean = clean.replace(/Futrix\s+AI/gi, 'फ्यूट्रिक्स एआई');
+        clean = clean.replace(/futrix\s+ai/gi, 'फ्यूट्रिक्स एआई');
+        clean = clean.replace(/FUTRIX/gi, 'फ्यूट्रिक्स');
+        clean = clean.replace(/Futrix/gi, 'फ्यूट्रिक्स');
+        clean = clean.replace(/futrix/gi, 'फ्यूट्रिक्स');
+      } else {
+        clean = clean.replace(/FUTRIX\s+AI/gi, 'Fewtricks AI');
+        clean = clean.replace(/Futrix\s+AI/gi, 'Fewtricks AI');
+        clean = clean.replace(/futrix\s+ai/gi, 'Fewtricks AI');
+        clean = clean.replace(/FUTRIX/gi, 'Fewtricks');
+        clean = clean.replace(/Futrix/gi, 'Fewtricks');
+        clean = clean.replace(/futrix/gi, 'Fewtricks');
+      }
+      return clean;
+    }
+
+    function speakFlashcardText(text) {
+      if (!window.flashcardVoiceEnabled) return;
+      window.speechSynthesis.cancel();
+      if (!text) return;
+      
+      const hasHindi = /[\u0900-\u097F]/.test(text);
+      const langCode = hasHindi ? 'hi-IN' : 'en-IN';
+      
+      const cleanText = preprocessTextForTTS(text, langCode);
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = langCode;
+      
+      const voice = findIndianMaleVoice(langCode);
+      if (voice) {
+        utterance.voice = voice;
+      }
+      
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function showActiveStudyCard() {
+      if (studyQueue.length === 0 || studyIndex >= studyQueue.length) {
+        // Deck finished!
+        triggerConfetti();
+        playAudioFx('victory');
+        
+        document.getElementById('personalCardFrontText').textContent = '🎉 Deck Study Completed!';
+        document.getElementById('personalCardBackText').textContent = 'Amazing work! You have finished all active cards in this deck.';
+        document.getElementById('personalCardSubject').textContent = 'COMPLETE';
+        document.getElementById('personalCardDifficulty').textContent = 'SUCCESS';
+        document.getElementById('personalCardMnemonicBox').style.display = 'none';
+        document.getElementById('personalCardExplanationBox').style.display = 'none';
+        
+        document.getElementById('studyProgressText').textContent = 'Session finished successfully.';
+        
+        document.getElementById('studyControlsRow').innerHTML = `
+          <button onclick="exitStudyMode()" style="width: 100%; padding: 0.9rem; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--primary-color), var(--teal-color)); color: #03050a; font-family: 'Sora', sans-serif; font-weight: 750; font-size: 0.95rem; cursor: pointer;">
+            Return to Deck List
+          </button>
+        `;
+        return;
+      }
+
+      const activeItem = studyQueue[studyIndex];
+      const card = activeItem.card;
+      const rq = activeItem.queueItem;
+
+      // Update progressive counts
+      const counts = { new: 0, learn: 0, review: 0 };
+      studyQueue.slice(studyIndex).forEach(item => {
+        if (item.state === 'new') counts.new++;
+        else if (item.state === 'learning' || item.state === 'relearning') counts.learn++;
+        else counts.review++;
+      });
+      document.getElementById('studyProgressText').innerHTML = `
+        Remaining: <span style="color:#00d2ff; font-weight:800;">${counts.new} New</span>, 
+        <span style="color:#ff4d4d; font-weight:800;">${counts.learn} Learn</span>, 
+        <span style="color:#00e676; font-weight:800;">${counts.review} Review</span>
+      `;
+
+      // Fill Question
+      document.getElementById('personalCardFrontText').textContent = card.question;
+      document.getElementById('personalCardSubject').textContent = card.subject || 'General';
+      document.getElementById('personalCardDifficulty').textContent = card.difficulty || 'medium';
+      
+      speakFlashcardText(card.question);
+      
+      // Fill Answer
+      document.getElementById('personalCardBackText').textContent = card.answer;
+      document.getElementById('personalCardTypeBadge').textContent = card.card_type || 'Basic';
+
+      // Mnemonics & Explanations
+      if (card.mnemonic) {
+        document.getElementById('personalCardMnemonicText').textContent = card.mnemonic;
+        document.getElementById('personalCardMnemonicBox').style.display = 'block';
+      } else {
+        document.getElementById('personalCardMnemonicBox').style.display = 'none';
+      }
+
+      if (card.explanation) {
+        document.getElementById('personalCardExplanationText').textContent = card.explanation;
+        document.getElementById('personalCardExplanationBox').style.display = 'block';
+      } else {
+        document.getElementById('personalCardExplanationBox').style.display = 'none';
+      }
+
+      // Pre-calculate scheduling estimates for buttons
+      calculateAndShowIntervalEstimates(activeItem);
+
+      // Hide back face and reset flip
+      isPersonalFlipped = false;
+      document.getElementById('personalCard').classList.remove('flipped');
+
+      // Setup standard controls
+      document.getElementById('studyControlsRow').innerHTML = `
+        <button id="btnPersonalShowAnswer" onclick="flipPersonalCard()" style="width: 100%; padding: 0.9rem; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--primary-color), var(--teal-color)); color: #03050a; font-family: 'Sora', sans-serif; font-weight: 750; font-size: 0.95rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 229, 212, 0.25);">
+          Show Answer (Space)
+        </button>
+        <div id="personalRatingsRow" style="display: none; width: 100%; gap: 0.4rem;">
+          <button onclick="rateActivePersonalCard('again')" class="btn-confidence" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: rgba(255, 77, 77, 0.05); border: 1px solid rgba(255, 77, 77, 0.25); color: #ff6b6b; border-radius: 10px; cursor: pointer;">
+            <span style="font-size: 0.65rem; opacity: 0.7; font-weight: 600; text-transform: uppercase;">Again</span>
+            <span id="interval-again" style="font-size: 0.8rem; font-weight: 800; margin-top: 0.1rem;">< 1m</span>
+          </button>
+          <button onclick="rateActivePersonalCard('hard')" class="btn-confidence" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: rgba(255, 169, 77, 0.05); border: 1px solid rgba(255, 169, 77, 0.25); color: var(--accent-color); border-radius: 10px; cursor: pointer;">
+            <span style="font-size: 0.65rem; opacity: 0.7; font-weight: 600; text-transform: uppercase;">Hard</span>
+            <span id="interval-hard" style="font-size: 0.8rem; font-weight: 800; margin-top: 0.1rem;">12h</span>
+          </button>
+          <button onclick="rateActivePersonalCard('good')" class="btn-confidence" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: rgba(56, 128, 247, 0.05); border: 1px solid rgba(56, 128, 247, 0.25); color: var(--primary-color); border-radius: 10px; cursor: pointer;">
+            <span style="font-size: 0.65rem; opacity: 0.7; font-weight: 600; text-transform: uppercase;">Good</span>
+            <span id="interval-good" style="font-size: 0.8rem; font-weight: 800; margin-top: 0.1rem;">1d</span>
+          </button>
+          <button onclick="rateActivePersonalCard('easy')" class="btn-confidence" style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: rgba(0, 230, 118, 0.05); border: 1px solid rgba(0, 230, 118, 0.25); color: var(--success-color); border-radius: 10px; cursor: pointer;">
+            <span style="font-size: 0.65rem; opacity: 0.7; font-weight: 600; text-transform: uppercase;">Easy</span>
+            <span id="interval-easy" style="font-size: 0.8rem; font-weight: 800; margin-top: 0.1rem;">4d</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function calculateAndShowIntervalEstimates(item) {
+      const state = item.state || 'new';
+      const rq = item.queueItem;
+      
+      let againText = '< 1m';
+      let hardText = '12h';
+      let goodText = '1d';
+      let easyText = '4d';
+
+      if (state === 'review' && rq) {
+        const interval = rq.interval_day || 1;
+        const ease = rq.ease_factor || 2500;
+        
+        againText = '< 10m';
+        hardText = Math.max(1, Math.round(interval * 1.2)) + 'd';
+        goodText = Math.max(1, Math.round(interval * (ease / 1000))) + 'd';
+        easyText = Math.max(1, Math.round(interval * (ease / 1000) * 1.3)) + 'd';
+      }
+
+      item.intervals = { againText, hardText, goodText, easyText };
+    }
+
+    window.flipPersonalCard = function() {
+      if (studyQueue.length === 0 || studyIndex >= studyQueue.length) return;
+      
+      isPersonalFlipped = !isPersonalFlipped;
+      playAudioFx('flip');
+      
+      const cardEl = document.getElementById('personalCard');
+      cardEl.classList.toggle('flipped', isPersonalFlipped);
+      
+      const btnShow = document.getElementById('btnPersonalShowAnswer');
+      const ratingsRow = document.getElementById('personalRatingsRow');
+      
+      if (isPersonalFlipped) {
+        if (btnShow) btnShow.style.display = 'none';
+        if (ratingsRow) {
+          ratingsRow.style.display = 'flex';
+          
+          const activeItem = studyQueue[studyIndex];
+          if (activeItem.intervals) {
+            document.getElementById('interval-again').textContent = activeItem.intervals.againText;
+            document.getElementById('interval-hard').textContent = activeItem.intervals.hardText;
+            document.getElementById('interval-good').textContent = activeItem.intervals.goodText;
+            document.getElementById('interval-easy').textContent = activeItem.intervals.easyText;
+          }
+          
+          // Speak Answer
+          if (activeItem.card && activeItem.card.answer) {
+            speakFlashcardText(activeItem.card.answer);
+          }
+        }
+      } else {
+        if (btnShow) btnShow.style.display = 'block';
+        if (ratingsRow) ratingsRow.style.display = 'none';
+      }
+    }
+
+    window.rateActivePersonalCard = async function(rating) {
+      if (studyQueue.length === 0 || studyIndex >= studyQueue.length) return;
+      
+      const activeItem = studyQueue[studyIndex];
+      const card = activeItem.card;
+      
+      if (rating === 'again') playAudioFx('again');
+      else playAudioFx('success');
+
+      if (rating === 'again') {
+        spawnXpBurst('+2 XP');
+      } else if (rating === 'hard') {
+        spawnXpBurst('+5 XP');
+      } else if (rating === 'good') {
+        spawnXpBurst('+10 XP');
+      } else if (rating === 'easy') {
+        spawnXpBurst('+15 XP');
+      }
+
+      try {
+        const token = await getAuthToken();
+        
+        let res;
+        if (activeStudyDeck === 'smart') {
+          res = await fetch('/api/memory/revision', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              queueId: activeItem.queueItem.id,
+              rating: rating
+            })
+          });
+        } else {
+          res = await fetch(`/api/memory/personal/cards/${card.id}/review`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ rating })
+          });
+        }
+        
+        if (!res.ok) throw new Error('Failed to submit review');
+        
+        const data = await res.json();
+        
+        if (rating === 'again') {
+          const item = studyQueue.splice(studyIndex, 1)[0];
+          item.state = 'relearning';
+          studyQueue.push(item);
+        } else {
+          studyQueue.splice(studyIndex, 1);
+        }
+
+        showActiveStudyCard();
+        loadSpacedRevisionQueue();
+      } catch (err) {
+        alert('Failed to submit rating: ' + err.message);
+      }
+    }
+
+    window.exitStudyMode = function() {
+      window.speechSynthesis.cancel();
+      activeStudyDeck = null;
+      loadPersonalCards();
+    }
+
+    window.triggerCustomStudyPersonal = function() {
+      if (!activeStudyDeck) return;
+      const deckCards = personalCards.filter(c => activeStudyDeck === 'default' ? !c.folder_id : c.folder_id === activeStudyDeck);
+      
+      studyQueue = [];
+      deckCards.forEach(c => {
+        studyQueue.push({ card: c, queueItem: null, state: 'learning', ord: 1 });
+      });
+      
+      studyIndex = 0;
+      document.getElementById('studyProgressText').textContent = `Custom Study: reviewing all ${studyQueue.length} cards ahead!`;
+      showActiveStudyCard();
+    }
+
+    // Keyboard Shortcuts Listener
+    document.addEventListener('keydown', (e) => {
+      if (document.getElementById('personalStudyView').style.display !== 'flex') return;
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        if (!isPersonalFlipped) {
+          flipPersonalCard();
+        } else {
+          rateActivePersonalCard('good');
+        }
+      } else if (e.key === '1') {
+        if (isPersonalFlipped) rateActivePersonalCard('again');
+      } else if (e.key === '2') {
+        if (isPersonalFlipped) rateActivePersonalCard('hard');
+      } else if (e.key === '3') {
+        if (isPersonalFlipped) rateActivePersonalCard('good');
+      } else if (e.key === '4') {
+        if (isPersonalFlipped) rateActivePersonalCard('easy');
+      } else if (e.key === 'Escape') {
+        exitStudyMode();
+      }
+    });
+
+    window.openNewFolderModal = function() {
+      document.getElementById('editFolderId').value = '';
+      document.getElementById('folderModalTitle').textContent = '📁 Create New Folder';
+      document.getElementById('btnSaveFolder').textContent = 'Create Folder';
+      document.getElementById('newFolderName').value = '';
+      document.getElementById('newFolderParent').value = '';
+      document.getElementById('folderModal').classList.add('show');
+    }
+    window.openEditFolderModal = function(folderId) {
+      const folder = personalFolders.find(f => f.id === folderId);
+      if (!folder) return;
+      document.getElementById('editFolderId').value = folder.id;
+      document.getElementById('folderModalTitle').textContent = '✏️ Edit Deck Folder';
+      document.getElementById('btnSaveFolder').textContent = 'Save Changes';
+      document.getElementById('newFolderName').value = folder.name;
+      document.getElementById('newFolderParent').value = folder.parent_folder_id || '';
+      document.getElementById('folderModal').classList.add('show');
+    }
+    window.closeFolderModal = function() {
+      document.getElementById('folderModal').classList.remove('show');
+    }
+    window.openNewCardModal = function() {
+      document.getElementById('editCardId').value = '';
+      document.getElementById('cardModalTitle').textContent = '➕ Create Study Flashcard';
+      document.getElementById('cardFormQuestion').value = '';
+      document.getElementById('cardFormAnswer').value = '';
+      document.getElementById('cardFormSubject').value = '';
+      document.getElementById('cardFormChapter').value = '';
+      document.getElementById('cardFormMnemonic').value = '';
+      document.getElementById('cardFormDifficulty').value = 'medium';
+      document.getElementById('cardFormPriority').value = 'medium';
+      document.getElementById('cardFormType').value = 'Basic';
+      document.getElementById('cardFormFolder').value = '';
+      document.getElementById('cardModal').classList.add('show');
+    }
+    window.openEditCardModal = function(cardId) {
+      const card = personalCards.find(c => c.id === cardId);
+      if (!card) return;
+      document.getElementById('editCardId').value = card.id;
+      document.getElementById('cardModalTitle').textContent = '✏️ Edit Study Flashcard';
+      document.getElementById('cardFormQuestion').value = card.question;
+      document.getElementById('cardFormAnswer').value = card.answer;
+      document.getElementById('cardFormSubject').value = card.subject || '';
+      document.getElementById('cardFormChapter').value = card.chapter || '';
+      document.getElementById('cardFormMnemonic').value = card.mnemonic || '';
+      document.getElementById('cardFormDifficulty').value = card.difficulty || 'medium';
+      document.getElementById('cardFormPriority').value = card.priority || 'medium';
+      document.getElementById('cardFormType').value = card.card_type || 'Basic';
+      document.getElementById('cardFormFolder').value = card.folder_id || '';
+      document.getElementById('cardModal').classList.add('show');
+    }
+    window.closeCardModal = function() {
+      document.getElementById('cardModal').classList.remove('show');
+    }
+
+    window.savePersonalCard = async function() {
+      const cardId = document.getElementById('editCardId').value;
+      const question = document.getElementById('cardFormQuestion').value.trim();
+      const answer = document.getElementById('cardFormAnswer').value.trim();
+      const subject = document.getElementById('cardFormSubject').value.trim();
+      const chapter = document.getElementById('cardFormChapter').value.trim();
+      const mnemonic = document.getElementById('cardFormMnemonic').value.trim();
+      const difficulty = document.getElementById('cardFormDifficulty').value;
+      const priority = document.getElementById('cardFormPriority').value;
+      const cardType = document.getElementById('cardFormType').value;
+      const folderId = document.getElementById('cardFormFolder').value;
+
+      if (!question || !answer) {
+        alert('Question and Answer are required!');
+        return;
+      }
+
+      try {
+        const token = await getAuthToken();
+        const url = cardId ? `/api/memory/personal/cards/${cardId}` : '/api/memory/personal/cards';
+        const method = cardId ? 'PUT' : 'POST';
+        
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            question, answer, subject, chapter, mnemonic, difficulty, priority, cardType, folderId
+          })
+        });
+
+        if (res.ok) {
+          closeCardModal();
+          await loadPersonalCards();
+          // If we are in active study view, update the current card in studyQueue
+          if (document.getElementById('personalStudyView').style.display === 'flex' && studyQueue.length > 0 && studyIndex < studyQueue.length) {
+            const currentCard = studyQueue[studyIndex].card;
+            const updatedCard = personalCards.find(c => c.id === currentCard.id);
+            if (updatedCard) {
+              studyQueue[studyIndex].card = updatedCard;
+              showActiveStudyCard();
+            }
+          }
+        } else {
+          const err = await res.json();
+          alert('Save failed: ' + (err.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Error saving card:', err);
+      }
+    }
+
+    window.optimizeCardWithAi = async function() {
+      const question = document.getElementById('cardFormQuestion').value.trim();
+      const answer = document.getElementById('cardFormAnswer').value.trim();
+      if (!question || !answer) {
+        alert('Please fill question and answer first.');
+        return;
+      }
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/memory/personal/cards/ai-improve', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ question, answer })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('cardFormQuestion').value = data.improvedQuestion || question;
+          document.getElementById('cardFormAnswer').value = data.improvedAnswer || answer;
+          if (data.mnemonic) document.getElementById('cardFormMnemonic').value = data.mnemonic;
+          playAudioFx('success');
+          alert('Card suggestions generated by AI Tutor! Verify content and click save.');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.aiImproveCardDraft = window.optimizeCardWithAi;
+
+    window.duplicateCard = async function(cardId) {
+      if (!confirm('Duplicate this card?')) return;
+      try {
+        const token = await getAuthToken();
+        await fetch(`/api/memory/personal/cards/${cardId}/duplicate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadPersonalCards();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.deleteCard = async function(cardId) {
+      if (!confirm('Are you sure you want to permanently delete this card?')) return;
+      try {
+        const token = await getAuthToken();
+        const res = await fetch(`/api/memory/personal/cards/${cardId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          await loadPersonalCards();
+          // If we are in active study view and deleted the current card (or any card in queue)
+          if (document.getElementById('personalStudyView').style.display === 'flex') {
+            const index = studyQueue.findIndex(item => item.card.id === cardId);
+            if (index !== -1) {
+              studyQueue.splice(index, 1);
+              if (studyQueue.length === 0) {
+                exitStudyMode();
+              } else {
+                if (studyIndex >= studyQueue.length) {
+                  studyIndex = 0;
+                }
+                showActiveStudyCard();
+              }
+            }
+          }
+        } else {
+          alert('Delete failed');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.editCurrentStudyCard = function() {
+      if (studyQueue.length === 0 || studyIndex >= studyQueue.length) return;
+      const card = studyQueue[studyIndex].card;
+      if (card && card.id) {
+        openEditCardModal(card.id);
+      }
+    }
+
+    window.deleteCurrentStudyCard = function() {
+      if (studyQueue.length === 0 || studyIndex >= studyQueue.length) return;
+      const card = studyQueue[studyIndex].card;
+      if (card && card.id) {
+        deleteCard(card.id);
+      }
+    }
+
+    window.browseDeckCards = function(deckId) {
+      const selScope = document.getElementById('selFolderScope');
+      if (selScope) {
+        selScope.value = deckId;
+      }
+      togglePersonalBrowseMode(true);
+    }
+
+    window.saveNewFolder = async function() {
+      const folderId = document.getElementById('editFolderId').value;
+      const name = document.getElementById('newFolderName').value.trim();
+      const parentId = document.getElementById('newFolderParent').value || null;
+      if (!name) {
+        alert('Please specify a folder name.');
+        return;
+      }
+      try {
+        const token = await getAuthToken();
+        const url = folderId ? `/api/memory/personal/folders/${folderId}` : '/api/memory/personal/folders';
+        const method = folderId ? 'PUT' : 'POST';
+        
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, parentFolderId: parentId })
+        });
+        if (res.ok) {
+          closeFolderModal();
+          await loadFolders();
+          await loadPersonalCards();
+        } else {
+          const err = await res.json();
+          alert('Failed to save folder: ' + (err.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.deleteFolder = async function(folderId) {
+      if (!confirm('Are you sure you want to permanently delete this deck folder? Any cards inside will be moved to Unsorted.')) return;
+      try {
+        const token = await getAuthToken();
+        const res = await fetch(`/api/memory/personal/folders/${folderId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          await loadFolders();
+          await loadPersonalCards();
+        } else {
+          const err = await res.json();
+          alert('Failed to delete folder: ' + (err.error || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.togglePinCard = async function(cardId, isPinned) {
+      try {
+        const token = await getAuthToken();
+        await fetch(`/api/memory/personal/cards/${cardId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ isPinned: !isPinned })
+        });
+        loadPersonalCards();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openAiGeneratorModal() {
+      document.getElementById('aiGenTopic').value = '';
+      document.getElementById('aiGenDrafts').style.display = 'none';
+      document.getElementById('btnAiSaveDrafts').style.display = 'none';
+      document.getElementById('btnAiTriggerGen').style.display = 'block';
+      document.getElementById('aiGenModal').classList.add('show');
+    }
+    function closeAiGenModal() {
+      document.getElementById('aiGenModal').classList.remove('show');
+    }
+    async function triggerAiCardGeneration() {
+      const topic = document.getElementById('aiGenTopic').value.trim();
+      const count = document.getElementById('aiGenCount').value;
+      if (!topic) {
+        alert('Please specify a topic.');
+        return;
+      }
+
+      document.getElementById('btnAiTriggerGen').disabled = true;
+      document.getElementById('btnAiTriggerGen').textContent = 'Generating...';
+
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/memory/personal/cards/ai-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ topic, count })
+        });
+        if (res.ok) {
+          aiDrafts = await res.json();
+          renderGeneratedDrafts();
+        } else {
+          alert('AI Generation failed.');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        document.getElementById('btnAiTriggerGen').disabled = false;
+        document.getElementById('btnAiTriggerGen').textContent = 'Generate Drafts';
+      }
+    }
+    function renderGeneratedDrafts() {
+      const list = document.getElementById('aiGenDraftsList');
+      list.innerHTML = '';
+      aiDrafts.forEach((draft, idx) => {
+        const d = document.createElement('div');
+        d.style.background = 'rgba(255,255,255,0.02)';
+        d.style.border = '1px solid var(--border-color)';
+        d.style.borderRadius = '8px';
+        d.style.padding = '0.6rem';
+        d.style.marginBottom = '0.4rem';
+        d.innerHTML = `
+          <div style="font-size:0.8rem; font-weight:700; color:#fff;">Q: ${draft.question}</div>
+          <div style="font-size:0.75rem; color:var(--success-color);">A: ${draft.answer}</div>
+        `;
+        list.appendChild(d);
+      });
+      document.getElementById('aiGenDrafts').style.display = 'flex';
+      document.getElementById('btnAiSaveDrafts').style.display = 'block';
+      document.getElementById('btnAiTriggerGen').style.display = 'none';
+    }
+    async function saveGeneratedDrafts() {
+      if (aiDrafts.length === 0) return;
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/memory/personal/cards/import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ cards: aiDrafts })
+        });
+        if (res.ok) {
+          alert(`Successfully saved ${aiDrafts.length} cards to your memory deck!`);
+          closeAiGenModal();
+          loadPersonalCards();
+          loadSpacedRevisionQueue();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openImportModal() {
+      document.getElementById('importCsvData').value = '';
+      document.getElementById('importModal').classList.add('show');
+    }
+    function closeImportModal() {
+      document.getElementById('importModal').classList.remove('show');
+    }
+    async function submitCsvImport() {
+      const rawText = document.getElementById('importCsvData').value.trim();
+      if (!rawText) {
+        alert('Please enter CSV data.');
+        return;
+      }
+      
+      const lines = rawText.split('\n');
+      const cards = [];
+      lines.forEach(line => {
+        const cols = line.split(',');
+        if (cols.length >= 2) {
+          cards.push({
+            question: cols[0].trim(),
+            answer: cols[1].trim(),
+            subject: cols[2] ? cols[2].trim() : 'General'
+          });
+        }
+      });
+
+      if (cards.length === 0) {
+        alert('No valid CSV rows parsed. Make sure they are comma separated.');
+        return;
+      }
+
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/memory/personal/cards/import', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ cards })
+        });
+        if (res.ok) {
+          alert(`Successfully imported ${cards.length} cards!`);
+          closeImportModal();
+          loadPersonalCards();
+          loadSpacedRevisionQueue();
+        } else {
+          alert('CSV import failed.');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    function exportPersonalCardsCSV() {
+      if (personalCards.length === 0) {
+        alert('No personal cards to export.');
+        return;
+      }
+      let csvContent = 'data:text/csv;charset=utf-8,Question,Answer,Subject\n';
+      personalCards.forEach(card => {
+        const q = card.question.replace(/"/g, '""');
+        const a = card.answer.replace(/"/g, '""');
+        const s = (card.subject || 'General').replace(/"/g, '""');
+        csvContent += `"${q}","${a}","${s}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', 'futrix_personal_flashcards.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Init onload
+    window.addEventListener('DOMContentLoaded', async () => {
+      initGoalsAndAssessment();
+      loadSpacedRevisionQueue();
+      loadMistakeNotebook();
+      loadCommunityStats();
+      
+      // Load personal cards and folders at page startup
+      await loadFolders();
+      await loadPersonalCards();
+    });
+  </script>
+
+  <!-- Modal: Personal Folder Creation / Edition -->
+  <div id="folderModal" class="assessment-overlay">
+    <div class="assessment-content" style="max-width: 450px; text-align: left;">
+      <h3 id="folderModalTitle" style="font-family:'Sora',sans-serif; font-size:1.15rem; margin-bottom:1rem; color:#fff;">📁 Create New Folder</h3>
+      <input type="hidden" id="editFolderId" value="" />
+      <div style="display:flex; flex-direction:column; gap:0.8rem;">
+        <div>
+          <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Folder Name</label>
+          <input type="text" id="newFolderName" class="form-input" placeholder="e.g. Organic Chemistry" />
+        </div>
+        <div>
+          <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Parent Folder (Optional)</label>
+          <select id="newFolderParent" class="goal-select" style="width:100%; height:38px; background:var(--surface-hi-color); border:1px solid var(--border-color); color:#fff; border-radius:6px; font-size:0.85rem; padding: 0.5rem;"></select>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <button onclick="closeFolderModal()" style="padding:0.6rem 1.2rem; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:#fff; cursor:pointer; font-weight:600; font-size:0.82rem;">Cancel</button>
+        <button id="btnSaveFolder" onclick="saveNewFolder()" style="padding:0.6rem 1.2rem; border-radius:8px; border:none; background:linear-gradient(135deg, var(--primary-color), var(--teal-color)); color:#03050a; cursor:pointer; font-weight:700; font-size:0.82rem;">Create Folder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Personal Card Creation / Edition -->
+  <div id="cardModal" class="assessment-overlay">
+    <div class="assessment-content" style="max-width: 520px; text-align: left; max-height: 90vh; overflow-y: auto;">
+      <h3 id="cardModalTitle" style="font-family:'Sora',sans-serif; font-size:1.15rem; margin-bottom:1rem; color:#fff;">➕ Create Study Flashcard</h3>
+      <input type="hidden" id="editCardId" value="" />
+      
+      <div style="display:flex; flex-direction:column; gap:0.8rem;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Card Type</label>
+            <select id="cardFormType" class="goal-select" style="width:100%; height:38px; background:var(--surface-hi-color); border:1px solid var(--border-color); color:#fff; border-radius:6px; font-size:0.85rem;">
+              <option value="Basic">Basic Q&A</option>
+              <option value="FillInBlank">Fill in the Blank</option>
+              <option value="Diagram">Diagram Analysis</option>
+              <option value="Equation">Equation Breakdown</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Folder</label>
+            <select id="cardFormFolder" class="goal-select" style="width:100%; height:38px; background:var(--surface-hi-color); border:1px solid var(--border-color); color:#fff; border-radius:6px; font-size:0.85rem;"></select>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
+            <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600;">Question (Front Content)</label>
+            <button onclick="aiImproveCardDraft()" style="background:transparent; border:none; color:var(--teal-color); font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.25rem;">✨ Improve with AI</button>
+          </div>
+          <textarea id="cardFormQuestion" class="form-input" style="min-height: 60px; font-family:inherit; resize:vertical;" placeholder="Write your question, formula, or active recall prompt..."></textarea>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Answer (Back Content)</label>
+          <textarea id="cardFormAnswer" class="form-input" style="min-height: 60px; font-family:inherit; resize:vertical;" placeholder="Write the correct answer, definition, or explanation..."></textarea>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Subject</label>
+            <input type="text" id="cardFormSubject" class="form-input" placeholder="e.g. Chemistry" />
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Chapter</label>
+            <input type="text" id="cardFormChapter" class="form-input" placeholder="e.g. Alcohols" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Difficulty</label>
+            <select id="cardFormDifficulty" class="goal-select" style="width:100%; height:38px; background:var(--surface-hi-color); border:1px solid var(--border-color); color:#fff; border-radius:6px; font-size:0.85rem;">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Priority</label>
+            <select id="cardFormPriority" class="goal-select" style="width:100%; height:38px; background:var(--surface-hi-color); border:1px solid var(--border-color); color:#fff; border-radius:6px; font-size:0.85rem;">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Mnemonic or Memory Trick</label>
+          <input type="text" id="cardFormMnemonic" class="form-input" placeholder="e.g. LEO says GER (Loss is Oxidation, Gain is Reduction)" />
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <button onclick="closeCardModal()" style="padding:0.6rem 1.2rem; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:#fff; cursor:pointer; font-weight:600; font-size:0.82rem;">Cancel</button>
+        <button onclick="savePersonalCard()" style="padding:0.6rem 1.2rem; border-radius:8px; border:none; background:linear-gradient(135deg, var(--primary-color), var(--teal-color)); color:#03050a; cursor:pointer; font-weight:700; font-size:0.82rem;">Save Card</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: AI Cards Generator -->
+  <div id="aiGenModal" class="assessment-overlay">
+    <div class="assessment-content" style="max-width: 520px; text-align: left; max-height: 90vh; overflow-y: auto;">
+      <h3 style="font-family:'Sora',sans-serif; font-size:1.15rem; margin-bottom:1rem; color:#fff;">✨ AI Active Recall Card Generator</h3>
+      <div style="display:flex; flex-direction:column; gap:0.8rem;">
+        <div>
+          <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Topic or Study Concept</label>
+          <input type="text" id="aiGenTopic" class="form-input" placeholder="e.g. Krebs Cycle reactions" />
+        </div>
+        <div>
+          <label style="font-size:0.75rem; color:var(--text-muted-color); text-transform:uppercase; font-weight:600; display:block; margin-bottom:0.3rem;">Number of Cards</label>
+          <select id="aiGenCount" class="goal-select" style="width:100%; height:38px; background:var(--surface-hi-color); border:1px solid var(--border-color); color:#fff; border-radius:6px; font-size:0.85rem; padding: 0.5rem;">
+            <option value="5">5 Cards</option>
+            <option value="10">10 Cards</option>
+            <option value="20">20 Cards</option>
+          </select>
+        </div>
+      </div>
+      <div id="aiGenDrafts" style="margin-top:1rem; display:none; flex-direction:column; gap:0.6rem; border-top:1px solid var(--border-color); padding-top:1rem;">
+        <span style="font-size:0.75rem; color:var(--teal-color); font-weight:750; text-transform:uppercase;">Drafted Cards Preview</span>
+        <div id="aiGenDraftsList" style="max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:0.5rem;"></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <button onclick="closeAiGenModal()" style="padding:0.6rem 1.2rem; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:#fff; cursor:pointer; font-weight:600; font-size:0.82rem;">Cancel</button>
+        <button id="btnAiTriggerGen" onclick="triggerAiCardGeneration()" style="padding:0.6rem 1.2rem; border-radius:8px; border:none; background:linear-gradient(135deg, var(--primary-color), var(--teal-color)); color:#03050a; cursor:pointer; font-weight:700; font-size:0.82rem;">Generate Drafts</button>
+        <button id="btnAiSaveDrafts" onclick="saveGeneratedDrafts()" style="display:none; padding:0.6rem 1.2rem; border-radius:8px; border:none; background:var(--success-color); color:#03050a; cursor:pointer; font-weight:700; font-size:0.82rem;">Save All Cards</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Import CSV Modal -->
+  <div id="importModal" class="assessment-overlay">
+    <div class="assessment-content" style="max-width: 480px; text-align: left;">
+      <h3 style="font-family:'Sora',sans-serif; font-size:1.15rem; margin-bottom:1rem; color:#fff;">📥 Import Cards from CSV</h3>
+      <div style="display:flex; flex-direction:column; gap:0.8rem;">
+        <p style="font-size:0.75rem; color:var(--text-muted-color); line-height:1.4;">Paste your flashcards list below. Columns must be comma-separated in the format:<br><strong style="color:#fff;">Question, Answer, Subject</strong><br>e.g. <em>What is photosynthesis?, Converting light energy to chemical energy., Biology</em></p>
+        <textarea id="importCsvData" class="form-input" style="min-height: 120px; font-family:monospace; font-size:0.78rem;" placeholder="Question, Answer, Subject&#10;What is NaCl?, Sodium Chloride table salt., Chemistry"></textarea>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <button onclick="closeImportModal()" style="padding:0.6rem 1.2rem; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:#fff; cursor:pointer; font-weight:600; font-size:0.82rem;">Cancel</button>
+        <button onclick="submitCsvImport()" style="padding:0.6rem 1.2rem; border-radius:8px; border:none; background:linear-gradient(135deg, var(--primary-color), var(--teal-color)); color:#03050a; cursor:pointer; font-weight:700; font-size:0.82rem;">Import Cards</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

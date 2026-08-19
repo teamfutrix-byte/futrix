@@ -1,0 +1,3061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Instructions | Futrix Competitor</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #10131a;
+      --sidebar-bg: #0d1017;
+      --surface:    #1a1f2e;
+      --surface-hi: #222838;
+      --border:     rgba(255,255,255,0.07);
+      --primary:    #adc6ff;
+      --primary-btn:#4d8eff;
+      --text:       #e1e2ec;
+      --text-muted: #6b7280;
+      --accent:     #ffa94d;
+      --teal:       #00e5d4;
+      --danger:     #ff9a3c;
+      --success:    #00e676;
+    }
+
+    html, body { height: 100%; font-family: 'Geist','Sora',sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ══════════════ TOP BAR ══════════════ */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(13,16,23,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 200;
+    }
+    .topbar-logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .topbar-logo span {
+      color: var(--primary);
+    }
+    .topbar-center {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Sora', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+    .topbar-center svg { color: var(--text-muted); }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .user-avatar-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--surface-hi);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .user-avatar-btn:hover { background: #2a3045; }
+
+    /* ══════════════ LAYOUT ══════════════ */
+    .layout {
+      display: flex;
+      height: 100vh;
+      padding-top: 56px;
+    }
+
+    /* ══════════════ SIDEBAR ══════════════ */
+    .sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.2rem 0;
+      position: fixed;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+    }
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Profile section */
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.5rem 1.2rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.6rem;
+    }
+    .profile-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4d8eff, #00e5d4);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .profile-info { overflow: hidden; }
+    .profile-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .profile-level {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    /* Nav items */
+    .nav-list {
+      flex: 1;
+      list-style: none;
+      padding: 0 0.6rem;
+    }
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      margin-bottom: 0.15rem;
+    }
+    .nav-item a:hover {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+    }
+    .nav-item a.active {
+      background: rgba(77,142,255,0.12);
+      color: var(--primary);
+      border: 1px solid rgba(77,142,255,0.2);
+    }
+    .nav-item a svg { flex-shrink: 0; }
+
+    /* Sidebar bottom */
+    .sidebar-bottom {
+      padding: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+    .btn-upgrade {
+      width: 100%;
+      padding: 0.7rem;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #4d8eff, #6fa3ff);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 0.6rem;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(77,142,255,0.3);
+    }
+    .btn-upgrade:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(77,142,255,0.4); }
+
+    .bottom-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+    .bottom-links li a {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0.6rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .bottom-links li a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+
+    /* ══════════════ MAIN CONTENT ══════════════ */
+    .main-content {
+      margin-left: 200px;
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      gap: 1.2rem;
+      align-items: flex-start;
+    }
+
+    /* ── LEFT: Candidate Card ── */
+    .candidate-panel {
+      width: 260px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .candidate-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.3rem;
+      position: relative;
+    }
+    .candidate-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .candidate-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.7rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 1rem;
+      word-break: break-word;
+    }
+    .settings-btn {
+      position: absolute;
+      top: 1.1rem;
+      right: 1.1rem;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--surface-hi);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: background 0.2s, color 0.2s;
+    }
+    .settings-btn:hover { background: #2a3045; color: var(--primary); }
+
+    .reward-row {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-end;
+    }
+    .reward-block { display: flex; flex-direction: column; }
+    .reward-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    .reward-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .reward-value svg { color: var(--accent); }
+    .reward-unit {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .rank-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .rank-value svg { color: var(--text-muted); }
+
+    .exam-details-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.2rem;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+    .detail-item { display: flex; flex-direction: column; }
+    .detail-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    .detail-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .negative-marking {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.78rem;
+      color: var(--danger);
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── RIGHT: Instruction Panel ── */
+    .instruction-panel {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .inst-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.8rem;
+    }
+    .inst-intro {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-bottom: 1.6rem;
+    }
+    .inst-intro strong { color: var(--text); }
+
+    .inst-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex: 1;
+    }
+
+    .inst-item {
+      display: flex;
+      gap: 0.85rem;
+      align-items: flex-start;
+    }
+    .inst-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: var(--surface-hi);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      color: var(--primary);
+    }
+    .inst-text h4 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+    .inst-text p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .inst-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 0.4rem;
+      margin-bottom: 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
+    .inst-scroll::-webkit-scrollbar { width: 4px; }
+    .inst-scroll::-webkit-scrollbar-track { background: transparent; }
+    .inst-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+
+    .inst-section {
+      margin-bottom: 1.4rem;
+    }
+    .inst-section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.55rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .inst-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .inst-section ul li {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      padding: 0.15rem 0 0.15rem 1.1rem;
+      position: relative;
+    }
+    .inst-section ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-size: 0.7rem;
+    }
+    .inst-section ul li strong { color: var(--text); }
+    .inst-section ul li.danger::before { color: var(--danger); }
+    .inst-section ul li.success::before { color: var(--success); }
+    .inst-note {
+      background: rgba(77,142,255,0.07);
+      border: 1px solid rgba(77,142,255,0.18);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-top: 0.5rem;
+    }
+    .inst-note strong { color: var(--primary); }
+
+    /* Confirm + Start */
+    .inst-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .confirm-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7rem;
+      cursor: pointer;
+      flex: 1;
+      min-width: 200px;
+    }
+    .confirm-label input[type="checkbox"] {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      accent-color: var(--primary-btn);
+      cursor: pointer;
+    }
+    .confirm-label span {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .btn-start {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 2rem;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: not-allowed;
+      transition: all 0.25s;
+      opacity: 0.5;
+      white-space: nowrap;
+    }
+    .btn-start.ready {
+      background: linear-gradient(135deg, #fff 0%, #e8eeff 100%);
+      color: #0d1017;
+      border-color: transparent;
+      box-shadow: 0 4px 20px rgba(255,255,255,0.15);
+      cursor: pointer;
+      opacity: 1;
+    }
+    .btn-start.ready:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,255,255,0.2); }
+
+    /* ══════════════ SIDEBAR TOGGLE (mobile) ══════════════ */
+    .sidebar-toggle {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 1rem;
+      z-index: 300;
+      background: var(--surface-hi);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.4rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+
+    /* ══════════════ RESPONSIVE ══════════════ */
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-toggle { display: flex; }
+      .sidebar-overlay.open { display: block; }
+      .main-content { margin-left: 0; padding: 1rem; }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        flex-direction: column;
+      }
+      .candidate-panel {
+        width: 100%;
+      }
+      .inst-grid {
+        grid-template-columns: 1fr;
+      }
+      .inst-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-start { justify-content: center; }
+      .topbar-center { display: none; }
+      .panels-layout {
+        flex-direction: column;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topbar { padding: 0 1rem; }
+      .main-content { padding: 0.75rem; gap: 0.75rem; }
+      .instruction-panel { padding: 1.2rem; }
+      .inst-title { font-size: 1.3rem; }
+      .candidate-card, .exam-details-card { padding: 1rem; }
+      .candidate-name { font-size: 1.4rem; }
+    }
+
+    /* ── OTP / UPI Payment Modal CSS ── */
+    .otp-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 10, 16, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+      overflow-y: auto;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .otp-modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .otp-modal-content {
+      background: rgba(18, 22, 33, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 2.5rem;
+      width: 90%;
+      max-width: 440px;
+      position: relative;
+      margin: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .otp-modal-overlay.show .otp-modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .otp-modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .otp-modal-close:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .otp-modal-header h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+    }
+
+    .otp-modal-header p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0 0 2rem 0;
+    }
+
+    .otp-modal-header p strong {
+      color: var(--primary);
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Profile Modal & Notification Drawer Styles */
+    .notification-drawer {
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .modal-overlay {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="topbar">
+  <a href="#" class="topbar-logo">Fut<span>rix</span></a>
+  <div class="topbar-center">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span id="timerDisplay">00:00:00</span>
+  </div>
+  <div class="topbar-right">
+    <!-- Notification Bell Icon -->
+    <div class="notification-bell-btn" id="topNotificationBtn" style="position: relative; margin-right: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: background 0.2s;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span id="notifBadge" style="display: none; position: absolute; top: 0; right: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--danger, #ef4444); border: 1.5px solid #090b11;"></span>
+    </div>
+    
+    <div class="user-avatar-btn" id="topUserBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+  </div>
+</header>
+
+<!-- Sidebar Toggle (mobile) -->
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <!-- Profile -->
+    <div class="sidebar-profile">
+      <div class="profile-avatar" id="profileInitial">FP</div>
+      <div class="profile-info">
+        <div class="profile-name" id="profileName">Futrix Competitor</div>
+        <div class="profile-level">XP: <span id="sidebarXP">0</span></div>
+      </div>
+    </div>
+    <!-- League Progression Widget -->
+    <div class="league-widget" style="padding: 0 1.2rem 1.2rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+        <span id="leagueBadge" style="font-size: 1.2rem;">🟫</span>
+        <div>
+          <div id="leagueName" style="font-size: 0.85rem; font-weight: 700; color: #fff; line-height: 1.2;">Bronze League</div>
+          <div id="leagueNextText" style="font-size: 0.72rem; color: var(--text-muted);">Next: Silver (150 XP)</div>
+        </div>
+      </div>
+      <div class="league-bar" style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 0.25rem;">
+        <div id="leagueBarFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #4d8eff, #6fa3ff); border-radius: 3px; transition: width 0.4s ease;"></div>
+      </div>
+      <div id="leagueAdvanceXp" style="font-size: 0.68rem; color: var(--text-muted); text-align: right;">150 XP needed</div>
+    </div>
+
+    <!-- Nav -->
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a href="instruction.html" class="active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="active-exams.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Active Exams
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="performance.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Performance
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="leaderboard.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Leaderboard
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="arena.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          PvP Arena
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="memory-lab.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2z"/></svg>
+          Memory Lab
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="roadmap.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+          Roadmap
+        </a>
+      </li>
+    </ul>
+
+    <!-- Bottom -->
+    <div class="sidebar-bottom">
+      <button class="btn-upgrade">Upgrade to Pro</button>
+      <ul class="bottom-links">
+        <li><a href="#">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Help
+        </a></li>
+        <li><a href="/features/auth/login.html" id="logoutBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content" style="flex-direction: column; gap: 1.5rem; align-items: stretch;">
+
+    <div class="panels-layout" style="display: flex; gap: 1.2rem; align-items: flex-start; width: 100%;">
+      <!-- Candidate Panel -->
+      <div class="candidate-panel">
+        <!-- Candidate Info Card -->
+        <div class="candidate-card">
+          <div class="candidate-tag">Candidate</div>
+          <div class="candidate-name" id="candidateName">Loading...</div>
+          <button class="settings-btn" aria-label="Settings">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          </button>
+          <div class="reward-row">
+            <div class="reward-block">
+              <span class="reward-label">Total XP Points</span>
+              <div class="reward-value">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+                <span id="displayXP">100</span> <span class="reward-unit">XP</span>
+              </div>
+            </div>
+            <div class="reward-block">
+              <span class="reward-label">Rank</span>
+              <div class="rank-value">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span id="displayRank">B</span>
+              </div>
+            </div>
+          </div>
+          <!-- Referral XP Row -->
+          <div class="reward-row" style="margin-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 0.8rem;">
+            <div class="reward-block">
+              <span class="reward-label">Referral XP</span>
+              <div class="reward-value" style="color: var(--teal);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color: var(--teal);"><circle cx="12" cy="12" r="10"/></svg>
+                <span id="displayReferralXP">0</span> <span class="reward-unit" style="color: var(--teal);">XP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exam Details Card -->
+        <div class="exam-details-card">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Series</span>
+              <span class="detail-value">#FX-8892</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Questions</span>
+              <span class="detail-value">50 items</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Max Marks</span>
+              <span class="detail-value">200 pts</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Duration</span>
+              <span class="detail-value">60 mins</span>
+            </div>
+          </div>
+          <div class="negative-marking">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Negative Marking: -0.25/wrong
+          </div>
+        </div>
+      </div>
+
+      <!-- Instruction Panel -->
+      <div class="instruction-panel">
+        <h2 class="inst-title">System Instructions</h2>
+        <p class="inst-intro">
+          Welcome to the <strong>Futrix Competitor Evaluation System 🚀</strong>
+          This test evaluates your analytical thinking, consistency, discipline, and competitive performance under real exam conditions.
+        </p>
+
+        <!-- Test Selection Section -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.8rem;">
+          <label style="font-family: 'Sora', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.4rem;">
+            <span>📝</span> Select Test Series / Exam
+          </label>
+          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; width: 100%;">
+            <!-- Search field -->
+            <div style="flex: 1; min-width: 180px; position: relative;">
+              <span style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; pointer-events: none;">🔍</span>
+              <input type="text" id="dashboardSearchTest" placeholder="Search test..." style="
+                width: 100%;
+                padding: 0.55rem 0.8rem 0.55rem 2.2rem;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                background: var(--surface-hi);
+                color: var(--text);
+                font-family: 'Geist', sans-serif;
+                font-size: 0.85rem;
+                outline: none;
+                transition: border-color 0.2s;
+              " />
+            </div>
+            <!-- Dropdown Select -->
+            <div style="flex: 1.2; min-width: 200px;">
+              <select id="dashboardSelectTest" style="
+                width: 100%;
+                padding: 0.55rem 0.8rem;
+                border-radius: 8px;
+                border: 1px solid var(--border);
+                background: var(--surface-hi);
+                color: #fff;
+                font-family: 'Geist', sans-serif;
+                font-size: 0.85rem;
+                outline: none;
+                cursor: pointer;
+                transition: border-color 0.2s;
+              ">
+                <option value="">-- Choose a Test --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable content -->
+        <div class="inst-scroll">
+
+          <!-- XP Reward -->
+          <div class="inst-section">
+            <div class="inst-section-title">🎯 XP Reward System</div>
+            <ul>
+              <li class="success">Every <strong>correct answer</strong> awards <strong>+1 XP Point</strong></li>
+              <li class="danger">Every <strong>incorrect answer</strong> deducts <strong>−0.25 XP Point</strong></li>
+              <li>Unattempted questions will <strong>not affect</strong> your XP</li>
+              <li>XP points help increase your <strong>Futrix Rank</strong> and unlock future rewards</li>
+            </ul>
+          </div>
+
+          <!-- Toggle Read More Button -->
+          <div id="readMoreBtnWrap" style="text-align: center; margin: 0.5rem 0 1.2rem;">
+            <button type="button" id="readMoreBtn" style="
+              background: rgba(77, 142, 255, 0.08);
+              border: 1px dashed var(--primary-btn);
+              color: var(--primary);
+              padding: 0.5rem 1.1rem;
+              border-radius: 8px;
+              cursor: pointer;
+              font-family: 'Sora', sans-serif;
+              font-size: 0.8rem;
+              font-weight: 600;
+              transition: all 0.2s ease;
+              display: inline-flex;
+              align-items: center;
+              gap: 0.4rem;
+            " onmouseover="this.style.background='rgba(77, 142, 255, 0.15)'" onmouseout="this.style.background='rgba(77, 142, 255, 0.08)'">
+              <span>📖</span> Read More Instructions
+            </button>
+          </div>
+
+          <!-- Collapsible Instructions Panel -->
+          <div id="collapsibleInstructions" style="display: none;">
+            <!-- FUTRIX XP Benefits -->
+            <div class="inst-section">
+              <div class="inst-section-title">💎 FUTRIX XP Benefits</div>
+              <ul>
+                <li>Reputation rankings &amp; league progression</li>
+                <li>Discount coupons &amp; Exclusive offers</li>
+                <li>Premium feature unlocks</li>
+                <li>Scholarship opportunities &amp; Sponsored learning programs</li>
+                <li>Community leaderboard rewards</li>
+              </ul>
+              <div class="inst-note">The more <strong>consistently you perform</strong>, the greater your benefits.</div>
+            </div>
+
+            <!-- Sponsorship -->
+            <div class="inst-section">
+              <div class="inst-section-title">🏆 Sponsorship &amp; Rank Opportunities</div>
+              <ul>
+                <li>Sponsorship opportunities &amp; Premium mentorship access</li>
+                <li>Featured leaderboard positions</li>
+                <li>Early access to Futrix programs</li>
+                <li>Community recognition badges</li>
+              </ul>
+            </div>
+
+            <!-- Daily XP -->
+            <div class="inst-section">
+              <div class="inst-section-title">🔥 Daily XP Opportunities</div>
+              <ul>
+                <li>Daily mock tests &amp; Quiz battles</li>
+                <li>Streak rewards &amp; Special challenges</li>
+                <li>Referral missions &amp; Leaderboard events</li>
+              </ul>
+              <div class="inst-note"><strong>Consistency</strong> matters more than one-time performance.</div>
+            </div>
+
+            <!-- Referral -->
+            <div class="inst-section">
+              <div class="inst-section-title">👥 Referral Reward Program</div>
+              <ul>
+                <li class="success">Every successful referral gives <strong>+100 XP Points</strong></li>
+                <li>Referral bonuses may increase during special campaigns</li>
+                <li class="danger">Abuse or fake referrals will result in <strong>XP removal</strong></li>
+              </ul>
+            </div>
+
+            <!-- Anti-Cheating -->
+            <div class="inst-section">
+              <div class="inst-section-title">⚠️ Anti-Cheating &amp; Fair Play Policy</div>
+              <ul>
+                <li class="danger">Tab switching repeatedly</li>
+                <li class="danger">Using external help / tools</li>
+                <li class="danger">Multiple device access</li>
+                <li class="danger">Copy-pasting answers or suspicious behavior</li>
+              </ul>
+              <div class="inst-note" style="border-color:rgba(255,154,60,0.3);background:rgba(255,154,60,0.06)">
+                If detected: XP → 0 · Result invalidated · Account warning · Possible suspension
+              </div>
+            </div>
+          </div>
+
+          <!-- Toggle Hide Button (shown only when expanded) -->
+          <div id="hideInstBtnWrap" style="display: none; text-align: center; margin: 0.5rem 0 1.2rem;">
+            <button type="button" id="hideInstBtn" style="
+              background: rgba(77, 142, 255, 0.08);
+              border: 1px dashed var(--primary-btn);
+              color: var(--primary);
+              padding: 0.5rem 1.1rem;
+              border-radius: 8px;
+              cursor: pointer;
+              font-family: 'Sora', sans-serif;
+              font-size: 0.8rem;
+              font-weight: 600;
+              transition: all 0.2s ease;
+              display: inline-flex;
+              align-items: center;
+              gap: 0.4rem;
+            " onmouseover="this.style.background='rgba(77, 142, 255, 0.15)'" onmouseout="this.style.background='rgba(77, 142, 255, 0.08)'">
+              <span>📖</span> Hide Instructions
+            </button>
+          </div>
+
+          <!-- Guidelines -->
+          <div class="inst-section">
+            <div class="inst-section-title">📌 Important Guidelines</div>
+            <ul>
+              <li>Ensure stable internet connectivity</li>
+              <li>Do not refresh the page during exam</li>
+              <li>Read every question carefully &amp; manage time wisely</li>
+              <li>Submit before the timer ends — once submitted, answers <strong>cannot be changed</strong></li>
+            </ul>
+            <div class="inst-note" style="border-color: rgba(77,142,255,0.25); background: rgba(77,142,255,0.06); margin-top: 0.8rem; line-height: 1.6;">
+              ⚠️ <strong>Attempt Limit &amp; Validity Policy:</strong> You can only attempt a test series once, so please prepare with a fully focused mindset before starting. Each test series is available for free for a validity of 24 hours, after which the test series will change. For updates on older test series, please stay tuned to our WhatsApp Community and Instagram.
+            </div>
+          </div>
+
+          <!-- Final note -->
+          <div class="inst-note" style="text-align:center;font-size:0.82rem">
+            <strong>Compete fairly · Earn XP · Climb ranks · Unlock opportunities</strong><br>
+            <span style="color:var(--primary); font-weight:700; display:block; margin-top:0.4rem;">🚀 Learn. Decide. Grow.</span>
+            <span style="color:var(--text-muted); font-size:0.75rem; display:block;">Compete Fairly • Improve Daily • Climb Higher</span>
+          </div>
+
+        </div><!-- end scroll -->
+
+        <!-- Footer -->
+        <div class="inst-footer">
+          <!-- Unlocked Test Footer -->
+          <div id="footerUnlocked" style="display: none; width: 100%; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+            <label class="confirm-label" id="confirmLabel">
+              <input type="checkbox" id="confirmCheck" />
+              <span>I have read and agree to all Futrix rules, XP policies, and fair-play guidelines.</span>
+            </label>
+            <button class="btn-start" id="startTestBtn" disabled>
+              Start Test
+              <span>🚀</span>
+            </button>
+          </div>
+
+          <!-- Locked Test Footer -->
+          <div id="footerLocked" style="display: none; width: 100%; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 16px; padding: 1.5rem; text-align: center; box-sizing: border-box;">
+            <h3 style="font-family: 'Sora', sans-serif; font-size: 1.1rem; color: #fff; margin-bottom: 0.25rem;">🔒 Free Access Expired</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">Unlock this Test Series for ₹11.61</p>
+            <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+              <button id="proFooterBtn" class="btn-upgrade" style="background: linear-gradient(135deg, #4d8eff 0%, #a78bfa 100%); color: #fff; cursor: pointer; padding: 0.75rem 1.8rem; border-radius: 10px; border: none; font-weight: 700; font-family: 'Sora', sans-serif; font-size: 0.85rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='none'">
+                Access Free with FUTRIX Pro
+              </button>
+              <button id="payUnlockBtn" style="background: transparent; border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; padding: 0.75rem 1.8rem; border-radius: 10px; font-weight: 600; font-family: 'Sora', sans-serif; font-size: 0.85rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                Unlock This Test
+              </button>
+            </div>
+          </div>
+
+          <!-- Coming Soon Footer -->
+          <div id="footerComingSoon" style="display: none; width: 100%; justify-content: center;">
+            <button class="btn-start" disabled style="opacity: 0.5; cursor: not-allowed; background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.04); color: var(--text-muted); padding: 0.9rem 2.5rem; border-radius: 12px;">
+              🔒 Coming Soon
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== PHASE 2: GAMIFICATION SECTION ==================== -->
+    <div class="gamification-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; width: 100%; margin-top: 1.5rem; align-items: start;">
+      
+      <!-- Card 1: Daily Missions Panel -->
+      <div class="gamify-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.8rem;">
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 750; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🎯</span> Daily Missions
+          </h3>
+          <span style="font-size: 0.72rem; background: rgba(0,229,212,0.1); color: var(--teal); padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 700; border: 1px solid rgba(0,229,212,0.2);">XP & Season Points</span>
+        </div>
+        <div class="missions-list" style="display: flex; flex-direction: column; gap: 1rem;" id="missionsList">
+          <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Loading daily missions...</div>
+        </div>
+      </div>
+
+      <!-- Card 2: Friends & Rivals Registry -->
+      <div class="gamify-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.8rem;">
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 750; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+            <span>👥</span> Friends & Rivals
+          </h3>
+          <span style="font-size: 0.72rem; background: rgba(255,169,77,0.1); color: var(--accent); padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 700; border: 1px solid rgba(255,169,77,0.2);">Rivalry Alert</span>
+        </div>
+        
+        <div style="display: flex; gap: 0.5rem; width: 100%;">
+          <input type="text" id="rivalSearchInput" placeholder="Enter rival phone number..." style="flex: 1; padding: 0.55rem 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-hi); color: var(--text); font-family: 'Geist', sans-serif; font-size: 0.82rem; outline: none;" />
+          <button type="button" id="btnAddRival" style="padding: 0.55rem 1rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #4d8eff, #6fa3ff); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer;">Add Rival</button>
+        </div>
+
+        <div id="rivalryAlertBox" style="display: none; padding: 0.6rem 0.8rem; border-radius: 8px; background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.2); font-size: 0.78rem; color: var(--success); text-align: center; font-weight: 600;">
+          🎉 You passed Rahul today!
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="rivalsList">
+          <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 0.5rem;">No rivals added. Compare stats by entering a registered phone number above!</div>
+        </div>
+      </div>
+
+      <!-- Card 3: Institute Battle Mode -->
+      <div class="gamify-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.8rem;">
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 750; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🏫</span> Institute Battle Mode
+          </h3>
+          <span style="font-size: 0.72rem; background: rgba(173,198,255,0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 700; border: 1px solid rgba(173,198,255,0.2);">Inter-Institute</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="instituteBattleList">
+          <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Loading institute rankings...</div>
+        </div>
+      </div>
+
+      <!-- Card 4: Rank Card Sharing -->
+      <div class="gamify-card" style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); grid-column: span 1;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.8rem;">
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 750; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+            <span>👑</span> Achievement Card
+          </h3>
+          <span style="font-size: 0.72rem; background: rgba(0,230,118,0.1); color: var(--success); padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 700; border: 1px solid rgba(0,230,118,0.2);">Share Stats</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+          <canvas id="rankCardCanvas" width="600" height="350" style="display: none;"></canvas>
+          
+          <div style="width: 100%; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.2); position: relative; aspect-ratio: 600 / 350;">
+            <img id="rankCardImg" style="width: 100%; height: 100%; object-fit: contain; display: block;" alt="Achievement Card Preview" />
+            <div id="rankCardLoading" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(16,19,26,0.85); color: var(--text-muted); font-size: 0.85rem;">
+              Generating achievement card...
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; width: 100%; flex-wrap: wrap;">
+            <button type="button" id="btnDownloadCard" style="flex: 1; min-width: 100px; padding: 0.65rem 0.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+              <span>📥</span> Download
+            </button>
+            <button type="button" id="btnShareWhatsapp" style="flex: 1; min-width: 100px; padding: 0.65rem 0.5rem; border-radius: 8px; border: none; background: #25d366; color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.517 2.266 2.27 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.426-.003 9.885-4.464 9.888-9.89.002-2.628-1.02-5.1-2.871-6.955C16.386 1.904 13.9 1.9 12.01 1.9c-5.433 0-9.892 4.457-9.896 9.886-.002 1.765.467 3.491 1.357 5.025l-.989 3.607 3.693-.968z"/></svg>
+              WhatsApp
+            </button>
+            <button type="button" id="btnShareInsta" style="flex: 1; min-width: 100px; padding: 0.65rem 0.5rem; border-radius: 8px; border: none; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+              <span>📸</span> Instagram
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- WhatsApp Community Footer -->
+    <footer style="padding: 1.2rem 2rem; border: 1px solid var(--border); background: var(--sidebar-bg); border-radius: 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+      <div style="font-weight: 700; color: #fff;">🚀 Learn. Decide. Grow.</div>
+      <div style="font-size: 0.78rem; color: var(--text-muted);">Compete Fairly • Improve Daily • Climb Higher</div>
+      <div>Join Futrix WhatsApp Community to earn <strong style="color: var(--teal);">+100 XP</strong> points instantly and get daily updates!</div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+        <a href="https://chat.whatsapp.com/EuQwlgresyD4fYxrxXJAjc" target="_blank" style="color: var(--primary-btn); text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--primary-btn)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.517 2.266 2.27 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.426-.003 9.885-4.464 9.888-9.89.002-2.628-1.02-5.1-2.871-6.955C16.386 1.904 13.9 1.9 12.01 1.9c-5.433 0-9.892 4.457-9.896 9.886-.002 1.765.467 3.491 1.357 5.025l-.989 3.607 3.693-.968z" />
+          </svg>
+          Join WhatsApp Community
+        </a>
+        <span style="color: var(--text-muted); opacity: 0.4;">|</span>
+        <a href="https://www.instagram.com/futrix_official/" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--accent)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+          Follow on Instagram
+        </a>
+      </div>
+    </footer>
+
+  </div>
+
+  </div>
+</div>
+
+<!-- UPI Payment Modal -->
+<div id="paymentModal" class="otp-modal-overlay">
+  <div class="otp-modal-content" style="max-width: 440px; padding: 2.2rem 2rem;">
+    <button type="button" class="otp-modal-close" id="closePaymentModalBtn">&times;</button>
+    <div class="otp-modal-header" style="text-align: center; margin-bottom: 1.2rem;">
+      <div style="font-size: 2.8rem; margin-bottom: 0.5rem;">💳</div>
+      <h2 style="font-size: 1.4rem; font-weight: 750; color: #fff; margin-bottom: 0.3rem; font-family: 'Sora', sans-serif;" id="paymentModalTitle">Pay &amp; Unlock Test</h2>
+      <p id="paymentModalSeriesTitle" style="font-size: 0.88rem; color: var(--primary); font-weight: 600; margin-bottom: 0;">Topic: Loading...</p>
+    </div>
+    
+    <!-- Invoice Breakdown -->
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.4rem; text-align: left; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.55rem;">
+      <div style="display: flex; justify-content: space-between; color: var(--text-muted);" id="invoiceBaseRow">
+        <span>Test Access Fee:</span>
+        <span style="color: var(--text); font-weight: 500;" id="invoiceBaseFee">₹9.00</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; color: var(--text-muted);" id="invoiceGstRow">
+        <span>GST (18%):</span>
+        <span style="color: var(--text); font-weight: 500;" id="invoiceGst">₹1.62</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; color: var(--text-muted); border-bottom: 1px dashed var(--border); padding-bottom: 0.55rem;" id="invoicePgRow">
+        <span>Platform Charges:</span>
+        <span style="color: var(--text); font-weight: 500;" id="invoicePgCharge">₹0.99</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-weight: 700; font-family: 'Sora', sans-serif; font-size: 0.92rem; color: var(--accent); margin-top: 0.2rem;">
+        <span>Total Payable:</span>
+        <span id="invoiceTotal">₹11.61</span>
+      </div>
+    </div>
+
+    <!-- Scan & Pay -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem;">
+      <div style="background: white; padding: 0.8rem; border-radius: 12px; display: inline-block; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+        <img id="paymentQRCode" src="" alt="Scan to Pay QR Code" style="display: block; width: 170px; height: 170px;" />
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-muted); text-align: center; max-width: 280px; line-height: 1.4;">
+        Scan QR with Google Pay, PhonePe, Paytm, or BHIM to pay instantly.
+      </div>
+    </div>
+
+    <!-- Form Inputs for Validation -->
+    <div style="display: flex; flex-direction: column; gap: 0.95rem; margin-bottom: 1.6rem; text-align: left;">
+      <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <label for="payTransactionId" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">12-Digit Transaction UTR / Ref ID</label>
+        <input type="text" id="payTransactionId" placeholder="e.g. 518928374829" maxlength="12" style="
+          width: 100%;
+          padding: 0.7rem 0.9rem;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: var(--surface-hi);
+          color: #fff;
+          font-family: 'Geist', sans-serif;
+          font-size: 0.9rem;
+          outline: none;
+          transition: border-color 0.2s;
+        " />
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <label for="paySenderUpi" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sender UPI ID or Mobile Number</label>
+        <input type="text" id="paySenderUpi" placeholder="e.g. name@upi or 9876543210" style="
+          width: 100%;
+          padding: 0.7rem 0.9rem;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: var(--surface-hi);
+          color: #fff;
+          font-family: 'Geist', sans-serif;
+          font-size: 0.9rem;
+          outline: none;
+          transition: border-color 0.2s;
+        " />
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+      <button type="button" id="confirmPaymentBtn" class="btn-start ready" style="width: 100%; padding: 0.85rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; font-family: 'Sora', sans-serif; font-size: 0.92rem; background: var(--primary-btn); color: #fff; border: none; cursor: pointer; transition: all 0.2s;">
+        Submit for Verification
+        <span id="paymentSpinner" style="display: none; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.8s linear infinite;"></span>
+      </button>
+      <div style="font-size: 0.72rem; color: var(--teal); text-align: center; font-weight: 500;">
+        ⚠️ Test series will unlock automatically within 10-15 minutes after verification.
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- Notification Drawer -->
+<div class="notification-drawer" id="notificationDrawer" style="
+  position: fixed;
+  top: 70px;
+  right: -360px;
+  width: 350px;
+  height: calc(100vh - 70px);
+  background: rgba(22, 27, 46, 0.95);
+  backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+">
+  <div style="padding: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;">
+    <h3 style="font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700; margin: 0;">Notifications</h3>
+    <button id="closeNotifBtn" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem;">&times;</button>
+  </div>
+  <div id="notifList" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+    <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 2rem 0;">Loading notifications...</div>
+  </div>
+</div>
+
+<!-- Profile Settings Modal -->
+<div class="modal-overlay" id="profileSettingsModal" style="
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(9, 11, 17, 0.8);
+  backdrop-filter: blur(12px);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+">
+  <div class="glass-modal" style="
+    background: rgba(20, 24, 46, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 480px;
+    padding: 2rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    color: #fff;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  ">
+    <button id="closeProfileModalBtn" style="
+      position: absolute; top: 1rem; right: 1.2rem;
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; font-size: 1.5rem;
+    ">&times;</button>
+    
+    <h2 style="font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.4rem; margin-bottom: 1.5rem; color: #fff; background: linear-gradient(135deg, #fff 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Profile Settings</h2>
+    
+    <!-- Tabs for Edit Profile / Change Password -->
+    <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
+      <button id="tabEditProfileBtn" style="flex: 1; padding: 0.5rem; background: var(--primary); border: none; color: #fff; font-weight: 600; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Edit Profile</button>
+      <button id="tabChangePassBtn" style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); color: var(--text-muted); font-weight: 600; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Change Password</button>
+    </div>
+
+    <!-- Edit Profile Subpanel -->
+    <div id="subpanelEditProfile" style="display: flex; flex-direction: column; gap: 1rem;">
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Full Name</label>
+        <input type="text" id="profFullName" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.88rem;">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Profile Picture</label>
+        <input type="file" id="profAvatarFile" accept="image/*" style="width: 100%; padding: 0.5rem 0; border: none; background: transparent; color: #fff; outline: none; font-size: 0.82rem; cursor: pointer;">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Phone Number</label>
+        <input type="text" id="profPhone" disabled style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.01); color: var(--text-muted); outline: none; font-size: 0.88rem; cursor: not-allowed;">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Date of Birth</label>
+        <input type="date" id="profDob" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.88rem;">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">City</label>
+        <input type="text" id="profCity" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.88rem;">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Qualification</label>
+        <input type="text" id="profQualification" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.88rem;">
+      </div>
+      <button id="saveProfileBtn" style="width: 100%; padding: 0.8rem; background: var(--primary); border: none; color: #fff; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s;">Save Profile Details</button>
+    </div>
+
+    <!-- Change Password Subpanel -->
+    <div id="subpanelChangePass" style="display: none; flex-direction: column; gap: 1rem;">
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">New Password</label>
+        <input type="password" id="profNewPass" placeholder="At least 6 characters" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.88rem;">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+        <label style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Confirm New Password</label>
+        <input type="password" id="profConfirmPass" placeholder="Confirm new password" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.88rem;">
+      </div>
+      <button id="savePasswordBtn" style="width: 100%; padding: 0.8rem; background: var(--success, #22c55e); border: none; color: #fff; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s;">Update Account Password</button>
+    </div>
+  </div>
+</div>
+
+<script src="supabase-js.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/supabase-client.js"></script>
+<script src="/features/student/onboarding-client.js"></script>
+<script src="floating-ai-mentor.js"></script>
+<script>
+  /* ── Auth Guard: redirect to login if not logged in or not student ── */
+  const userRaw = sessionStorage.getItem('futrix_user');
+  if (!userRaw) {
+    window.location.href = '/features/auth/login.html';
+  }
+  const user = JSON.parse(userRaw || '{}');
+  if (user.role !== 'student') {
+    window.location.href = '/features/auth/login.html';
+  }
+  const name = user.name || 'Competitor';
+
+  /* ── Populate user info ── */
+  const firstName = name.split(' ')[0];
+  const lastName  = name.split(' ').slice(1).join(' ');
+
+  // Candidate name — split to two lines like screenshot
+  const candidateEl = document.getElementById('candidateName');
+  if (lastName) {
+    candidateEl.innerHTML = `${firstName}<br>${lastName}`;
+  } else {
+    candidateEl.textContent = firstName;
+  }
+
+  // Sidebar profile
+  document.getElementById('profileName').textContent = name;
+
+  function loadAvatar() {
+    const avatarData = localStorage.getItem('futrix_avatar_' + user.id);
+    const profileInitial = document.getElementById('profileInitial');
+    if (profileInitial) {
+      if (avatarData) {
+        profileInitial.textContent = '';
+        profileInitial.style.backgroundImage = `url(${avatarData})`;
+        profileInitial.style.backgroundSize = 'cover';
+        profileInitial.style.backgroundPosition = 'center';
+      } else {
+        profileInitial.textContent = name.charAt(0).toUpperCase();
+        profileInitial.style.backgroundImage = 'none';
+      }
+    }
+  }
+  loadAvatar();
+
+  /* ── XP and Rank (from sessionStorage) ── */
+  const xp = parseFloat(user.xp || 100);
+
+  // Rank grade based on XP
+  function getGrade(xp) {
+    if (xp >= 500) return 'S+';
+    if (xp >= 300) return 'S';
+    if (xp >= 200) return 'A+';
+    if (xp >= 150) return 'A';
+    if (xp >= 120) return 'B+';
+    if (xp >= 100) return 'B';
+    return 'C';
+  }
+
+  const grade = getGrade(xp);
+
+  // Update all XP display elements
+  const referralXp = parseFloat(user.referralXp || 0);
+  document.getElementById('sidebarXP').textContent = xp.toFixed(2);
+  document.getElementById('displayXP').textContent  = xp.toFixed(2);
+  document.getElementById('displayRank').textContent = grade;
+  document.getElementById('displayReferralXP').textContent = referralXp.toFixed(2);
+  
+  function updateLeagueWidget(xp) {
+    let currentLeague = 'Bronze';
+    let nextLeague = 'Silver';
+    let minXp = 0;
+    let maxXp = 2500;
+    let badge = '🟫';
+    let color = '#a36845';
+
+    if (xp >= 75000) {
+      currentLeague = 'Legend';
+      nextLeague = '';
+      minXp = 75000;
+      maxXp = 75000;
+      badge = '👑';
+      color = '#a78bfa';
+    } else if (xp >= 30000) {
+      currentLeague = 'Diamond';
+      nextLeague = 'Legend';
+      minXp = 30000;
+      maxXp = 75000;
+      badge = '🔷';
+      color = '#38bdf8';
+    } else if (xp >= 10000) {
+      currentLeague = 'Gold';
+      nextLeague = 'Diamond';
+      minXp = 10000;
+      maxXp = 30000;
+      badge = '🟨';
+      color = '#facc15';
+    } else if (xp >= 2500) {
+      currentLeague = 'Silver';
+      nextLeague = 'Gold';
+      minXp = 2500;
+      maxXp = 10000;
+      badge = '⬜';
+      color = '#a1a1aa';
+    }
+
+    const leagueBadgeEl = document.getElementById('leagueBadge');
+    const leagueNameEl = document.getElementById('leagueName');
+    const leagueNextTextEl = document.getElementById('leagueNextText');
+    const leagueBarFillEl = document.getElementById('leagueBarFill');
+    const leagueAdvanceXpEl = document.getElementById('leagueAdvanceXp');
+
+    if (leagueBadgeEl) leagueBadgeEl.textContent = badge;
+    if (leagueNameEl) {
+      leagueNameEl.textContent = currentLeague + ' League';
+      leagueNameEl.style.color = color;
+    }
+    
+    if (currentLeague === 'Legend') {
+      if (leagueNextTextEl) leagueNextTextEl.textContent = 'Maximum League Reached!';
+      if (leagueBarFillEl) {
+        leagueBarFillEl.style.width = '100%';
+        leagueBarFillEl.style.background = 'linear-gradient(90deg, #a78bfa, #c084fc)';
+      }
+      if (leagueAdvanceXpEl) leagueAdvanceXpEl.textContent = 'Ultimate Competitor 🚀';
+    } else {
+      const range = maxXp - minXp;
+      const progress = xp - minXp;
+      const pct = Math.max(0, Math.min(100, Math.round((progress / range) * 100)));
+      
+      if (leagueNextTextEl) leagueNextTextEl.textContent = `Next: ${nextLeague} (${maxXp} XP)`;
+      if (leagueBarFillEl) {
+        leagueBarFillEl.style.width = pct + '%';
+        leagueBarFillEl.style.background = `linear-gradient(90deg, #4d8eff, ${color})`;
+      }
+      if (leagueAdvanceXpEl) {
+        const remaining = Math.ceil(maxXp - xp);
+        leagueAdvanceXpEl.textContent = `${remaining} XP to advance`;
+      }
+    }
+  }
+  updateLeagueWidget(xp);
+
+
+
+  /* ── Timer (counts up from 00:00:00) ── */
+  let seconds = 0;
+  function formatTime(s) {
+    const h = String(Math.floor(s / 3600)).padStart(2,'0');
+    const m = String(Math.floor((s % 3600) / 60)).padStart(2,'0');
+    const sec = String(s % 60).padStart(2,'0');
+    return `${h}:${m}:${sec}`;
+  }
+  setInterval(() => {
+    seconds++;
+    document.getElementById('timerDisplay').textContent = formatTime(seconds);
+  }, 1000);
+
+  /* ── Checkbox enables Start Test ── */
+  document.getElementById('confirmCheck').addEventListener('change', function() {
+    const btn = document.getElementById('startTestBtn');
+    if (this.checked) {
+      btn.classList.add('ready');
+      btn.disabled = false;
+    } else {
+      btn.classList.remove('ready');
+      btn.disabled = true;
+    }
+  });
+
+  // Local fallback / Offline mock database
+  const examTestsDatabase = {
+    NEET: [
+      { id: 'NEET_T_CELL', seriesId: 'NEET-CELL-DIV', title: 'Cell Division Quiz', questions: 15, duration: 10, xp: 40, maxMarks: 15, type: 'topic', desc: 'Cell cycle stages, mitosis, meiosis, and key regulatory checkpoints.', isExpired: false, isUnlocked: true, hasQuestions: true, price: "0.00", isFree: true },
+      { id: 'NEET_T_CHEM', seriesId: 'NEET-CHEM-BOND', title: 'Chemical Bonding Quiz', questions: 15, duration: 12, xp: 45, maxMarks: 15, type: 'topic', desc: 'Ionic/covalent bonds, molecular structures, and hybridisation concepts.', isExpired: false, isUnlocked: true, hasQuestions: true, price: "0.00", isFree: true },
+      { id: 'NEET_S_PHYS', seriesId: 'NEET-PHYS-MECH', title: 'Physics Mechanics Drill', questions: 25, duration: 20, xp: 80, maxMarks: 25, type: 'subject', desc: 'Comprehensive practice on laws of motion, work, energy, and power.', isExpired: false, isUnlocked: true, hasQuestions: true, price: "0.00", isFree: true },
+      { id: 'NEET_S_BIOL', seriesId: 'NEET-BIOL-PHYS', title: 'Biology Physiology Booster', questions: 30, duration: 25, xp: 100, maxMarks: 30, type: 'subject', desc: 'Human physiology questions covering respiration, circulation, and digestion.', isExpired: true, isUnlocked: false, hasQuestions: true, price: "7.00", isFree: false },
+      { id: 'NEET_R_TS1', seriesId: 'NEET-SERIES-01', title: 'NEET Test Series #1', questions: 45, duration: 45, xp: 150, maxMarks: 45, type: 'series', desc: 'Mock test series covering 50% syllabus of Physics, Chemistry & Biology.', isExpired: true, isUnlocked: false, hasQuestions: true, price: "7.00", isFree: false },
+      { id: 'NEET_R_TS2', seriesId: 'NEET-SERIES-02', title: 'NEET Test Series #2', questions: 45, duration: 45, xp: 150, maxMarks: 45, type: 'series', desc: 'Physics, Chemistry and Biology mock covering remaining 50% syllabus.', isExpired: false, isUnlocked: false, hasQuestions: false, price: "7.00", isFree: false },
+      { id: 'NEET_F_MOCK', seriesId: 'NEET-FULL-MOCK', title: 'NEET Full Length Mock 2026', questions: 90, duration: 90, xp: 300, maxMarks: 90, type: 'full', desc: 'Full syllabus simulation matching the exact NTA exam pattern and weightage.', isExpired: false, isUnlocked: true, hasQuestions: true, price: "0.00", isFree: true }
+    ],
+    JEE: [
+      { id: 'JEE_T_MAT', seriesId: 'JEE-MATRICES', title: 'Matrices & Determinants', questions: 15, duration: 15, xp: 60, maxMarks: 15, type: 'topic', desc: "Matrix operations, Cramer's rule, and system of linear equations.", isExpired: false, isUnlocked: true, hasQuestions: true, price: "0.00", isFree: true },
+      { id: 'JEE_T_ELECT', seriesId: 'JEE-ELECTROSTAT', title: 'Electrostatics Practice', questions: 15, duration: 15, xp: 60, maxMarks: 15, type: 'topic', desc: "Coulomb's Law, electric field, potential, and capacitance questions.", isExpired: true, isUnlocked: false, hasQuestions: true, price: "7.00", isFree: false },
+      { id: 'JEE_S_CHEM', seriesId: 'JEE-CHEM-ORG', title: 'Organic Chemistry Booster', questions: 25, duration: 25, xp: 100, maxMarks: 25, type: 'subject', desc: 'Reaction mechanisms, isomerism, and conversions in organic chemistry.', isExpired: false, isUnlocked: true, hasQuestions: true, price: "0.00", isFree: true },
+      { id: 'JEE_S_PHYS', seriesId: 'JEE-PHYS-ROT', title: 'Rotational Mechanics Booster', questions: 25, duration: 30, xp: 120, maxMarks: 25, type: 'subject', desc: 'Moment of inertia, angular momentum conservation, and rolling motion.', isExpired: true, isUnlocked: false, hasQuestions: true, price: "7.00", isFree: false },
+      { id: 'JEE_R_TS1', seriesId: 'JEE-SERIES-01', title: 'JEE Main Test Series #1', questions: 30, duration: 30, xp: 120, maxMarks: 30, type: 'series', desc: 'Balanced 30-item mock series for Physics, Chemistry, and Mathematics.', isExpired: false, isUnlocked: false, hasQuestions: false, price: "7.00", isFree: false },
+      { id: 'JEE_F_MOCK', seriesId: 'JEE-FULL-MOCK', title: 'JEE Main Full Syllabus Mock', questions: 75, duration: 180, xp: 300, maxMarks: 75, type: 'full', desc: 'Complete 3-hour mock exam covering the exact Mains pattern and syllabus.', isExpired: false, isUnlocked: true, hasQuestions: true, price: "0.00", isFree: true }
+    ]
+  };
+
+  let liveTestsList = [];
+  let isProUser = false;
+  let selectedTest = null;
+  let isUpgradeToProFlow = false;
+
+  const candidatePrep = (user.preparation || 'NEET').toUpperCase().trim();
+
+  // Populate Dropdown Options
+  function populateTestDropdown(searchQuery = "") {
+    const select = document.getElementById('dashboardSelectTest');
+    if (!select) return;
+    
+    // Clear and add placeholder option
+    select.innerHTML = '<option value="">-- Choose a Test --</option>';
+    
+    const query = searchQuery.toLowerCase().trim();
+    const tests = liveTestsList || [];
+    
+    // Filter matching tests
+    const filtered = tests.filter(t => {
+      const matchSearch = t.topic.toLowerCase().includes(query) || t.seriesId.toLowerCase().includes(query);
+      return matchSearch;
+    });
+    
+    filtered.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.seriesId;
+      
+      let prefix = '';
+      if (t.hasQuestions === false) {
+        prefix = '🔒 [Coming Soon] ';
+      } else if (!t.isUnlocked) {
+        prefix = '⏰ [Expired / Locked] ';
+      } else {
+        prefix = '⚡ [Active] ';
+      }
+      
+      let priceSuffix = '';
+      if (t.isFree) {
+        priceSuffix = ' (Free)';
+      } else {
+        const basePrice = parseFloat(t.price || 7.00);
+        const gst = basePrice * 0.18;
+        const pgCharge = basePrice * 0.05;
+        const total = basePrice + gst + pgCharge;
+        priceSuffix = ` (Paid: ₹${total.toFixed(2)})`;
+      }
+      
+      opt.textContent = `${prefix}[${t.examType}] ${t.seriesId} - ${t.topic}${priceSuffix}`;
+      select.appendChild(opt);
+    });
+  }
+
+  // Update instructions content and footer state when a test is selected
+  function onTestSelected(seriesId) {
+    if (!seriesId) {
+      selectedTest = null;
+      document.querySelector('.inst-title').textContent = 'System Instructions';
+      // Apply defaults
+      applyConfig({ success: false });
+      
+      // Hide all footers
+      document.getElementById('footerUnlocked').style.display = 'none';
+      document.getElementById('footerLocked').style.display = 'none';
+      document.getElementById('footerComingSoon').style.display = 'none';
+      return;
+    }
+    
+    const test = liveTestsList.find(t => t.seriesId === seriesId);
+    if (!test) return;
+    
+    selectedTest = test;
+    
+    // Update Title in UI
+    document.querySelector('.inst-title').textContent = test.topic + ' Instructions';
+    
+    // Apply stats config
+    applyConfig({
+      success: true,
+      seriesId: test.seriesId,
+      questions: test.maxMarks || 15,
+      duration: test.duration,
+      maxMarks: test.maxMarks || 15
+    });
+    
+    // Toggle footers based on locks
+    const footerUnlocked = document.getElementById('footerUnlocked');
+    const footerLocked = document.getElementById('footerLocked');
+    const footerComingSoon = document.getElementById('footerComingSoon');
+    
+    if (test.hasQuestions === false) {
+      footerUnlocked.style.display = 'none';
+      footerLocked.style.display = 'none';
+      footerComingSoon.style.display = 'flex';
+    } else if (test.isUnlocked) {
+      footerUnlocked.style.display = 'flex';
+      footerLocked.style.display = 'none';
+      footerComingSoon.style.display = 'none';
+      
+      // Reset checkbox & start test button state
+      document.getElementById('confirmCheck').checked = false;
+      const startBtn = document.getElementById('startTestBtn');
+      startBtn.classList.remove('ready');
+      startBtn.disabled = true;
+    } else {
+      footerUnlocked.style.display = 'none';
+      footerLocked.style.display = 'flex';
+      footerComingSoon.style.display = 'none';
+      
+      const basePrice = (test.price !== undefined) ? parseFloat(test.price) : 7.00;
+      const gst = basePrice * 0.18;
+      const pgCharge = basePrice * 0.05;
+      const totalAmount = basePrice + gst + pgCharge;
+      document.getElementById('payUnlockBtn').textContent = `Unlock Test Series (₹${totalAmount.toFixed(2)}) ⚡`;
+    }
+    
+    // Save to sessionStorage for exam.html
+    sessionStorage.setItem('futrix_exam_config', JSON.stringify({
+      success: true,
+      seriesId: test.seriesId,
+      questions: test.maxMarks || 15,
+      duration: test.duration,
+      maxMarks: test.maxMarks || 15
+    }));
+  }
+
+  function applyConfig(cfg) {
+    document.querySelectorAll('.detail-value').forEach((el, i) => {
+      if (i === 0) el.textContent = cfg.success ? cfg.seriesId : '#FX-0000';
+      if (i === 1) el.textContent = cfg.success ? (cfg.questions + ' items') : '0 items';
+      if (i === 2) el.textContent = cfg.success ? (cfg.maxMarks + ' pts') : '0 pts';
+      if (i === 3) el.textContent = cfg.success ? (cfg.duration + ' mins') : '0 mins';
+    });
+  }
+
+  // Setup Search Input Event
+  document.getElementById('dashboardSearchTest').addEventListener('input', (e) => {
+    populateTestDropdown(e.target.value);
+  });
+
+  // Setup Selector Change Event
+  document.getElementById('dashboardSelectTest').addEventListener('change', (e) => {
+    onTestSelected(e.target.value);
+  });
+
+  // Setup Checkbox Event to enable/disable Start Test button
+  document.getElementById('confirmCheck').addEventListener('change', (e) => {
+    const startBtn = document.getElementById('startTestBtn');
+    if (e.target.checked) {
+      startBtn.disabled = false;
+      startBtn.classList.add('ready');
+    } else {
+      startBtn.disabled = true;
+      startBtn.classList.remove('ready');
+    }
+  });
+
+  /* ── Stale-While-Revalidate (SWR) fetching ── */
+  async function loadDashboardCatalog() {
+    // 1. Stale Phase
+    const cachedList = sessionStorage.getItem('futrix_series_list');
+    const cachedIsPro = sessionStorage.getItem('futrix_is_pro');
+    if (cachedList) {
+      try {
+        liveTestsList = JSON.parse(cachedList);
+        isProUser = (cachedIsPro === 'true');
+        populateTestDropdown();
+        autoSelectFirstOrPrior();
+      } catch (e) {
+        console.error('Error loading cached series list:', e);
+      }
+    }
+
+    // 2. Revalidate Phase from Supabase
+    try {
+      const seriesList = await getSupabaseSeriesList(user.id);
+      if (seriesList && seriesList.length > 0) {
+        liveTestsList = seriesList;
+        isProUser = !!user.is_pro;
+        
+        sessionStorage.setItem('futrix_series_list', JSON.stringify(liveTestsList));
+        sessionStorage.setItem('futrix_is_pro', isProUser ? 'true' : 'false');
+        
+        populateTestDropdown();
+        autoSelectFirstOrPrior();
+      }
+    } catch (err) {
+      console.error('Error in background fetch:', err);
+    }
+  }
+
+  function autoSelectFirstOrPrior() {
+    // If we have prior selection, restore it
+    const selectedTestRaw = sessionStorage.getItem('futrix_selected_test');
+    if (selectedTestRaw) {
+      try {
+        const testObj = JSON.parse(selectedTestRaw);
+        // Verify if it exists in the current list
+        const exists = liveTestsList.some(t => t.seriesId === testObj.seriesId);
+        if (exists) {
+          document.getElementById('dashboardSelectTest').value = testObj.seriesId;
+          onTestSelected(testObj.seriesId);
+          return;
+        }
+      } catch(e){}
+    }
+    
+    // Otherwise select first active test
+    const matching = liveTestsList.filter(t => (t.examType || '').toUpperCase().trim() === candidatePrep && t.hasQuestions !== false);
+    if (matching.length > 0) {
+      const activeTest = matching.find(t => t.isUnlocked) || matching[0];
+      document.getElementById('dashboardSelectTest').value = activeTest.seriesId;
+      onTestSelected(activeTest.seriesId);
+    }
+  }
+
+  loadDashboardCatalog();
+
+  // Clear selected test if they click Dashboard
+  const dashLinks = document.querySelectorAll('a[href="instruction.html"]');
+  dashLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      sessionStorage.removeItem('futrix_selected_test');
+    });
+  });
+
+  // Upgrade to Pro click handler (sidebar)
+  const proSidebarBtn = document.querySelector('.btn-upgrade');
+  if (proSidebarBtn) {
+    proSidebarBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '/features/tests/pricing.html';
+    });
+  }
+  const proFooterBtn = document.getElementById('proFooterBtn');
+  if (proFooterBtn) {
+    proFooterBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '/features/tests/pricing.html';
+    });
+  }
+
+  let isSingleTestPurchaseFlow = false;
+  let singleTestSeriesId = '';
+
+  async function openSinglePassCheckoutModal(seriesId, price) {
+    let gatewayKey = "";
+    let gatewayType = "";
+
+    try {
+      const res = await fetch('/api/premium/settings');
+      if (res.ok) {
+        const data = await res.json();
+        const settings = data.settings || {};
+        
+        const type = settings.payment_gateway_type;
+        const key = settings.payment_gateway_key;
+        
+        // Strict validation: check if credential fields are filled and not Mock Gateway
+        if (!type || type === 'Mock Gateway' || type === 'Mock' || !key || key.trim() === '' || key.includes('rzp_test_mockKey123')) {
+          alert('Admin is not accepting payments at the moment. Please wait or contact at email teamfutrix@gmail.com');
+          return;
+        }
+
+        gatewayKey = key;
+        gatewayType = type;
+      } else {
+        alert('Admin is not accepting payments at the moment. Please wait or contact at email teamfutrix@gmail.com');
+        return;
+      }
+    } catch (err) {
+      alert('Admin is not accepting payments at the moment. Please wait or contact at email teamfutrix@gmail.com');
+      return;
+    }
+
+    isSingleTestPurchaseFlow = true;
+    singleTestSeriesId = seriesId;
+    isUpgradeToProFlow = false;
+    
+    // Clear inputs
+    document.getElementById('payTransactionId').value = '';
+    document.getElementById('paySenderUpi').value = '';
+    
+    const qrImg = document.getElementById('paymentQRCode');
+    qrImg.src = '';
+    
+    document.getElementById('paymentModalTitle').textContent = "Buy Single Test Pass (30 Days)";
+    document.getElementById('paymentModalSeriesTitle').textContent = `Unlock: ${seriesId} (Unlimited Retakes)`;
+    
+    // Invoice breakdown
+    document.getElementById('invoiceBaseFee').textContent = `₹${price.toFixed(2)}`;
+    document.getElementById('invoiceGst').textContent = "₹0.00";
+    document.getElementById('invoicePgCharge').textContent = "₹0.00";
+    document.getElementById('invoiceTotal').textContent = `₹${price.toFixed(2)}`;
+    
+    const pa = gatewayKey;
+    const pn = "Futrix";
+    const cu = "INR";
+    
+    const upiUrl = `upi://pay?pa=${encodeURIComponent(pa)}&pn=${encodeURIComponent(pn)}&am=${encodeURIComponent(price.toFixed(2))}&cu=${encodeURIComponent(cu)}&tn=${encodeURIComponent(seriesId)}`;
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}`;
+    
+    document.getElementById('paymentModal').classList.add('show');
+  }
+
+  /* ── Start Test → Check duplicate then go to Exam ── */
+  document.getElementById('startTestBtn').addEventListener('click', async () => {
+    if (!selectedTest) return;
+    
+    const btn = document.getElementById('startTestBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span style="opacity:0.7">Checking...</span>';
+
+    const seriesId  = selectedTest.seriesId;
+    const userEmail = (user.email || '').toLowerCase().trim();
+
+    let alreadyDone = false;
+    let hasPass = false;
+
+    // Fetch premium / single pass status from backend first
+    try {
+      const token = sessionStorage.getItem('futrix_token') || '';
+      const statusRes = await fetch(`/api/premium/check-status/${seriesId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        hasPass = statusData.hasAccess;
+      }
+    } catch(err) {
+      console.error('Error checking premium status:', err);
+    }
+
+    if (!hasPass) {
+      try {
+        const { data: attempt } = await supabase
+          .from('attempts')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('series_id', seriesId)
+          .limit(1);
+
+        if (attempt && attempt.length > 0) {
+          alreadyDone = true;
+        }
+      } catch(err) {
+        console.error('Error checking attempts:', err);
+      }
+    }
+
+    if (alreadyDone) {
+      // Fetch dynamic price settings
+      let singleTestPrice = 19;
+      try {
+        const res = await fetch('/api/premium/settings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.settings && data.settings.plan_single_test) {
+            singleTestPrice = parseFloat(data.settings.plan_single_test);
+          }
+        }
+      } catch(e) {}
+
+      const panel = document.querySelector('.instruction-panel');
+      panel.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100%; gap:1.5rem; text-align:center; padding:2.5rem 2rem; background: rgba(26, 31, 46, 0.45); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 1rem;">
+          <div style="font-size:3.5rem; animation: pulse 2s infinite;">✅</div>
+          <h2 style="font-family:'Sora',sans-serif; font-size:1.5rem; font-weight:700; color:var(--text); margin-bottom:-0.5rem; background: linear-gradient(135deg, #e1e2ec 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Already Completed!</h2>
+          
+          <p style="font-size:0.95rem; color:var(--text); line-height:1.7; max-width:480px; font-weight: 500;">
+            You have already completed the <strong style="color:var(--primary); font-weight: 700;">${seriesId}</strong> Test Series.
+          </p>
+
+          <div style="background: rgba(168, 85, 247, 0.04); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 480px; margin: 0.5rem 0; display:flex; flex-direction:column; gap:1rem; text-align:center;">
+            <div style="font-weight:700; font-size:1rem; color:#fff; font-family:'Sora';">🚀 Want to retake this test?</div>
+            
+            <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-top:-0.5rem;">
+              Unlock unlimited attempts on all mock tests, full review whiteboards, AI mentoring, and Spaced Flashcards.
+            </div>
+            
+            <button onclick="window.location.href='/features/tests/pricing.html'" style="
+              width:100%; padding:0.85rem; border-radius:12px; border:none;
+              background: linear-gradient(135deg, var(--accent) 0%, #9333ea 100%); color:#fff;
+              font-family:'Sora',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer;
+              box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35); transition: transform 0.2s;"
+              onmouseover="this.style.transform='translateY(-1px)';"
+              onmouseout="this.style.transform='translateY(0)';"
+              >
+              Upgrade to Premium Plan
+            </button>
+
+            <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; color:var(--text-muted); font-size:0.75rem; font-weight:700; text-transform:uppercase;">
+              <span style="height:1px; background:var(--border); flex-grow:1;"></span>
+              <span>or only unlock this test</span>
+              <span style="height:1px; background:var(--border); flex-grow:1;"></span>
+            </div>
+
+            <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+              Get a <strong>Single Test Pass</strong> to unlock this specific test series for 30 days of unlimited attempts.
+            </div>
+
+            <button id="btnBuySinglePass" style="
+              width:100%; padding:0.85rem; border-radius:12px; border:1px solid rgba(77, 142, 255, 0.3);
+              background: rgba(77, 142, 255, 0.05); color:var(--primary);
+              font-family:'Sora',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer;
+              transition: background 0.2s, transform 0.2s;"
+              onmouseover="this.style.background='rgba(77, 142, 255, 0.1)'; this.style.transform='translateY(-1px)';"
+              onmouseout="this.style.background='rgba(77, 142, 255, 0.05)'; this.style.transform='translateY(0)';"
+              >
+              Buy Single Test Pass (₹${singleTestPrice})
+            </button>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0.95rem; width:100%; max-width:480px; text-align:left; margin-top:0.5rem;">
+            <div style="background:rgba(0, 230, 118, 0.06); border:1px solid rgba(0, 230, 118, 0.25); border-radius:12px; padding:0.95rem 1.2rem; font-size:0.85rem; color:var(--text); line-height:1.5; display:flex; gap:0.8rem; align-items:flex-start;">
+              <span style="font-size:1.2rem; line-height:1;">🏆</span>
+              <div>Your XP Points are safely secured — get ready to earn even more XP in the next series and climb the Futrix leaderboard.</div>
+            </div>
+            
+            <div style="background:rgba(77, 142, 255, 0.06); border:1px solid rgba(77, 142, 255, 0.25); border-radius:12px; padding:0.95rem 1.2rem; font-size:0.85rem; color:var(--text); line-height:1.5; display:flex; gap:0.8rem; align-items:flex-start;">
+              <span style="font-size:1.2rem; line-height:1;">👥</span>
+              <div>Refer your friends and earn <strong style="color: var(--primary);">+100 XP Points</strong> for every successful referral.</div>
+            </div>
+          </div>
+
+          <button onclick="window.location.href='/features/tests/active-exams.html'" style="
+            margin-top:0.8rem; padding:0.8rem 2.2rem; border-radius:12px; border:1px solid rgba(255,255,255,0.08);
+            background:#222838; color:#e1e2ec; font-family:'Sora',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25); transition: background 0.2s, transform 0.2s;"
+            onmouseover="this.style.background='#2b3247'; this.style.transform='translateY(-1px)';"
+            onmouseout="this.style.background='#222838'; this.style.transform='translateY(0)';"
+            >
+            ← Return to Dashboard
+          </button>
+        </div>`;
+
+      // Click handler to trigger QR / payment model
+      document.getElementById('btnBuySinglePass').onclick = () => {
+        openSinglePassCheckoutModal(seriesId, singleTestPrice);
+      };
+      
+      btn.disabled = false;
+      btn.innerHTML = 'Start Test';
+      return;
+    }
+
+    // Set correct exam config to session storage before leaving
+    sessionStorage.setItem('futrix_exam_config', JSON.stringify({
+      success: true,
+      seriesId: selectedTest.seriesId,
+      questions: selectedTest.maxMarks || 15,
+      duration: selectedTest.duration,
+      maxMarks: selectedTest.maxMarks || 15
+    }));
+    window.location.href = '/features/tests/exam.html';
+  });
+
+  /* ── UPI Payment Modal Handlers ── */
+  function openPaymentModal(isProUpgrade = false) {
+    isUpgradeToProFlow = isProUpgrade;
+    
+    // Clear inputs
+    document.getElementById('payTransactionId').value = '';
+    document.getElementById('paySenderUpi').value = '';
+    
+    const qrImg = document.getElementById('paymentQRCode');
+    qrImg.src = '';
+    
+    let basePrice = 7.00;
+    let seriesTitle = '';
+    let lockId = '';
+    
+    if (isProUpgrade) {
+      basePrice = 99.00;
+      seriesTitle = "FUTRIX PRO Tier Membership";
+      lockId = "PRO";
+      
+      // Update modal headers & breakdown for flat Pro pricing
+      document.getElementById('paymentModalTitle').textContent = "Upgrade to Futrix Pro";
+      document.getElementById('paymentModalSeriesTitle').textContent = "Package: Lifetime PRO Premium Membership";
+      
+      // Setup Invoice Breakdown
+      document.getElementById('invoiceBaseFee').textContent = "₹99.00";
+      document.getElementById('invoiceGst').textContent = "₹0.00";
+      document.getElementById('invoicePgCharge').textContent = "₹0.00";
+      document.getElementById('invoiceTotal').textContent = "₹99.00";
+    } else {
+      if (!selectedTest) return;
+      basePrice = (selectedTest.price !== undefined) ? parseFloat(selectedTest.price) : 9.00;
+      seriesTitle = `Series: ${selectedTest.seriesId} - ${selectedTest.topic}`;
+      lockId = selectedTest.seriesId;
+      
+      const gst = basePrice * 0.18;
+      const pgCharge = basePrice * 0.11;
+      const totalAmount = basePrice + gst + pgCharge;
+      
+      document.getElementById('paymentModalTitle').textContent = "Pay & Unlock Test Series";
+      document.getElementById('paymentModalSeriesTitle').textContent = seriesTitle;
+      
+      // Setup Invoice Breakdown
+      document.getElementById('invoiceBaseFee').textContent = `₹${basePrice.toFixed(2)}`;
+      document.getElementById('invoiceGst').textContent = `₹${gst.toFixed(2)}`;
+      document.getElementById('invoicePgCharge').textContent = `₹${pgCharge.toFixed(2)}`;
+      document.getElementById('invoiceTotal').textContent = `₹${totalAmount.toFixed(2)}`;
+    }
+    
+    const amountStr = isProUpgrade ? "99.00" : (basePrice + (basePrice * 0.18) + (basePrice * 0.11)).toFixed(2);
+    
+    const pa = "teamfutrix@upi";
+    const pn = "Futrix";
+    const cu = "INR";
+    
+    const upiUrl = `upi://pay?pa=${encodeURIComponent(pa)}&pn=${encodeURIComponent(pn)}&am=${encodeURIComponent(amountStr)}&cu=${encodeURIComponent(cu)}&tn=${encodeURIComponent(lockId)}`;
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}`;
+    
+    document.getElementById('paymentModal').classList.add('show');
+  }
+
+  document.getElementById('payUnlockBtn').onclick = () => {
+    openPaymentModal(false);
+  };
+  
+  document.getElementById('closePaymentModalBtn').onclick = () => {
+    document.getElementById('paymentModal').classList.remove('show');
+  };
+  
+  document.getElementById('paymentModal').onclick = (e) => {
+    if (e.target === document.getElementById('paymentModal')) {
+      document.getElementById('paymentModal').classList.remove('show');
+    }
+  };
+
+  // Confirm payment verification button click
+  document.getElementById('confirmPaymentBtn').onclick = async () => {
+    const transactionId = document.getElementById('payTransactionId').value.trim();
+    const senderUpi = document.getElementById('paySenderUpi').value.trim();
+    
+    if (!/^\d{12}$/.test(transactionId)) {
+      alert('Please enter a valid 12-digit numeric transaction UTR/Transaction ID.');
+      return;
+    }
+    
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const upiRegex = /^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+$/;
+    if (!phoneRegex.test(senderUpi) && !upiRegex.test(senderUpi)) {
+      alert('Please enter a valid Sender UPI ID (e.g. name@upi) or a 10-digit Mobile Number.');
+      return;
+    }
+    
+    const confirmBtn = document.getElementById('confirmPaymentBtn');
+    const spinner = document.getElementById('paymentSpinner');
+    
+    confirmBtn.disabled = true;
+    if (spinner) spinner.style.display = 'inline-block';
+    
+    const unlockId = isUpgradeToProFlow ? 'PRO' : selectedTest.seriesId;
+    
+    let amountVal = 11.61;
+    if (isUpgradeToProFlow) {
+      amountVal = 99.00;
+    } else {
+      const basePrice = (selectedTest.price !== undefined) ? parseFloat(selectedTest.price) : 9.00;
+      amountVal = basePrice + (basePrice * 0.18) + (basePrice * 0.11);
+    }
+    
+    const amountStr = amountVal.toFixed(2);
+    
+    try {
+      if (isSingleTestPurchaseFlow) {
+        const token = sessionStorage.getItem('futrix_token') || '';
+        const res = await fetch('/api/premium/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            planKey: 'plan_single_test',
+            seriesId: singleTestSeriesId,
+            paymentDetails: {
+              transactionId: transactionId,
+              senderUpi: senderUpi,
+              gateway: 'UPI ID'
+            }
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server payment verification failed.');
+
+        alert('Payment verified! Single Test Pass is now active for 30 days.');
+        document.getElementById('paymentModal').classList.remove('show');
+        window.location.reload();
+        return;
+      }
+
+      if (isUpgradeToProFlow) {
+        // Upgrade to PRO
+        const { error: profErr } = await supabase
+          .from('profiles')
+          .update({ is_pro: true })
+          .eq('id', user.id);
+        if (profErr) throw profErr;
+        
+        user.is_pro = true;
+        sessionStorage.setItem('futrix_user', JSON.stringify(user));
+      } else {
+        // Unlock specific test series
+        const { error: txErr } = await supabase
+          .from('xp_transactions')
+          .insert({
+            user_id: user.id,
+            amount: parseFloat(amountStr),
+            transaction_type: 'admin_adjustment',
+            reference_id: unlockId
+          });
+        if (txErr) throw txErr;
+      }
+
+      // Log security audit log
+      await logAuditEvent('PaymentConfirmation', {
+        seriesId: unlockId,
+        transactionId: transactionId,
+        senderUpi: senderUpi,
+        amountPaid: amountStr
+      });
+
+      confirmBtn.disabled = false;
+      if (spinner) spinner.style.display = 'none';
+      
+      alert('Payment submitted and verified! The item is now unlocked.');
+      document.getElementById('paymentModal').classList.remove('show');
+      
+      // Reload dynamic catalog list
+      await loadDashboardCatalog();
+    } catch (err) {
+      confirmBtn.disabled = false;
+      if (spinner) spinner.style.display = 'none';
+      console.error('Error unlocking series:', err);
+      alert('Verification failed: ' + err.message);
+    }
+  };
+
+  /* ── Logout ── */
+  document.getElementById('logoutBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('futrix_user');
+    window.location.href = '/features/auth/login.html';
+  });
+
+  /* ── Sidebar toggle (mobile) ── */
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebarOverlay');
+  const toggleBtn = document.getElementById('sidebarToggle');
+
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+
+  /* ── Toggle Collapsible Instructions ── */
+  const readMoreBtnWrap = document.getElementById('readMoreBtnWrap');
+  const hideInstBtnWrap = document.getElementById('hideInstBtnWrap');
+  const readMoreBtn = document.getElementById('readMoreBtn');
+  const hideInstBtn = document.getElementById('hideInstBtn');
+  const collapsibleInst = document.getElementById('collapsibleInstructions');
+
+  if (readMoreBtn && hideInstBtn && collapsibleInst) {
+    readMoreBtn.addEventListener('click', () => {
+      collapsibleInst.style.display = 'block';
+      readMoreBtnWrap.style.display = 'none';
+      hideInstBtnWrap.style.display = 'block';
+    });
+
+    hideInstBtn.addEventListener('click', () => {
+      collapsibleInst.style.display = 'none';
+      readMoreBtnWrap.style.display = 'block';
+      hideInstBtnWrap.style.display = 'none';
+    });
+  }
+
+  // ==================== PHASE 2: GAMIFICATION SCRIPTS ====================
+  function getLeague(xp) {
+    let name = 'Bronze';
+    let badge = '🟫';
+    if (xp >= 75000) { name = 'Legend'; badge = '👑'; }
+    else if (xp >= 30000) { name = 'Diamond'; badge = '🔷'; }
+    else if (xp >= 10000) { name = 'Gold'; badge = '🟨'; }
+    else if (xp >= 2500) { name = 'Silver'; badge = '⬜'; }
+    return { name, badge };
+  }
+
+  const MISSION_REWARDS = {
+    q20: { title: "Attempt 20 Questions", reward: 50, xp_target: 20 },
+    test1: { title: "Complete 1 Test", reward: 100, xp_target: 1 },
+    acc80: { title: "Accuracy Above 80%", reward: 150, xp_target: 80 },
+    study30: { title: "Study 30 Minutes", reward: 50, xp_target: 30 },
+    revision: { title: "Complete Revision", reward: 30, xp_target: 1 }
+  };
+
+  let studySecs = parseInt(localStorage.getItem('futrix_study_time_today') || 0);
+  setInterval(() => {
+    studySecs += 1;
+    localStorage.setItem('futrix_study_time_today', studySecs);
+  }, 1000);
+
+  async function loadDailyMissions() {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    let attempts = [];
+    try {
+      const { data } = await supabase
+        .from('assessment_attempts')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('created_at', today.toISOString());
+      attempts = data || [];
+    } catch (e) {
+      console.error(e);
+    }
+
+    let questionsAttempted = 0;
+    let completedTestsCount = 0;
+    let hasHighAccuracy = false;
+
+    attempts.forEach(a => {
+      const answersObj = (typeof a.answers === 'string') ? JSON.parse(a.answers) : (a.answers || {});
+      questionsAttempted += Object.keys(answersObj).length;
+      if (a.score_percentage !== null) {
+        completedTestsCount++;
+        if (parseFloat(a.score_percentage) >= 80) {
+          hasHighAccuracy = true;
+        }
+      }
+    });
+
+    const studyMins = Math.floor(studySecs / 60);
+    const revisionDone = localStorage.getItem('futrix_revision_today') === 'true';
+    const claimState = JSON.parse(localStorage.getItem('futrix_claims_today') || '{}');
+
+    const container = document.getElementById('missionsList');
+    if (!container) return;
+
+    const missions = [
+      { id: 'q20', current: questionsAttempted, target: 20, label: `${questionsAttempted}/20 questions attempted`, reward: 50 },
+      { id: 'test1', current: completedTestsCount, target: 1, label: `${completedTestsCount}/1 tests completed`, reward: 100 },
+      { id: 'acc80', current: hasHighAccuracy ? 1 : 0, target: 1, label: hasHighAccuracy ? 'Achieved (>80% accuracy)' : 'Not achieved yet', reward: 150 },
+      { id: 'study30', current: studyMins, target: 30, label: `${studyMins}/30 minutes study time`, reward: 50 },
+      { id: 'revision', current: revisionDone ? 1 : 0, target: 1, label: revisionDone ? 'Revision list completed ✓' : 'Mark revision completed', reward: 30 }
+    ];
+
+    container.innerHTML = '';
+    missions.forEach(m => {
+      const isComplete = m.current >= m.target;
+      const isClaimed = claimState[m.id] === true;
+      const pct = Math.max(0, Math.min(100, Math.round((m.current / m.target) * 100)));
+      
+      let actionBtnHtml = '';
+      if (isClaimed) {
+        actionBtnHtml = `<span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Claimed ✓</span>`;
+      } else if (isComplete) {
+        actionBtnHtml = `<button type="button" onclick="claimDailyMission('${m.id}')" style="background: linear-gradient(135deg, #00e676, #00b0ff); border: none; color: #fff; padding: 0.35rem 0.8rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: transform 0.15s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">Claim +${m.reward} XP</button>`;
+      } else if (m.id === 'revision') {
+        actionBtnHtml = `<button type="button" onclick="toggleRevisionComplete()" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text); padding: 0.35rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">Complete Revision</button>`;
+      } else {
+        actionBtnHtml = `<span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">In Progress</span>`;
+      }
+
+      const itemHtml = `
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 10px; padding: 0.8rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 0.85rem; font-weight: 600; color: ${isComplete ? 'var(--success)' : '#fff'};">${MISSION_REWARDS[m.id].title}</div>
+            ${actionBtnHtml}
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);">${m.label}</div>
+          <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;">
+            <div style="width: ${pct}%; height: 100%; background: ${isComplete ? 'var(--success)' : 'linear-gradient(90deg, #4d8eff, var(--primary))'}; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += itemHtml;
+    });
+  }
+
+  window.toggleRevisionComplete = function() {
+    localStorage.setItem('futrix_revision_today', 'true');
+    loadDailyMissions();
+  };
+
+  window.claimDailyMission = async function(missionId) {
+    const claimState = JSON.parse(localStorage.getItem('futrix_claims_today') || '{}');
+    if (claimState[missionId]) return;
+
+    const mission = MISSION_REWARDS[missionId];
+    if (!mission) return;
+
+    try {
+      const { error: txErr } = await supabase.from('xp_transactions').insert({
+        user_id: user.id,
+        amount: parseFloat(mission.reward),
+        transaction_type: 'daily_mission',
+        reference_id: missionId
+      });
+      if (txErr) throw txErr;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('xp_balance')
+        .eq('id', user.id)
+        .single();
+      
+      const newXp = parseFloat(profile.xp_balance || 0) + mission.reward;
+
+      const { error: profErr } = await supabase
+        .from('profiles')
+        .update({ xp_balance: newXp })
+        .eq('id', user.id);
+      if (profErr) throw profErr;
+
+      user.xp = newXp;
+      sessionStorage.setItem('futrix_user', JSON.stringify(user));
+
+      claimState[missionId] = true;
+      localStorage.setItem('futrix_claims_today', JSON.stringify(claimState));
+
+      alert(`Congratulations! You claimed +${mission.reward} XP for: ${mission.title}! 🏆`);
+
+      document.getElementById('sidebarXP').textContent = newXp.toLocaleString('en-US', {maximumFractionDigits: 0});
+      updateLeagueWidget(newXp);
+      generateRankCard();
+      loadDailyMissions();
+    } catch (e) {
+      alert('Failed to claim reward: ' + e.message);
+    }
+  };
+
+  async function loadRivals() {
+    const rivalsList = document.getElementById('rivalsList');
+    if (!rivalsList) return;
+
+    try {
+      const { data: matches, error: matchErr } = await supabase
+        .from('friends_rivals')
+        .select('rival_id')
+        .eq('user_id', user.id);
+      
+      if (matchErr) throw matchErr;
+
+      if (!matches || matches.length === 0) {
+        rivalsList.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 0.5rem;">No rivals added. Compare stats by entering a registered phone number above!</div>`;
+        return;
+      }
+
+      const rivalIds = matches.map(m => m.rival_id);
+      
+      const { data: profiles, error: profErr } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', rivalIds);
+      
+      if (profErr) throw profErr;
+
+      rivalsList.innerHTML = '';
+      let showPassedAlert = false;
+
+      profiles.forEach(p => {
+        const rivalXp = parseFloat(p.xp_balance || 100);
+        const userXp = parseFloat(user.xp || 0);
+
+        const isBetter = userXp > rivalXp;
+        if (isBetter) {
+          showPassedAlert = true;
+        }
+
+        const rivalLeague = getLeague(rivalXp);
+
+        const rivalItem = `
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 10px; padding: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">${p.full_name}</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">${p.phone || 'No phone'} · ${rivalLeague.badge} ${rivalLeague.name}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: ${isBetter ? 'var(--success)' : 'var(--danger)'};">${rivalXp.toLocaleString('en-US', {maximumFractionDigits: 0})} XP</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Accuracy: 82%</div>
+            </div>
+          </div>
+        `;
+        rivalsList.innerHTML += rivalItem;
+      });
+
+      const alertBox = document.getElementById('rivalryAlertBox');
+      if (alertBox) {
+        alertBox.style.display = showPassedAlert ? 'block' : 'none';
+      }
+
+    } catch (e) {
+      console.error('Error loading rivals:', e);
+    }
+  }
+
+  document.getElementById('btnAddRival').onclick = async () => {
+    const input = document.getElementById('rivalSearchInput');
+    const phoneVal = input.value.trim();
+    if (!phoneVal) {
+      alert('Please enter a phone number.');
+      return;
+    }
+
+    if (phoneVal === user.phone) {
+      alert('You cannot add yourself as a rival!');
+      return;
+    }
+
+    try {
+      const { data: rival, error } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .eq('phone', phoneVal)
+        .maybeSingle();
+
+      if (!rival) {
+        alert('No registered student found with this mobile number.');
+        return;
+      }
+
+      const { data: existing } = await supabase
+        .from('friends_rivals')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('rival_id', rival.id)
+        .maybeSingle();
+
+      if (existing) {
+        alert(`${rival.full_name} is already added as your rival!`);
+        return;
+      }
+
+      const { error: insError } = await supabase
+        .from('friends_rivals')
+        .insert({
+          user_id: user.id,
+          rival_id: rival.id
+        });
+
+      if (insError) throw insError;
+
+      alert(`Added ${rival.full_name} as your rival successfully! ⚔️`);
+      input.value = '';
+      await loadRivals();
+    } catch (e) {
+      alert('Error adding rival: ' + e.message);
+    }
+  };
+
+  async function loadInstituteBattles() {
+    const list = document.getElementById('instituteBattleList');
+    if (!list) return;
+
+    try {
+      const { data: students, error: studErr } = await supabase
+        .from('profiles')
+        .select('xp_balance, institute_id, role')
+        .eq('role', 'student');
+      
+      if (studErr) throw studErr;
+
+      const { data: institutes, error: instErr } = await supabase
+        .from('institutes')
+        .select('*');
+      
+      if (instErr) throw instErr;
+
+      const instMap = {};
+      institutes.forEach(i => {
+        instMap[i.id] = { name: i.name, totalXp: 0, count: 0 };
+      });
+
+      students.forEach(s => {
+        if (s.institute_id && instMap[s.institute_id]) {
+          instMap[s.institute_id].totalXp += parseFloat(s.xp_balance || 0);
+          instMap[s.institute_id].count += 1;
+        }
+      });
+
+      const rankings = [];
+      Object.keys(instMap).forEach(id => {
+        const item = instMap[id];
+        const avg = item.count > 0 ? (item.totalXp / item.count) : 0;
+        rankings.push({ name: item.name, averageXp: avg, count: item.count });
+      });
+
+      rankings.sort((a, b) => b.averageXp - a.averageXp);
+
+      list.innerHTML = '';
+      
+      if (rankings.length === 0) {
+        list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">No institute battle data available.</div>`;
+        return;
+      }
+
+      rankings.forEach((r, idx) => {
+        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : '▪️'));
+        const mockAccuracy = 75 + Math.round(r.averageXp / 1000) % 15;
+        const barPct = Math.max(10, Math.min(100, Math.round((r.averageXp / 5000) * 100)));
+
+        const itemHtml = `
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: 10px; padding: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.35rem;">
+                <span>${medal}</span>
+                <span>${r.name}</span>
+              </div>
+              <div style="font-size: 0.82rem; font-weight: 700; color: var(--primary);">${Math.round(r.averageXp)} Avg XP</div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+              <span>Size: ${r.count} candidate(s)</span>
+              <span>Avg Accuracy: ${mockAccuracy}%</span>
+            </div>
+            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;">
+              <div style="width: ${barPct}%; height: 100%; background: linear-gradient(90deg, #a78bfa, #818cf8); border-radius: 2px;"></div>
+            </div>
+          </div>
+        `;
+        list.innerHTML += itemHtml;
+      });
+
+    } catch (e) {
+      console.error('Error loading institute battles:', e);
+    }
+  }
+
+  async function generateRankCard() {
+    const canvas = document.getElementById('rankCardCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const grad = ctx.createLinearGradient(0, 0, 600, 350);
+    grad.addColorStop(0, '#0d1017');
+    grad.addColorStop(0.5, '#161d2d');
+    grad.addColorStop(1, '#0b0c10');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 600, 350);
+
+    ctx.fillStyle = 'rgba(77, 142, 255, 0.04)';
+    ctx.beginPath();
+    ctx.arc(500, 100, 180, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, 580, 330);
+
+    ctx.strokeStyle = 'rgba(77, 142, 255, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(15, 40); ctx.lineTo(15, 15); ctx.lineTo(40, 15);
+    ctx.moveTo(585, 40); ctx.lineTo(585, 15); ctx.lineTo(560, 15);
+    ctx.moveTo(15, 310); ctx.lineTo(15, 335); ctx.lineTo(40, 335);
+    ctx.moveTo(585, 310); ctx.lineTo(585, 335); ctx.lineTo(560, 335);
+    ctx.stroke();
+
+    ctx.font = "bold 20px 'Sora', sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "left";
+    ctx.fillText("FUT", 30, 45);
+    const futWidth = ctx.measureText("FUT").width;
+    ctx.fillStyle = "#adc6ff";
+    ctx.fillText("RIX", 30 + futWidth, 45);
+
+    ctx.font = "600 11px 'Geist', sans-serif";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.fillText("VERIFIED COMPETITOR CERTIFICATE", 30, 70);
+
+    ctx.beginPath();
+    ctx.arc(80, 145, 40, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.font = "bold 32px 'Sora', sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const initialChar = (user.name || 'F').charAt(0).toUpperCase();
+    ctx.fillText(initialChar, 80, 145);
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.font = "bold 22px 'Sora', sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(user.name || 'Futrix Competitor', 140, 135);
+
+    const mockAccuracy = '84%';
+    const currentXp = parseFloat(user.xp || 0);
+
+    let badge = '🟫';
+    let league = 'Bronze League';
+    let color = '#a36845';
+
+    if (currentXp >= 75000) { badge = '👑'; league = 'Legend League'; color = '#a78bfa'; }
+    else if (currentXp >= 30000) { badge = '🔷'; league = 'Diamond League'; color = '#38bdf8'; }
+    else if (currentXp >= 10000) { badge = '🟨'; league = 'Gold League'; color = '#facc15'; }
+    else if (currentXp >= 2500) { badge = '⬜'; league = 'Silver League'; color = '#a1a1aa'; }
+
+    ctx.font = "600 13px 'Geist', sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.fillText("Current League:", 140, 162);
+    ctx.font = "bold 14px 'Sora', sans-serif";
+    ctx.fillStyle = color;
+    ctx.fillText(badge + " " + league, 250, 162);
+
+    const statsY = 210;
+    
+    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    ctx.fillRect(30, statsY, 160, 80);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeRect(30, statsY, 160, 80);
+    ctx.font = "600 11px 'Geist', sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.fillText("TOTAL SCORE", 45, statsY + 28);
+    ctx.font = "bold 20px 'Sora', sans-serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(currentXp.toLocaleString() + " XP", 45, statsY + 58);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    ctx.fillRect(210, statsY, 160, 80);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeRect(210, statsY, 160, 80);
+    ctx.font = "600 11px 'Geist', sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.fillText("AVERAGE ACCURACY", 225, statsY + 28);
+    ctx.font = "bold 20px 'Sora', sans-serif";
+    ctx.fillStyle = "var(--success)";
+    ctx.fillText(mockAccuracy, 225, statsY + 58);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    ctx.fillRect(390, statsY, 180, 80);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeRect(390, statsY, 180, 80);
+    ctx.font = "600 11px 'Geist', sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.fillText("COMPETITIVE LEVEL", 405, statsY + 28);
+    ctx.font = "bold 20px 'Sora', sans-serif";
+    ctx.fillStyle = "var(--accent)";
+    
+    let grade = 'C';
+    if (currentXp >= 15000) grade = 'S+';
+    else if (currentXp >= 10000) grade = 'S';
+    else if (currentXp >= 5000) grade = 'A+';
+    else if (currentXp >= 2000) grade = 'A';
+    else if (currentXp >= 1000) grade = 'B+';
+    else if (currentXp >= 500) grade = 'B';
+    ctx.fillText(grade + " Rank", 405, statsY + 58);
+
+    ctx.font = "italic 9px 'Geist', sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.textAlign = "right";
+    ctx.fillText("futrix.in", 570, 45);
+
+    ctx.font = "8px monospace";
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.textAlign = "center";
+    ctx.fillText("SECURED WITH SUPABASE BLOCKCHAIN AUTHENTICATION • VERIFIED DIGITAL RECORD", 300, 315);
+
+    const dataUrl = canvas.toDataURL('image/png');
+    const previewImg = document.getElementById('rankCardImg');
+    const loadingDiv = document.getElementById('rankCardLoading');
+    if (previewImg) previewImg.src = dataUrl;
+    if (loadingDiv) loadingDiv.style.display = 'none';
+  }
+
+  document.getElementById('btnDownloadCard').onclick = () => {
+    const canvas = document.getElementById('rankCardCanvas');
+    const link = document.createElement('a');
+    link.download = `${(user.name || 'competitor').replace(/\s+/g, '_')}_futrix_achievement_card.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  document.getElementById('btnShareWhatsapp').onclick = () => {
+    const currentXp = parseFloat(user.xp || 0);
+    const msg = `Hey, check out my Futrix score! I am currently at ${currentXp.toLocaleString()} XP. Can you beat my score? Sign up at http://localhost:8000/index.html and use my phone number ${user.phone} as your referral! 🚀`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  document.getElementById('btnShareInsta').onclick = () => {
+    alert('Achievement Card copied to clipboard! Open Instagram and paste it in your Story or DM. 📸');
+    try {
+      const canvas = document.getElementById('rankCardCanvas');
+      canvas.toBlob(blob => {
+        const item = new ClipboardItem({ "image/png": blob });
+        navigator.clipboard.write([item]);
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Notifications and Profile Settings Event Wiring
+  const notifBtn = document.getElementById('topNotificationBtn');
+  const notifDrawer = document.getElementById('notificationDrawer');
+  const closeNotifBtn = document.getElementById('closeNotifBtn');
+  const notifBadge = document.getElementById('notifBadge');
+  const notifList = document.getElementById('notifList');
+
+  if (notifBtn && notifDrawer) {
+    notifBtn.onclick = async () => {
+      const isVisible = notifDrawer.style.right === '0px';
+      notifDrawer.style.right = isVisible ? '-360px' : '0px';
+      if (!isVisible) {
+        await loadNotifications();
+      }
+    };
+    closeNotifBtn.onclick = () => {
+      notifDrawer.style.right = '-360px';
+    };
+  }
+
+  async function loadNotifications() {
+    if (!notifList) return;
+    notifList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem 0;">Fetching announcements...</div>';
+    try {
+      const { data, error } = await supabase
+        .from('notification_announcements')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        notifList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1.5rem 0;">No notifications broadcast yet.</div>';
+        return;
+      }
+      
+      notifList.innerHTML = '';
+      data.forEach(n => {
+        const item = document.createElement('div');
+        item.style.padding = '0.8rem';
+        item.style.background = 'rgba(255,255,255,0.03)';
+        item.style.border = '1px solid rgba(255,255,255,0.06)';
+        item.style.borderRadius = '8px';
+        item.style.fontSize = '0.82rem';
+        item.style.lineHeight = '1.4';
+        
+        const date = new Date(n.created_at).toLocaleString();
+        item.innerHTML = `
+          <div style="font-weight:700; color:var(--primary); margin-bottom:0.25rem;">${n.title}</div>
+          <div style="color:#e1e2ec; margin-bottom:0.4rem;">${n.message}</div>
+          <div style="font-size:0.68rem; color:var(--text-muted); text-align:right;">${date}</div>
+        `;
+        notifList.appendChild(item);
+      });
+      
+      if (notifBadge) notifBadge.style.display = 'none';
+    } catch (err) {
+      console.error('Error loading notifications:', err);
+      notifList.innerHTML = '<div style="color:var(--danger); font-size:0.85rem; text-align:center; padding:1.5rem 0;">Failed to load.</div>';
+    }
+  }
+
+  async function checkNotificationsBadge() {
+    try {
+      const { data } = await supabase
+        .from('notification_announcements')
+        .select('id')
+        .limit(1);
+      if (data && data.length > 0 && notifBadge) {
+        notifBadge.style.display = 'block';
+      }
+    } catch (e) {}
+  }
+  checkNotificationsBadge();
+
+  const settingsBtn = document.querySelector('.settings-btn');
+  const profModal = document.getElementById('profileSettingsModal');
+  const closeProfBtn = document.getElementById('closeProfileModalBtn');
+  const tabEditProfileBtn = document.getElementById('tabEditProfileBtn');
+  const tabChangePassBtn = document.getElementById('tabChangePassBtn');
+  const subpanelEditProfile = document.getElementById('subpanelEditProfile');
+  const subpanelChangePass = document.getElementById('subpanelChangePass');
+
+  if (settingsBtn && profModal) {
+    settingsBtn.onclick = () => {
+      document.getElementById('profFullName').value = user.name || '';
+      document.getElementById('profPhone').value = user.phone || '';
+      document.getElementById('profDob').value = user.dob || '';
+      document.getElementById('profCity').value = user.city || '';
+      document.getElementById('profQualification').value = user.qualification || '';
+      
+      profModal.style.display = 'flex';
+    };
+    closeProfBtn.onclick = () => {
+      profModal.style.display = 'none';
+    };
+    
+    tabEditProfileBtn.onclick = () => {
+      tabEditProfileBtn.style.background = 'var(--primary)';
+      tabEditProfileBtn.style.color = '#fff';
+      tabChangePassBtn.style.background = 'rgba(255,255,255,0.04)';
+      tabChangePassBtn.style.color = 'var(--text-muted)';
+      subpanelEditProfile.style.display = 'flex';
+      subpanelChangePass.style.display = 'none';
+    };
+    
+    tabChangePassBtn.onclick = () => {
+      tabChangePassBtn.style.background = 'var(--primary)';
+      tabChangePassBtn.style.color = '#fff';
+      tabEditProfileBtn.style.background = 'rgba(255,255,255,0.04)';
+      tabEditProfileBtn.style.color = 'var(--text-muted)';
+      subpanelChangePass.style.display = 'flex';
+      subpanelEditProfile.style.display = 'none';
+    };
+  }
+
+  let selectedAvatarBase64 = null;
+  const profAvatarFile = document.getElementById('profAvatarFile');
+  if (profAvatarFile) {
+    profAvatarFile.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          selectedAvatarBase64 = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+  }
+
+  document.getElementById('saveProfileBtn').onclick = async () => {
+    const newName = document.getElementById('profFullName').value.trim();
+    const newDob = document.getElementById('profDob').value;
+    const newCity = document.getElementById('profCity').value.trim();
+    const newQual = document.getElementById('profQualification').value.trim();
+    
+    if (!newName) {
+      alert('Please fill in your name.');
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: newName,
+          dob: newDob,
+          city: newCity,
+          qualification: newQual
+        })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      user.name = newName;
+      user.dob = newDob;
+      user.city = newCity;
+      user.qualification = newQual;
+      sessionStorage.setItem('futrix_user', JSON.stringify(user));
+      
+      if (selectedAvatarBase64) {
+        localStorage.setItem('futrix_avatar_' + user.id, selectedAvatarBase64);
+        selectedAvatarBase64 = null;
+        if (profAvatarFile) profAvatarFile.value = '';
+      }
+      
+      document.getElementById('profileName').textContent = newName;
+      loadAvatar();
+      const firstName = newName.split(' ')[0];
+      const lastName = newName.split(' ').slice(1).join(' ');
+      const candidateEl = document.getElementById('candidateName');
+      if (candidateEl) {
+        if (lastName) {
+          candidateEl.innerHTML = `${firstName}<br>${lastName}`;
+        } else {
+          candidateEl.textContent = firstName;
+        }
+      }
+      
+      alert('Profile updated successfully!');
+      profModal.style.display = 'none';
+      generateRankCard();
+    } catch (err) {
+      alert('Error updating profile: ' + err.message);
+    }
+  };
+
+  document.getElementById('savePasswordBtn').onclick = async () => {
+    const newPass = document.getElementById('profNewPass').value;
+    const confirmPass = document.getElementById('profConfirmPass').value;
+    
+    if (newPass.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
+    if (newPass !== confirmPass) {
+      alert('Passwords do not match.');
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPass });
+      if (error) throw error;
+      
+      alert('Password updated successfully!');
+      profModal.style.display = 'none';
+      document.getElementById('profNewPass').value = '';
+      document.getElementById('profConfirmPass').value = '';
+    } catch (err) {
+      alert('Error changing password: ' + err.message);
+    }
+  };
+
+  setTimeout(() => {
+    loadDailyMissions();
+    loadRivals();
+    loadInstituteBattles();
+    generateRankCard();
+  }, 800);
+</script>
+</body>
+</html>

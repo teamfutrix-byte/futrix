@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Portal | FUTRIX India</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #090b11;
+      --surface: #111422;
+      --surface-hi: #191c32;
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #4d8eff; /* Unified FUTRIX Blue */
+      --primary-btn: #4d8eff;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --accent: #22d3ee; /* Cyan */
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(77, 142, 255, 0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 85%, rgba(34, 211, 238, 0.08) 0%, transparent 60%),
+        #090b11;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 1rem 2rem;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Geist', 'Sora', sans-serif;
+      color: var(--text);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 11, 17, 0.6);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: #e1e2ec;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: #adc6ff; }
+
+    .portal-badge {
+      background: rgba(77, 142, 255, 0.15);
+      border: 1px solid rgba(77, 142, 255, 0.3);
+      padding: 0.35rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+
+    .sound-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .sound-toggle-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+      transform: scale(1.05);
+    }
+
+    .sound-toggle-btn:active {
+      transform: scale(0.95);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(17, 20, 34, 0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem 2.2rem;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+      z-index: 1;
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.7rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 30%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .card-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .tab-header {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 0.5rem;
+      color: var(--text-muted);
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      border-bottom-color: var(--primary);
+      color: #fff;
+    }
+
+    .field {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+    .field-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .field-input {
+      width: 100%;
+      padding: 0.95rem 1.1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(13, 16, 23, 0.45);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    .field-input:focus {
+      border-color: #38bdf8;
+      background: rgba(13, 16, 23, 0.65);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-eye {
+      position: absolute;
+      right: 1.1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .btn-eye:hover { color: #fff; }
+
+    .error-msg {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-size: 0.82rem;
+      color: #fca5a5;
+      display: none;
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+    .error-msg.show { display: flex; }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.9rem;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #4d8eff, #6fa3ff);
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(77, 142, 255, 0.25);
+    }
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(77, 142, 255, 0.35);
+    }
+    .btn-login:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .back-btn {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="#" class="logo">Fut<span>rix</span></a>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <div class="portal-badge">Staff Console</div>
+      <button id="soundToggleBtn" onclick="toggleGlobalSound()" class="sound-toggle-btn" title="Toggle Sound/Music" aria-label="Toggle Sound and Music">
+        <span class="sound-icon">🔇</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="login-card">
+    <div class="card-header">
+      <h1 class="card-title">Staff Portal</h1>
+      <p class="card-subtitle">Access your Super Admin dashboard or Teacher analytics panel.</p>
+    </div>
+
+    <!-- Tab Switchers -->
+    <div class="tab-header">
+      <button type="button" id="tabSignIn" class="tab-btn active">Sign In</button>
+      <button type="button" id="tabRegister" class="tab-btn">Register Teacher</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg">
+      <span style="font-size:1.1rem; line-height:1;">⚠️</span>
+      <span id="errorText">Error message here</span>
+    </div>
+
+    <!-- SIGN IN FORM -->
+    <form id="loginForm">
+      <div class="field">
+        <label class="field-label">User ID or Email Address</label>
+        <div class="input-wrap">
+          <input type="text" id="loginEmail" class="field-input" placeholder="User ID or Email Address" required autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="loginPhone" class="field-input" placeholder="••••••••" required autocomplete="current-password" />
+          <button type="button" class="btn-eye" id="eyeBtn" aria-label="Toggle password visibility">
+            <svg id="eyeClosed" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            <svg id="eyeOpen" style="display:none" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin: 0.8rem 0 1.2rem; font-size: 0.82rem; color: #94a3b8;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+          <input type="checkbox" id="adminRememberMe" style="accent-color: #38bdf8; width: 16px; height: 16px; cursor: pointer;" />
+          Remember Me / Save Credentials
+        </label>
+      </div>
+
+      <button type="submit" class="btn-login" id="loginBtn">
+        <span id="btnText">Verify &amp; Sign In</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+    </form>
+
+    <!-- TEACHER SIGNUP FORM -->
+    <form id="registerForm" style="display: none;">
+      <div class="field">
+        <label class="field-label">Full Name</label>
+        <div class="input-wrap">
+          <input type="text" id="regName" class="field-input" placeholder="e.g. Dr. Amit Sharma" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">User ID or Email Address</label>
+        <div class="input-wrap">
+          <input type="text" id="regEmail" class="field-input" placeholder="teacher@coaching.com or User ID" required autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Password</label>
+        <div class="input-wrap">
+          <input type="password" id="regPhone" class="field-input" placeholder="Enter secure password (Min 6 characters)" required minlength="6" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Stream / Specialization</label>
+        <div class="input-wrap">
+          <select id="regStream" class="field-input" style="background: var(--surface); color: #fff;" required>
+            <option value="NEET">NEET Stream</option>
+            <option value="JEE">JEE Stream</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" id="regBtn">
+        <span id="regBtnText">Register as Teacher</span>
+        <div class="spinner" id="regSpinner"></div>
+      </button>
+    </form>
+
+    <a href="/features/auth/login.html" class="back-btn">← Back to Student Login</a>
+  </div>
+
+  <script src="/supabase-js.js"></script>
+  <script src="/supabase-client.js?v=3"></script>
+  <script>
+    // Load specializations dynamically from Supabase
+    async function loadSpecializations() {
+      try {
+        const categories = await getExamCategories();
+        const select = document.getElementById('regStream');
+        if (!select) return;
+        select.innerHTML = '';
+        categories.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat.name;
+          opt.textContent = cat.display_name || `${cat.name} Stream`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Failed to load exam categories:', err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadSpecializations);
+
+    // Eye Toggle
+    const eyeBtn = document.getElementById('eyeBtn');
+    const phoneInput = document.getElementById('loginPhone');
+    const eyeOpen = document.getElementById('eyeOpen');
+    const eyeClosed = document.getElementById('eyeClosed');
+
+    eyeBtn.addEventListener('click', () => {
+      const isPass = phoneInput.type === 'password';
+      phoneInput.type = isPass ? 'text' : 'password';
+      eyeOpen.style.display = isPass ? 'none' : 'block';
+      eyeClosed.style.display = isPass ? 'block' : 'none';
+    });
+
+    // Tab switcher
+    const tabSignIn = document.getElementById('tabSignIn');
+    const tabRegister = document.getElementById('tabRegister');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    tabSignIn.onclick = () => {
+      tabSignIn.classList.add('active');
+      tabRegister.classList.remove('active');
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+      hideError();
+    };
+
+    tabRegister.onclick = () => {
+      tabRegister.classList.add('active');
+      tabSignIn.classList.remove('active');
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'block';
+      hideError();
+    };
+
+    // Error / Loading helpers
+    function showError(msg) {
+      const box = document.getElementById('errorMsg');
+      let finalMsg = 'Invalid email/User ID or password. Please try again.';
+      if (msg) {
+        if (typeof msg === 'string') {
+          finalMsg = msg;
+        } else if (msg.message && typeof msg.message === 'string') {
+          finalMsg = msg.message;
+        } else if (msg.error && typeof msg.error === 'string') {
+          finalMsg = msg.error;
+        } else {
+          try {
+            finalMsg = JSON.stringify(msg);
+          } catch (_) {
+            finalMsg = String(msg);
+          }
+        }
+      }
+      
+      if (!finalMsg || finalMsg === '{}' || finalMsg === '{"isTrusted":true}' || finalMsg.includes('{') || finalMsg.includes('}') || finalMsg.startsWith('[object')) {
+        finalMsg = 'Invalid email/User ID or password. Please try again.';
+      }
+      
+      document.getElementById('errorText').textContent = finalMsg;
+      box.classList.add('show');
+    }
+    function hideError() {
+      document.getElementById('errorMsg').classList.remove('show');
+    }
+    function setLoading(on) {
+      const btn = document.getElementById('loginBtn');
+      const txt = document.getElementById('btnText');
+      const spinner = document.getElementById('spinner');
+      btn.disabled = on;
+      txt.style.display = on ? 'none' : 'inline';
+      spinner.style.display = on ? 'block' : 'none';
+    }
+    function setRegLoading(on) {
+      const btn = document.getElementById('regBtn');
+      const txt = document.getElementById('regBtnText');
+      const spinner = document.getElementById('regSpinner');
+      btn.disabled = on;
+      txt.style.display = on ? 'none' : 'inline';
+      spinner.style.display = on ? 'block' : 'none';
+    }
+
+    // Submit handler: Sign In
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      let email = document.getElementById('loginEmail').value.trim();
+      const phone = document.getElementById('loginPhone').value.trim();
+
+      if (!email || !phone) {
+        showError('Please fill in both User ID/email and password fields.');
+        return;
+      }
+
+      if (email === "teamfutrix-byte's Project") {
+        email = "teamfutrix-bytes-project@futrix.internal";
+      }
+
+      setLoading(true);
+
+      try {
+        const userObj = await signInUser(email, phone);
+
+        const remCb = document.getElementById('adminRememberMe');
+        if (remCb && remCb.checked) {
+          localStorage.setItem('futrix_remember_me', 'true');
+          localStorage.setItem('futrix_admin_email', email);
+        } else {
+          localStorage.removeItem('futrix_remember_me');
+          localStorage.removeItem('futrix_admin_email');
+        }
+
+        if (userObj.role === 'admin') {
+          window.location.href = '/features/super-admin/admin-dashboard.html';
+        } else if (userObj.role === 'teacher') {
+          window.location.href = '/features/teacher/teacher-dashboard.html';
+        } else {
+          await signOutUser();
+          setLoading(false);
+          showError('Invalid email/User ID or password. Please try again.');
+        }
+
+      } catch (err) {
+        console.error('Portal Login error:', err);
+        setLoading(false);
+        showError(err.message || 'Invalid email/User ID or password. Please try again.');
+      }
+    });
+
+    // Submit handler: Register Teacher / Admin
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      const name = document.getElementById('regName').value.trim();
+      let email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const stream = document.getElementById('regStream').value;
+
+      if (!name || !email || !phone) {
+        showError('Please fill in all registration fields.');
+        return;
+      }
+
+      let isSuperAdminReg = false;
+      if (email === "teamfutrix-byte's Project") {
+        email = "teamfutrix-bytes-project@futrix.internal";
+        isSuperAdminReg = true;
+      } else {
+        // Validate regular email format
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showError('Please enter a valid email address.');
+          return;
+        }
+      }
+
+      if (phone.length < 6) {
+        showError('Password must be at least 6 characters long.');
+        return;
+      }
+
+      setRegLoading(true);
+
+      try {
+        if (isSuperAdminReg) {
+          // Enforce single Super Admin constraint
+          const { data: existingAdmins, error: checkErr } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('role', 'admin');
+
+          if (checkErr) throw checkErr;
+          if (existingAdmins && existingAdmins.length > 0) {
+            showError('A Super Admin already exists on this platform. Only one Super Admin is allowed.');
+            setRegLoading(false);
+            return;
+          }
+        }
+
+        // Register Supabase Auth user
+        const { data, error } = await supabase.auth.signUp({
+          email: email,
+          password: phone,
+          options: {
+            data: {
+              full_name: name,
+              preparation_for: stream,
+              phone: phone
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        const targetRole = isSuperAdminReg ? 'admin' : 'teacher';
+
+        // Elevate profile role
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (existingProfile) {
+          const { error: uErr } = await supabase
+            .from('profiles')
+            .update({ role: targetRole, preparation_for: stream })
+            .eq('id', data.user.id);
+          if (uErr) throw uErr;
+        } else {
+          const { error: iErr } = await supabase.from('profiles').insert({
+            id: data.user.id,
+            full_name: name,
+            email: email,
+            phone: phone,
+            preparation_for: stream,
+            role: targetRole,
+            xp_balance: 100.00
+          });
+          if (iErr) throw iErr;
+        }
+
+        await logAuditEvent(isSuperAdminReg ? 'SuperAdminSignUp' : 'TeacherSignUp', { email, name });
+        alert(isSuperAdminReg ? 'Super Admin account registered successfully! You can now log in.' : 'Teacher account registered successfully! You can now log in.');
+        
+        // Swap to Sign In tab
+        tabSignIn.click();
+
+      } catch (err) {
+        console.error('Registration failed:', err.message);
+        showError('Registration failed: ' + err.message);
+      } finally {
+        setRegLoading(false);
+      }
+    });
+
+    // ── Web Audio API Retro Synth Engine
+    let audioCtx = null;
+    let isSoundMuted = true;
+    let ambientOscs = [];
+    let ambientGain = null;
+    let musicTimer = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSynthSound(type) {
+      if (isSoundMuted) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+
+      if (type === 'hover') {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(750, now + 0.08);
+        gainNode.gain.setValueAtTime(0.02, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'click') {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(60, now + 0.12);
+        gainNode.gain.setValueAtTime(0.1, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (type === 'error') {
+        const osc1 = audioCtx.createOscillator();
+        const gainNode1 = audioCtx.createGain();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(110, now);
+        gainNode1.gain.setValueAtTime(0.08, now);
+        gainNode1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc1.connect(gainNode1);
+        gainNode1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.15);
+
+        setTimeout(() => {
+          if (isSoundMuted) return;
+          const osc2 = audioCtx.createOscillator();
+          const gainNode2 = audioCtx.createGain();
+          osc2.type = 'sawtooth';
+          osc2.frequency.setValueAtTime(90, audioCtx.currentTime);
+          gainNode2.gain.setValueAtTime(0.08, audioCtx.currentTime);
+          gainNode2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+          osc2.connect(gainNode2);
+          gainNode2.connect(audioCtx.destination);
+          osc2.start(audioCtx.currentTime);
+          osc2.stop(audioCtx.currentTime + 0.2);
+        }, 180);
+      } else if (type === 'success') {
+        const notes = [261.63, 329.63, 392.00, 523.25];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            if (isSoundMuted) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.35);
+          }, idx * 100);
+        });
+      }
+    }
+
+    function toggleGlobalSound() {
+      const btn = document.getElementById('soundToggleBtn');
+      const icon = btn.querySelector('.sound-icon');
+      isSoundMuted = !isSoundMuted;
+      
+      if (!isSoundMuted) {
+        icon.textContent = '🔊';
+        btn.title = 'Mute Sound';
+        initAudio();
+        playSynthSound('success');
+        startAmbientMusic();
+      } else {
+        icon.textContent = '🔇';
+        btn.title = 'Unmute Sound';
+        stopAmbientMusic();
+      }
+    }
+
+    function startAmbientMusic() {
+      if (musicTimer) clearInterval(musicTimer);
+      
+      const sequence = [
+        [196.00, 246.94, 293.66],
+        [220.00, 261.63, 329.63],
+        [174.61, 220.00, 261.63],
+        [196.00, 246.94, 293.66]
+      ];
+      let step = 0;
+
+      musicTimer = setInterval(() => {
+        if (isSoundMuted) return;
+        initAudio();
+        const now = audioCtx.currentTime;
+        const chord = sequence[step % sequence.length];
+        
+        chord.forEach(freq => {
+          const osc = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+          gainNode.gain.setValueAtTime(0.008, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+          osc.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 1.8);
+        });
+        step++;
+      }, 2000);
+    }
+
+    function stopAmbientMusic() {
+      if (musicTimer) {
+        clearInterval(musicTimer);
+        musicTimer = null;
+      }
+    }
+
+    // Attach retro sound feedback to inputs and buttons
+    window.addEventListener('load', () => {
+      document.querySelectorAll('input, select, button, .tab-btn').forEach(el => {
+        el.addEventListener('mouseenter', () => playSynthSound('hover'));
+        el.addEventListener('focus', () => playSynthSound('hover'));
+        if (el.tagName === 'BUTTON' || el.classList.contains('tab-btn')) {
+          el.addEventListener('click', () => playSynthSound('click'));
+        }
+      });
+    });
+  </script>
+</body>
+</html>

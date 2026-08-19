@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Governance & LLMOps Control Center | FUTRIX Console</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #030508;
+      --sidebar-bg: #05080c;
+      --surface: rgba(10, 15, 30, 0.6);
+      --surface-hi: rgba(20, 28, 52, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #fb7185; /* Soft rose accent for LLM operations & gateway control */
+      --primary-glow: rgba(251, 113, 133, 0.4);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --accent: #22d3ee;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(251, 113, 133, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(34, 211, 238, 0.03) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--primary); }
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(251, 113, 133, 0.12);
+      color: var(--primary);
+      border-color: rgba(251, 113, 133, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(3, 5, 8, 0.35);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .gateway-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px var(--success); }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(22, 28, 50, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.accent::before { background: var(--accent); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(251, 113, 133, 0.15);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-submit:hover {
+      background: #f43f5e;
+      transform: translateY(-1px);
+    }
+
+    /* Split Workspace */
+    .split-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1.8fr;
+      gap: 1.5rem;
+    }
+
+    .content-list-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 550px;
+      overflow-y: auto;
+    }
+
+    .content-list-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 1rem;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+
+    .content-list-item:hover {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .content-list-item.selected {
+      border-color: var(--primary);
+      background: rgba(251, 113, 133, 0.05);
+    }
+
+    .content-list-item-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .content-list-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .prompt-version-badge {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(251, 113, 133, 0.15);
+      color: var(--primary);
+    }
+
+    /* Models Table */
+    .models-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .models-table th, .models-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .models-table th {
+      background: rgba(255,255,255,0.02);
+      color: var(--text-muted);
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+    }
+
+    /* Budget Progress */
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">FUTRIX<span>.</span></a>
+      <span class="logo-subtitle">LLMOps Console</span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-dashboard" class="active" onclick="switchTab('dashboard')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+          AI Gateway Dashboard
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-prompts" onclick="switchTab('prompts')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          Prompt Versioning
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-sandbox" onclick="switchTab('sandbox')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+          Prompt Sandbox Testing
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-registry" onclick="switchTab('registry')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+          Model Registry
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">Back to Admin Panel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">AI Gateway Dashboard</h2>
+      <div class="gateway-badge">
+        <span class="live-pulse"></span>
+        AI Gateway Active
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: AI DASHBOARD -->
+      <div id="panel-dashboard" class="view-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card success">
+            <span class="kpi-label">AI Requests Today</span>
+            <span class="kpi-value" id="kpi-reqs">0</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Active Models / Providers</span>
+            <span class="kpi-value" id="kpi-models">0 / 0</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">Average Latency</span>
+            <span class="kpi-value" id="kpi-latency">0 ms</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">Cache Hit Rate</span>
+            <span class="kpi-value" id="kpi-cache">0%</span>
+          </div>
+        </div>
+
+        <div class="glass-card" style="max-width:500px;">
+          <h3 class="panel-header">AI Providers Token Budget Usage</h3>
+          <div>
+            <span class="form-label" id="budget-spent-lbl">Spent: $0.00 / Limit: $500.00</span>
+            <div class="progress-bar-container">
+              <div id="budget-progress" class="progress-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Semantic Caches Registry</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>Cache Key</th>
+                  <th>Hash SHA-256</th>
+                  <th>Cached Output</th>
+                  <th>Created At</th>
+                </tr>
+              </thead>
+              <tbody id="caches-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: PROMPTS -->
+      <div id="panel-prompts" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Prompts Library</h3>
+            <div class="content-list-items" id="prompts-list">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="panel-header">
+              <span>Prompt Versions Control</span>
+              <button class="btn-submit" style="font-size:0.75rem; padding:0.4rem 0.8rem;" onclick="openNewVersionModal()">New Version</button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="models-table">
+                <thead>
+                  <tr>
+                    <th>Ver</th>
+                    <th>Template Content</th>
+                    <th>Change Log</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="versions-table-body">
+                  <tr>
+                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:3rem;">Select a prompt from the library to view versions.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- New Version Editor form (inline) -->
+            <div id="new-version-section" style="display:none; border-top:1px solid var(--border); padding-top:1.5rem; margin-top:2rem;">
+              <h4 class="panel-header" style="font-size:0.9rem;">Refine Prompt Template</h4>
+              <form onsubmit="savePromptVersion(event)">
+                <div class="form-group">
+                  <label class="form-label">Template Content (Use {{placeholder}} blocks)</label>
+                  <textarea id="prompt-template-text" class="form-textarea" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Iteration Change summary</label>
+                  <input type="text" id="prompt-change-summary" class="form-input" placeholder="e.g. adjust patient educator tone..." required />
+                </div>
+                <button type="submit" class="btn-submit">Save Version Draft</button>
+                <button type="button" class="btn-submit" style="background:rgba(255,255,255,0.03); border:1px solid var(--border); box-shadow:none; color:#fff;" onclick="closeNewVersionModal()">Cancel</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: SANDBOX TESTING -->
+      <div id="panel-sandbox" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Sandbox Completion settings</h3>
+            <form onsubmit="runSandboxTest(event)">
+              <div class="form-group">
+                <label class="form-label">Target Model Registry</label>
+                <select id="sandbox-model" class="form-select">
+                  <!-- Loaded dynamically -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sandbox Prompt Template</label>
+                <textarea id="sandbox-template" class="form-textarea" rows="6">You are Futrix AI. Greet the student {{student_name}} in language {{language}} and answer: {{question}}</textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Variable: student_name</label>
+                <input type="text" id="var-student" class="form-input" value="Rohan" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Variable: language</label>
+                <input type="text" id="var-lang" class="form-input" value="Hindi" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Variable: question</label>
+                <input type="text" id="var-question" class="form-input" value="Explain Newton third law." />
+              </div>
+              
+              <button type="submit" class="btn-submit" style="width:100%;">Execute Sandbox Completion</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">LLM Response Validation</h3>
+            
+            <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); padding:1rem; border-radius:10px; min-height:220px; font-size:0.9rem; margin-bottom:1.5rem;" id="sandbox-output">
+              <span style="color:var(--text-muted);">Sandbox execution output will render here...</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+              <div style="background:rgba(255,255,255,0.01); border:1px solid var(--border); padding:0.75rem; border-radius:8px; text-align:center;">
+                <span class="form-label">Latency</span>
+                <strong style="font-size:1.1rem; color:var(--accent);" id="test-latency">0 ms</strong>
+              </div>
+              <div style="background:rgba(255,255,255,0.01); border:1px solid var(--border); padding:0.75rem; border-radius:8px; text-align:center;">
+                <span class="form-label">Tokens Volume</span>
+                <strong style="font-size:1.1rem; color:var(--warning);" id="test-tokens">0</strong>
+              </div>
+              <div style="background:rgba(255,255,255,0.01); border:1px solid var(--border); padding:0.75rem; border-radius:8px; text-align:center;">
+                <span class="form-label">Computed Cost</span>
+                <strong style="font-size:1.1rem; color:var(--success);" id="test-cost">$0.0000</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: MODEL REGISTRY -->
+      <div id="panel-registry" class="view-panel">
+        <div class="glass-card">
+          <h3 class="panel-header">Model Registry Configurations</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>Model ID</th>
+                  <th>Display Name</th>
+                  <th>Provider</th>
+                  <th>Context Window</th>
+                  <th>Input Cost ($/M)</th>
+                  <th>Output Cost ($/M)</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="models-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  let selectedPromptId = null;
+
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav-list button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    const displayTitles = {
+      dashboard: 'AI Gateway Dashboard',
+      prompts: 'Prompt Versioning',
+      sandbox: 'Prompt Sandbox Testing',
+      registry: 'Model Registry'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    if (tabId === 'dashboard') loadDashboardData();
+    else if (tabId === 'prompts') loadPromptsLibrary();
+    else if (tabId === 'sandbox') loadSandboxModels();
+    else if (tabId === 'registry') loadModelRegistry();
+  }
+
+  // TAB 1: Dashboard
+  async function loadDashboardData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/ai/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('kpi-reqs').textContent = data.requestsToday;
+      document.getElementById('kpi-models').textContent = `${data.activeModelsCount} / ${data.activeProvidersCount}`;
+      document.getElementById('kpi-latency').textContent = `${data.avgLatencyMs} ms`;
+      document.getElementById('kpi-cache').textContent = `${data.cacheHitRate}%`;
+
+      document.getElementById('budget-spent-lbl').textContent = `Spent: $${parseFloat(data.budgetSpentMonthly).toFixed(4)} / Limit: $${parseFloat(data.budgetLimitMonthly).toFixed(2)}`;
+      const pct = Math.min(100, (data.budgetSpentMonthly / data.budgetLimitMonthly) * 100);
+      document.getElementById('budget-progress').style.width = pct + '%';
+
+      loadCachesList();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadCachesList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/ai/caches', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('caches-table-body');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:3rem;">Semantic cache currently empty.</td></tr>';
+        return;
+      }
+
+      list.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color:var(--accent); font-family:monospace;">${c.cache_key.substring(0, 12)}...</strong></td>
+          <td style="font-family:monospace; font-size:0.7rem; color:var(--text-muted);">${c.prompt_hash.substring(0, 24)}...</td>
+          <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${c.response_text}</td>
+          <td>${new Date(c.created_at).toLocaleDateString()}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TAB 2: Prompts
+  async function loadPromptsLibrary() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/ai/prompts', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      const cont = document.getElementById('prompts-list');
+      cont.innerHTML = '';
+      data.prompts.forEach(p => {
+        const div = document.createElement('div');
+        div.className = `content-list-item ${selectedPromptId === p.id ? 'selected' : ''}`;
+        div.style.cursor = 'pointer';
+        div.onclick = () => selectPrompt(p.id, data.versions);
+        div.innerHTML = `
+          <div class="content-list-item-title">
+            <span>${p.display_name}</span>
+            <span class="prompt-version-badge">${p.id}</span>
+          </div>
+          <div class="content-list-item-meta">
+            <span>Module: ${p.module}</span>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function selectPrompt(promptId, allVersions) {
+    selectedPromptId = promptId;
+    loadPromptsLibrary();
+
+    const versions = allVersions.filter(v => v.prompt_id === promptId);
+    const tbody = document.getElementById('versions-table-body');
+    tbody.innerHTML = '';
+
+    if (versions.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:3rem;">No iteration versions registered for this prompt.</td></tr>';
+      return;
+    }
+
+    versions.forEach(v => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>v${v.version_number}</strong></td>
+        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${v.content}</td>
+        <td>${v.change_summary || 'Baseline version'}</td>
+        <td>
+          <span class="status-indicator ${v.status === 'Published' ? 'Compliant' : ''}"></span>
+          <strong>${v.status}</strong>
+        </td>
+        <td>
+          ${v.status !== 'Published' ? `<button class="btn-submit" style="font-size:0.75rem; padding:0.3rem 0.6rem; box-shadow:none;" onclick="publishPromptVersion('${v.prompt_id}', '${v.id}')">Publish</button>` : '<span style="color:var(--success); font-weight:700;">Active</span>'}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openNewVersionModal() {
+    if (!selectedPromptId) {
+      alert('Please select a prompt from the library first.');
+      return;
+    }
+    document.getElementById('new-version-section').style.display = 'block';
+  }
+
+  function closeNewVersionModal() {
+    document.getElementById('new-version-section').style.display = 'none';
+  }
+
+  async function savePromptVersion(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+    const payload = {
+      promptId: selectedPromptId,
+      content: document.getElementById('prompt-template-text').value,
+      changeSummary: document.getElementById('prompt-change-summary').value
+    };
+
+    try {
+      const res = await fetch('/api/ai/prompts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Save prompt failed');
+      alert('New prompt version draft saved successfully!');
+      closeNewVersionModal();
+      switchTab('prompts');
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function publishPromptVersion(promptId, versionId) {
+    const token = await getAuthToken();
+    try {
+      const res = await fetch('/api/ai/prompts/publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ promptId, versionId })
+      });
+      if (!res.ok) throw new Error('Publish version failed');
+      alert('Prompt version published successfully!');
+      switchTab('prompts');
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // TAB 3: Sandbox Testing
+  async function loadSandboxModels() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/ai/models', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const sel = document.getElementById('sandbox-model');
+      sel.innerHTML = '';
+      list.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = `${m.display_name} (${m.provider_id})`;
+        sel.appendChild(opt);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function runSandboxTest(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+    const payload = {
+      modelId: document.getElementById('sandbox-model').value,
+      promptText: document.getElementById('sandbox-template').value,
+      variables: {
+        student_name: document.getElementById('var-student').value,
+        language: document.getElementById('var-lang').value,
+        question: document.getElementById('var-question').value
+      }
+    };
+
+    const outBox = document.getElementById('sandbox-output');
+    outBox.innerHTML = '<span style="color:var(--primary);">Calling AI Gateway adaptador...</span>';
+
+    try {
+      const res = await fetch('/api/ai/prompts/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Sandbox completion execution failed.');
+      const result = await res.json();
+
+      outBox.innerHTML = `<strong>Response:</strong><br/><p style="margin-top:0.5rem; white-space:pre-wrap;">${result.completion}</p>`;
+      document.getElementById('test-latency').textContent = `${result.latencyMs} ms`;
+      document.getElementById('test-tokens').textContent = result.tokensUsed;
+      document.getElementById('test-cost').textContent = `$${parseFloat(result.costUsd).toFixed(5)}`;
+    } catch (err) {
+      outBox.innerHTML = `<span style="color:var(--danger)">Error: ${err.message}</span>`;
+    }
+  }
+
+  // TAB 4: Model Registry
+  async function loadModelRegistry() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/ai/models', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('models-table-body');
+      tbody.innerHTML = '';
+
+      list.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong style="color:var(--primary); font-family:monospace;">${m.id}</strong></td>
+          <td>${m.display_name}</td>
+          <td>${m.provider_name}</td>
+          <td>${m.context_window.toLocaleString()}</td>
+          <td>${parseFloat(m.input_cost_per_million).toFixed(4)}</td>
+          <td>${parseFloat(m.output_cost_per_million).toFixed(4)}</td>
+          <td>
+            <span class="status-indicator ${m.status === 'Active' ? 'Compliant' : ''}"></span>
+            <strong>${m.status}</strong>
+          </td>
+          <td>
+            <button class="btn-submit" style="font-size:0.72rem; padding:0.3rem 0.6rem; box-shadow:none; background:${m.status === 'Active' ? 'rgba(255,255,255,0.03)' : 'var(--success)'}; border:1px solid var(--border); color:${m.status === 'Active' ? '#fff' : '#fff'};" onclick="toggleModelStatus('${m.id}', '${m.status}')">
+              ${m.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function toggleModelStatus(modelId, currentStatus) {
+    const nextStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/ai/models/status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ modelId, status: nextStatus })
+      });
+      if (!res.ok) throw new Error('Toggle status failed');
+      loadModelRegistry();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+  });
+</script>
+
+</body>
+</html>

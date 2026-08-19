@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise Notification Center | FUTRIX Console</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #070913;
+      --sidebar-bg: #0b0d1b;
+      --surface: rgba(20, 24, 46, 0.6);
+      --surface-hi: rgba(30, 36, 68, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #4d8eff;
+      --primary-glow: rgba(77, 142, 255, 0.4);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --accent: #06b6d4;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(77, 142, 255, 0.07) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── LAYOUT ── */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--primary); }
+
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(77, 142, 255, 0.12);
+      color: var(--primary);
+      border-color: rgba(77, 142, 255, 0.2);
+      font-weight: 600;
+      box-shadow: 0 0 15px rgba(77, 142, 255, 0.05);
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    .btn-back-console:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(7, 9, 19, 0.3);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px var(--success); }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    /* ── CONTENT PANELS ── */
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    /* KPIs Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(25, 29, 54, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+
+    .kpi-card.failed::before { background: var(--danger); }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.accent::before { background: var(--accent); }
+    .kpi-card.warning::before { background: var(--warning); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Charts & Details Grid */
+    .details-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .dashboard-panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Activity Ledger */
+    .ledger-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .ledger-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      transition: background 0.15s;
+    }
+
+    .ledger-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .ledger-left {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .channel-badge {
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(77, 142, 255, 0.15);
+      color: var(--primary);
+    }
+
+    .channel-badge.sms { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .channel-badge.push { background: rgba(6, 182, 212, 0.15); color: var(--accent); }
+    .channel-badge.whatsapp { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+
+    .status-pill {
+      padding: 0.18rem 0.45rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .status-pill.Delivered, .status-pill.Opened, .status-pill.Clicked {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-pill.Failed {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .status-pill.Queued, .status-pill.Processing {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(77, 142, 255, 0.15);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .btn-submit:hover {
+      background: #3b7ced;
+      transform: translateY(-1px);
+    }
+
+    /* Template Split Workspace */
+    .split-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 1.5rem;
+    }
+
+    .template-list-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 550px;
+      overflow-y: auto;
+    }
+
+    .template-list-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .template-list-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(77, 142, 255, 0.2);
+    }
+
+    .template-list-item.selected {
+      background: rgba(77, 142, 255, 0.08);
+      border-color: var(--primary);
+    }
+
+    .template-list-item-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .template-list-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    /* Providers grid */
+    .providers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .provider-status-card {
+      background: rgba(25, 29, 54, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .provider-details h4 {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+
+    .provider-details p {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .provider-badge {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .provider-badge.Healthy {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .provider-badge.Degraded {
+      background: var(--warning);
+      box-shadow: 0 0 8px var(--warning);
+    }
+
+    .provider-badge.Dead {
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
+    /* Variable Helpers */
+    .variable-helper-box {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .variable-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      background: rgba(77, 142, 255, 0.12);
+      color: var(--primary);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      margin-right: 0.4rem;
+      margin-bottom: 0.4rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .variable-tag:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">FUTRIX<span>.</span></a>
+      <span class="logo-subtitle">Communication Engine</span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-overview" class="active" onclick="switchTab('overview')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+          Overview Dashboard
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-templates" onclick="switchTab('templates')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+          Templates Workspace
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-preferences" onclick="switchTab('preferences')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          Preferences Manager
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-campaigns" onclick="switchTab('campaigns')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+          Campaign Hub
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-announcements" onclick="switchTab('announcements')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+          System Announcements
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">Back to Admin Panel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">Overview Dashboard</h2>
+      <div class="topbar-right">
+        <div class="live-status">
+          <span class="live-pulse"></span>
+          Live Monitoring
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      
+      <!-- TAB 1: OVERVIEW -->
+      <div id="panel-overview" class="view-panel active">
+        <!-- KPIs Row -->
+        <div class="kpi-grid">
+          <div class="kpi-card success">
+            <span class="kpi-label">Sent Today</span>
+            <span class="kpi-value" id="kpi-sent-today">0</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Delivery Rate</span>
+            <span class="kpi-value" id="kpi-delivery-rate">100.0%</span>
+          </div>
+          <div class="kpi-card failed">
+            <span class="kpi-label">Failure Rate</span>
+            <span class="kpi-value" id="kpi-failure-rate">0.0%</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">Avg Open Rate</span>
+            <span class="kpi-value" id="kpi-open-rate">0.0%</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">Avg Click Rate</span>
+            <span class="kpi-value" id="kpi-click-rate">0.0%</span>
+          </div>
+        </div>
+
+        <!-- Provider health row -->
+        <div class="providers-grid" id="providers-container">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Details split grid -->
+        <div class="details-grid">
+          <div class="glass-card">
+            <h3 class="dashboard-panel-header">Real-Time Transmission Ledger</h3>
+            <div class="ledger-list" id="activity-ledger">
+              <!-- Dynamically populated activity -->
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:1rem;">
+            <div class="glass-card" style="flex:1;">
+              <h3 class="dashboard-panel-header">Channel Distribution</h3>
+              <div style="position:relative; width:100%; height:200px;">
+                <canvas id="channelShareChart"></canvas>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <h3 class="dashboard-panel-header">Active Queues Status</h3>
+              <div id="queue-status-container" style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.85rem;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: TEMPLATES -->
+      <div id="panel-templates" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <div class="dashboard-panel-header">
+              <span>Select Notification Template</span>
+              <button class="btn-submit" style="padding:0.4rem 0.8rem; font-size:0.75rem;" onclick="createNewTemplateForm()">+ New Template</button>
+            </div>
+            <div class="template-list-items" id="templates-list">
+              <!-- Templates loaded dynamically -->
+            </div>
+          </div>
+
+          <div class="glass-card" id="template-editor-panel">
+            <h3 class="dashboard-panel-header" id="editor-header">Template Editor</h3>
+            <form id="template-form" onsubmit="saveTemplate(event)">
+              <div class="form-group">
+                <label class="form-label">Template ID</label>
+                <input type="text" id="tpl-id" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Friendly Name</label>
+                <input type="text" id="tpl-name" class="form-input" required />
+              </div>
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div>
+                  <label class="form-label">Category</label>
+                  <select id="tpl-category" class="form-select">
+                    <option value="User Registration">User Registration</option>
+                    <option value="Mock Test Submission">Mock Test Submission</option>
+                    <option value="Payment Notifications">Payment Notifications</option>
+                    <option value="Reminder Notifications">Reminder Notifications</option>
+                    <option value="Learning Notifications">Learning Notifications</option>
+                    <option value="System Announcements">System Announcements</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Channel</label>
+                  <select id="tpl-channel" class="form-select">
+                    <option value="email">Email</option>
+                    <option value="sms">SMS</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="push">Push Notification</option>
+                    <option value="in-app">In-App Notification</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Subject Line (Emails only)</label>
+                <input type="text" id="tpl-subject" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Notification Title / Header</label>
+                <input type="text" id="tpl-title" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Message Template Body</label>
+                <textarea id="tpl-message" class="form-textarea" rows="4" required></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">HTML Rich Body (Emails only)</label>
+                <textarea id="tpl-html" class="form-textarea" rows="3"></textarea>
+              </div>
+              <div class="variable-helper-box">
+                <span class="form-label" style="font-size:0.7rem; margin-bottom:0.3rem;">Placeholders Helper:</span>
+                <div id="variable-tags-list">
+                  <span class="variable-tag" onclick="insertVariable('{{studentName}}')">{{studentName}}</span>
+                  <span class="variable-tag" onclick="insertVariable('{{exam}}')">{{exam}}</span>
+                  <span class="variable-tag" onclick="insertVariable('{{institute}}')">{{institute}}</span>
+                  <span class="variable-tag" onclick="insertVariable('{{subject}}')">{{subject}}</span>
+                  <span class="variable-tag" onclick="insertVariable('{{score}}')">{{score}}</span>
+                  <span class="variable-tag" onclick="insertVariable('{{rank}}')">{{rank}}</span>
+                  <span class="variable-tag" onclick="insertVariable('{{xp}}')">{{xp}}</span>
+                  <span class="variable-tag" onclick="insertVariable('{{invoiceNumber}}')">{{invoiceNumber}}</span>
+                  <span class="variable-tag" onclick="insertVariable('{{paymentAmount}}')">{{paymentAmount}}</span>
+                </div>
+              </div>
+              <button type="submit" class="btn-submit">Save Template</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: PREFERENCES -->
+      <div id="panel-preferences" class="view-panel">
+        <div class="glass-card" style="max-width: 600px;">
+          <h3 class="dashboard-panel-header">User Preference Lookup</h3>
+          <div class="form-group" style="display:flex; gap:1rem;">
+            <input type="text" id="pref-user-search" class="form-input" placeholder="Enter User ID (e.g. pay-test-student)" value="pay-test-student" />
+            <button class="btn-submit" onclick="lookupUserPreferences()">Lookup</button>
+          </div>
+
+          <div id="preferences-display-panel" style="display:none; border-top:1px solid var(--border); padding-top:1.5rem; margin-top:1.5rem;">
+            <h4 class="dashboard-panel-header" style="font-size:0.9rem;">Notification Opt-In Channels</h4>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+              <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem;">
+                <input type="checkbox" id="pref-email" /> Email Notifications
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem;">
+                <input type="checkbox" id="pref-sms" /> SMS Notifications
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem;">
+                <input type="checkbox" id="pref-wa" /> WhatsApp Notifications
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem;">
+                <input type="checkbox" id="pref-push" /> Mobile Push Notifications
+              </label>
+            </div>
+
+            <h4 class="dashboard-panel-header" style="font-size:0.9rem;">Notification Categories</h4>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+              <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem;">
+                <input type="checkbox" id="pref-learning" /> Learning & Revision Alerts
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem;">
+                <input type="checkbox" id="pref-achievements" /> Achievement Alerts
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem;">
+                <input type="checkbox" id="pref-payments" /> Payment & Billing
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem;">
+                <input type="checkbox" id="pref-marketing" /> Promotional & Campaigns
+              </label>
+            </div>
+
+            <h4 class="dashboard-panel-header" style="font-size:0.9rem;">Quiet Hours Configuration</h4>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+              <div>
+                <label class="form-label" style="font-size:0.7rem;">Starts (e.g. 22:00:00)</label>
+                <input type="text" id="pref-quiet-start" class="form-input" placeholder="HH:MM:SS" />
+              </div>
+              <div>
+                <label class="form-label" style="font-size:0.7rem;">Ends (e.g. 06:00:00)</label>
+                <input type="text" id="pref-quiet-end" class="form-input" placeholder="HH:MM:SS" />
+              </div>
+            </div>
+
+            <button class="btn-submit" onclick="saveUserPreferences()">Update Preferences</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: CAMPAIGNS -->
+      <div id="panel-campaigns" class="view-panel">
+        <div class="glass-card" style="max-width: 600px;">
+          <h3 class="dashboard-panel-header">Launch Dynamic Marketing/Retention Campaign</h3>
+          <form id="campaign-form" onsubmit="launchCampaign(event)">
+            <div class="form-group">
+              <label class="form-label">Campaign Name</label>
+              <input type="text" id="camp-name" class="form-input" placeholder="E.g. JEE Masterclass retention" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Campaign Category</label>
+              <select id="camp-category" class="form-select">
+                <option value="Retention">Retention Campaign</option>
+                <option value="Re-engagement">Re-engagement Campaign</option>
+                <option value="Festival">Festival Campaign</option>
+                <option value="Scholarship">Scholarship Drive</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Assigned Template</label>
+              <select id="camp-template" class="form-select">
+                <!-- Loaded dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group" style="border:1px solid var(--border); padding:1rem; border-radius:10px; background:rgba(255,255,255,0.01);">
+              <span class="form-label" style="margin-bottom:0.75rem;">Audience Segmentation Filters</span>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div>
+                  <label class="form-label" style="font-size:0.7rem;">Target Profile Role</label>
+                  <select id="camp-seg-role" class="form-select">
+                    <option value="">Any Role</option>
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label" style="font-size:0.7rem;">Target Stream/Goal</label>
+                  <select id="camp-seg-stream" class="form-select">
+                    <option value="">Any Preparation</option>
+                    <option value="JEE Main">JEE Main</option>
+                    <option value="NEET">NEET</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Dispatch Campaign</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- TAB 5: ANNOUNCEMENTS -->
+      <div id="panel-announcements" class="view-panel">
+        <div class="glass-card" style="max-width: 600px;">
+          <h3 class="dashboard-panel-header">Broadcast Platform-Wide Announcement</h3>
+          <form id="announcement-form" onsubmit="publishAnnouncement(event)">
+            <div class="form-group">
+              <label class="form-label">Announcement Title</label>
+              <input type="text" id="ann-title" class="form-input" placeholder="E.g. Scheduled system maintenance" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select id="ann-category" class="form-select">
+                <option value="Platform">Platform Maintenance</option>
+                <option value="Emergency">Emergency Alert</option>
+                <option value="Feature">Feature Release</option>
+                <option value="Community">Community Notice</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:grid; grid-template-columns:1fr 1.2fr; gap:1rem;">
+              <div>
+                <label class="form-label">Target Scope</label>
+                <select id="ann-scope" class="form-select">
+                  <option value="Global">Global Broadcast</option>
+                  <option value="Institute">Specific Institute</option>
+                  <option value="Exam">Specific Exam Category</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Scope Filter Value</label>
+                <input type="text" id="ann-scope-val" class="form-input" placeholder="E.g. JEE Main / Inst-102" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Broadcast Message Content</label>
+              <textarea id="ann-message" class="form-textarea" rows="4" placeholder="Type your broadcast announcement message details..." required></textarea>
+            </div>
+            <button type="submit" class="btn-submit">Publish Broadcast</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  // Initialize Supabase configuration locally matching standard project URLs and Anon Key
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  let activeTab = 'overview';
+  let chartInstance = null;
+  let allTemplates = [];
+
+  // Authentication Helpers
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  // Tab View Switcher
+  function switchTab(tabId) {
+    activeTab = tabId;
+    
+    // Toggle active links
+    document.querySelectorAll('.nav-list button').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    // Toggle panels
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    // Display title update
+    const displayTitles = {
+      overview: 'Overview Dashboard',
+      templates: 'Templates Workspace',
+      preferences: 'Preferences Manager',
+      campaigns: 'Campaign Hub',
+      announcements: 'System Announcements'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    // Trigger tab-specific loaders
+    if (tabId === 'overview') {
+      loadDashboardData();
+    } else if (tabId === 'templates') {
+      loadTemplates();
+    } else if (tabId === 'campaigns') {
+      loadCampaignTemplatesDropdown();
+    }
+  }
+
+  // Load Dashboard Overviews
+  async function loadDashboardData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/notifications/dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Dashboard stats fetch failed');
+      const data = await res.json();
+
+      // Set KPIs
+      document.getElementById('kpi-sent-today').textContent = data.sentToday;
+      document.getElementById('kpi-delivery-rate').textContent = `${data.deliveryRate}%`;
+      document.getElementById('kpi-failure-rate').textContent = `${data.failureRate}%`;
+      document.getElementById('kpi-open-rate').textContent = `${data.openRate}%`;
+      document.getElementById('kpi-click-rate').textContent = `${data.clickRate}%`;
+
+      // Set Providers
+      const providersCont = document.getElementById('providers-container');
+      providersCont.innerHTML = '';
+      data.providers.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'provider-status-card';
+        card.innerHTML = `
+          <div class="provider-details">
+            <h4>${p.id.toUpperCase()}</h4>
+            <p>Gate: ${p.provider}</p>
+            <p>Cost: ₹${p.cost_per_message}</p>
+          </div>
+          <span class="provider-badge ${p.health_status}"></span>
+        `;
+        providersCont.appendChild(card);
+      });
+
+      // Set Active Queues
+      const queueCont = document.getElementById('queue-status-container');
+      queueCont.innerHTML = '';
+      const queues = ['EMAIL', 'SMS', 'WHATSAPP', 'PUSH', 'RETRY', 'DLQ'];
+      queues.forEach(q => {
+        const count = data.queueStatus[q] || 0;
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.padding = '0.35rem 0';
+        row.style.borderBottom = '1px solid rgba(255, 255, 255, 0.03)';
+        row.innerHTML = `
+          <span style="color:var(--text-muted)">${q} Queue</span>
+          <strong style="color:${count > 0 && q === 'DLQ' ? 'var(--danger)' : '#fff'}">${count} messages</strong>
+        `;
+        queueCont.appendChild(row);
+      });
+
+      // Activity Ledger
+      const activityCont = document.getElementById('activity-ledger');
+      activityCont.innerHTML = '';
+      if (data.recentActivity.length === 0) {
+        activityCont.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:2rem;">No recent notification dispatches.</div>';
+      } else {
+        data.recentActivity.forEach(a => {
+          const item = document.createElement('div');
+          item.className = 'ledger-item';
+          const time = new Date(a.created_at).toLocaleTimeString();
+          item.innerHTML = `
+            <div class="ledger-left">
+              <span class="channel-badge ${a.channel}">${a.channel}</span>
+              <div>
+                <p style="color:#fff; font-weight:600;">${a.recipient}</p>
+                <p style="font-size:0.75rem; color:var(--text-muted);">${a.template_name || 'Direct Send'}</p>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <span class="status-pill ${a.status}">${a.status}</span>
+              <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.15rem;">${time}</p>
+            </div>
+          `;
+          activityCont.appendChild(item);
+        });
+      }
+
+      // Update Chart
+      renderChannelChart(data.channels);
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Render Doughnut Chart
+  function renderChannelChart(channels) {
+    const ctx = document.getElementById('channelShareChart').getContext('2d');
+    
+    if (chartInstance) {
+      chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Email', 'SMS', 'WhatsApp', 'Push', 'In-App'],
+        datasets: [{
+          data: [channels.email, channels.sms, channels.whatsapp, channels.push, channels['in-app']],
+          backgroundColor: ['#4d8eff', '#f59e0b', '#10b981', '#06b6d4', '#8b5cf6'],
+          borderColor: 'rgba(7, 9, 19, 0.8)',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: { color: '#f3f4f6', font: { family: 'Geist' } }
+          }
+        }
+      }
+    });
+  }
+
+  // Load templates workspace list
+  async function loadTemplates() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/notifications/templates', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      allTemplates = await res.json();
+
+      const listCont = document.getElementById('templates-list');
+      listCont.innerHTML = '';
+
+      allTemplates.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'template-list-item';
+        item.id = `template-card-${t.id}`;
+        item.onclick = () => selectTemplate(t.id);
+        item.innerHTML = `
+          <div class="template-list-item-title">
+            <span>${t.name}</span>
+            <span class="channel-badge ${t.channel}" style="padding: 0.1rem 0.35rem; font-size: 0.6rem;">${t.channel}</span>
+          </div>
+          <div class="template-list-item-meta">
+            <span>ID: ${t.id}</span>
+            <span>Ver: ${t.version}</span>
+            <span>Lang: ${t.language}</span>
+          </div>
+        `;
+        listCont.appendChild(item);
+      });
+
+      if (allTemplates.length > 0) {
+        selectTemplate(allTemplates[0].id);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Select a template for editing
+  function selectTemplate(id) {
+    document.querySelectorAll('.template-list-item').forEach(card => card.classList.remove('selected'));
+    const selectedCard = document.getElementById(`template-card-${id}`);
+    if (selectedCard) selectedCard.classList.add('selected');
+
+    const template = allTemplates.find(t => t.id === id);
+    if (!template) return;
+
+    document.getElementById('editor-header').textContent = `Edit Template: ${template.name}`;
+    document.getElementById('tpl-id').value = template.id;
+    document.getElementById('tpl-id').readOnly = true;
+    document.getElementById('tpl-name').value = template.name;
+    document.getElementById('tpl-category').value = template.category;
+    document.getElementById('tpl-channel').value = template.channel;
+    document.getElementById('tpl-subject').value = template.subject || '';
+    document.getElementById('tpl-title').value = template.title || '';
+    document.getElementById('tpl-message').value = template.message || '';
+    document.getElementById('tpl-html').value = template.html_body || '';
+  }
+
+  function createNewTemplateForm() {
+    document.querySelectorAll('.template-list-item').forEach(card => card.classList.remove('selected'));
+    document.getElementById('editor-header').textContent = 'Create New Template';
+    document.getElementById('tpl-id').value = '';
+    document.getElementById('tpl-id').readOnly = false;
+    document.getElementById('tpl-name').value = '';
+    document.getElementById('tpl-category').value = 'User Registration';
+    document.getElementById('tpl-channel').value = 'email';
+    document.getElementById('tpl-subject').value = '';
+    document.getElementById('tpl-title').value = '';
+    document.getElementById('tpl-message').value = '';
+    document.getElementById('tpl-html').value = '';
+  }
+
+  // Insert variable into message textbox
+  function insertVariable(tag) {
+    const txtArea = document.getElementById('tpl-message');
+    const start = txtArea.selectionStart;
+    const end = txtArea.selectionEnd;
+    const text = txtArea.value;
+    txtArea.value = text.substring(0, start) + tag + text.substring(end);
+    txtArea.focus();
+  }
+
+  // Save/Update template
+  async function saveTemplate(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const tplData = {
+      id: document.getElementById('tpl-id').value,
+      name: document.getElementById('tpl-name').value,
+      category: document.getElementById('tpl-category').value,
+      channel: document.getElementById('tpl-channel').value,
+      subject: document.getElementById('tpl-subject').value,
+      title: document.getElementById('tpl-title').value,
+      message: document.getElementById('tpl-message').value,
+      html_body: document.getElementById('tpl-html').value,
+      variables: ['studentName', 'exam', 'institute', 'subject', 'score', 'rank', 'xp']
+    };
+
+    try {
+      const res = await fetch('/api/notifications/templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(tplData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save template');
+
+      alert(`Template saved successfully (New Version: ${data.version})!`);
+      loadTemplates();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // Preferences Manager Lookups
+  async function lookupUserPreferences() {
+    const userId = document.getElementById('pref-user-search').value.trim();
+    if (!userId) return;
+
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/notifications/preferences?userId=${userId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'User preferences not found');
+
+      // Checkboxes sets
+      document.getElementById('pref-email').checked = data.email_enabled;
+      document.getElementById('pref-sms').checked = data.sms_enabled;
+      document.getElementById('pref-wa').checked = data.whatsapp_enabled;
+      document.getElementById('pref-push').checked = data.push_enabled;
+
+      document.getElementById('pref-learning').checked = data.learning_reminders_enabled;
+      document.getElementById('pref-achievements').checked = data.achievement_alerts_enabled;
+      document.getElementById('pref-payments').checked = data.payment_alerts_enabled;
+      document.getElementById('pref-marketing').checked = data.marketing_enabled;
+
+      document.getElementById('pref-quiet-start').value = data.quiet_hours_start || '';
+      document.getElementById('pref-quiet-end').value = data.quiet_hours_end || '';
+
+      document.getElementById('preferences-display-panel').style.display = 'block';
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // Save Preferences Updates
+  async function saveUserPreferences() {
+    const userId = document.getElementById('pref-user-search').value.trim();
+    const token = await getAuthToken();
+
+    const payload = {
+      userId,
+      preferences: {
+        email_enabled: document.getElementById('pref-email').checked,
+        sms_enabled: document.getElementById('pref-sms').checked,
+        whatsapp_enabled: document.getElementById('pref-wa').checked,
+        push_enabled: document.getElementById('pref-push').checked,
+        
+        learning_reminders_enabled: document.getElementById('pref-learning').checked,
+        achievement_alerts_enabled: document.getElementById('pref-achievements').checked,
+        payment_alerts_enabled: document.getElementById('pref-payments').checked,
+        marketing_enabled: document.getElementById('pref-marketing').checked,
+
+        quiet_hours_start: document.getElementById('pref-quiet-start').value || null,
+        quiet_hours_end: document.getElementById('pref-quiet-end').value || null
+      }
+    };
+
+    try {
+      const res = await fetch('/api/notifications/preferences', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update preferences');
+
+      alert('User preferences updated successfully!');
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // Campaign templates selector loading
+  async function loadCampaignTemplatesDropdown() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/notifications/templates', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const templates = await res.json();
+      const select = document.getElementById('camp-template');
+      select.innerHTML = '';
+      templates.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.name} (${t.channel.toUpperCase()})`;
+        select.appendChild(opt);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Launch segmentation campaign
+  async function launchCampaign(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      name: document.getElementById('camp-name').value,
+      category: document.getElementById('camp-category').value,
+      templateId: document.getElementById('camp-template').value,
+      audienceSegment: {
+        role: document.getElementById('camp-seg-role').value || null,
+        preparation_for: document.getElementById('camp-seg-stream').value || null
+      }
+    };
+
+    try {
+      const res = await fetch('/api/notifications/campaigns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Campaign dispatch failed');
+
+      alert(`Campaign dispatched successfully!\nSent to: ${data.sentCount} recipients.`);
+      switchTab('overview');
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // Publish Announcement
+  async function publishAnnouncement(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const payload = {
+      title: document.getElementById('ann-title').value,
+      category: document.getElementById('ann-category').value,
+      scope_type: document.getElementById('ann-scope').value,
+      scope_value: document.getElementById('ann-scope-val').value || null,
+      message: document.getElementById('ann-message').value
+    };
+
+    try {
+      const res = await fetch('/api/notifications/announcements', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Announcement failed');
+
+      alert('Announcement published successfully to target scope!');
+      document.getElementById('announcement-form').reset();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  // Initial load
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+    // Auto-refresh stats every 8 seconds
+    setInterval(() => {
+      if (activeTab === 'overview') {
+        loadDashboardData();
+      }
+    }, 8000);
+  });
+</script>
+
+</body>
+</html>

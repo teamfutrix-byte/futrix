@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database Control Center & Disaster Recovery | FUTRIX Admin Console</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #030508;
+      --sidebar-bg: #05080c;
+      --surface: rgba(10, 15, 30, 0.6);
+      --surface-hi: rgba(20, 28, 52, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #22d3ee; /* SRE cyan accent color */
+      --primary-glow: rgba(34, 211, 238, 0.4);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --accent: #fb7185;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(34, 211, 238, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(251, 113, 133, 0.03) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--primary); }
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(34, 211, 238, 0.12);
+      color: var(--primary);
+      border-color: rgba(34, 211, 238, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(3, 5, 8, 0.35);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .gateway-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px var(--success); }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(22, 28, 50, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.accent::before { background: var(--accent); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-select, .form-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #030508;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-submit:hover {
+      background: #67e8f9;
+      transform: translateY(-1px);
+    }
+
+    /* Table styling */
+    .models-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .models-table th, .models-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .models-table th {
+      background: rgba(255,255,255,0.02);
+      color: var(--text-muted);
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+    .status-badge.offline {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+    }
+
+    /* Split workspace layout */
+    .split-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">FUTRIX<span>.</span></a>
+      <span class="logo-subtitle">SRE Platform</span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-dashboard" class="active" onclick="switchTab('dashboard')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+          SRE Telemetry
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-backups" onclick="switchTab('backups')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+          Backups & PITR Restores
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-failover" onclick="switchTab('failover')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"></path></svg>
+          Cluster Geo-Failover
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">Back to Admin Panel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">SRE Telemetry</h2>
+      <div class="gateway-badge">
+        <span class="live-pulse"></span>
+        Data Platform Active
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: SRE TELEMETRY -->
+      <div id="panel-dashboard" class="view-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card success">
+            <span class="kpi-label">Primary Database Size</span>
+            <span class="kpi-value" id="kpi-dbsize">0 bytes</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Active Connections</span>
+            <span class="kpi-value" id="kpi-conns">0</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">Table Locks</span>
+            <span class="kpi-value" id="kpi-locks">0</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">Replication Lag</span>
+            <span class="kpi-value" id="kpi-repl-lag">0 ms</span>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Operational Database Clusters</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>Database ID</th>
+                  <th>Display Name</th>
+                  <th>Cluster Node</th>
+                  <th>Purpose</th>
+                  <th>Cluster Status</th>
+                  <th>Health Score</th>
+                </tr>
+              </thead>
+              <tbody id="registry-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: BACKUPS & RESTORES -->
+      <div id="panel-backups" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Trigger Database Backup Snapshot</h3>
+            <form onsubmit="createBackup(event)">
+              <div class="form-group">
+                <label class="form-label">Backup Scope Type</label>
+                <select id="backup-type" class="form-select">
+                  <option value="Full">Full Database Dump</option>
+                  <option value="Incremental">Incremental Transaction Logs (WAL)</option>
+                  <option value="Differential">Differential State Snapshot</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Compression Format</label>
+                <select id="backup-compress" class="form-select">
+                  <option value="gzip">gzip (.tar.gz)</option>
+                  <option value="none">none (.sql)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Encryption Standard</label>
+                <select id="backup-encrypt" class="form-select">
+                  <option value="true">Encrypted (AES-256 Symmetric)</option>
+                  <option value="false">Unencrypted (Warning: Raw text)</option>
+                </select>
+              </div>
+              <button type="submit" class="btn-submit" style="width:100%;">Initiate Backup Job</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3 class="panel-header">Point-in-Time Recovery Validator</h3>
+            <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:10px; padding:1.25rem; min-height:220px; font-size:0.9rem;" id="pitr-report-box">
+              <span style="color:var(--text-muted);">Select a backup snapshot from the lineage history to execute consistency validation verification...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Backups Archive Lineage</h3>
+          <div style="overflow-x:auto;">
+            <table class="models-table">
+              <thead>
+                <tr>
+                  <th>Backup ID</th>
+                  <th>Archive File Name</th>
+                  <th>Size</th>
+                  <th>Scope</th>
+                  <th>Encryption</th>
+                  <th>Checksum SHA-256</th>
+                  <th>Created At</th>
+                  <th>PITR Validator</th>
+                </tr>
+              </thead>
+              <tbody id="backups-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: FAILOVER PROMOTIONS -->
+      <div id="panel-failover" class="view-panel">
+        <div class="glass-card">
+          <h3 class="panel-header">Multi-Region SRE Cluster Failover Promotions</h3>
+          <form onsubmit="executeFailover(event)" style="max-width:500px;">
+            <div class="form-group">
+              <label class="form-label">Source Cluster Target Node</label>
+              <select id="failover-primary" class="form-select">
+                <option value="postgres_prod">PostgreSQL Production Cluster Node (Primary)</option>
+                <option value="redis_cache">Redis Session Cache Cluster Node (Primary)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Read Replica for Promotion</label>
+              <select id="failover-replica" class="form-select">
+                <option value="db-replica-01.c.teamfutrix.internal">db-replica-01.c.teamfutrix.internal (Geo-Replica ASIA)</option>
+                <option value="db-replica-02.c.teamfutrix.internal">db-replica-02.c.teamfutrix.internal (Geo-Replica US-EAST)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Outage Failover Reason</label>
+              <input type="text" id="failover-reason" class="form-input" placeholder="e.g. AWS primary region network outage / timeout" required />
+            </div>
+            <button type="submit" class="btn-submit" style="background:var(--danger); color:#fff; box-shadow:none;">Execute SRE Node Promotion</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav-list button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    const displayTitles = {
+      dashboard: 'SRE Telemetry',
+      backups: 'Backups & PITR Restores',
+      failover: 'Cluster Geo-Failover'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    if (tabId === 'dashboard') loadDashboardData();
+    else if (tabId === 'backups') loadBackupsList();
+  }
+
+  // TAB 1: Telemetry
+  async function loadDashboardData() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/recovery/stats', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('kpi-dbsize').textContent = data.dbSizeStr;
+      document.getElementById('kpi-conns').textContent = data.activeConnections;
+      document.getElementById('kpi-locks').textContent = data.tableLocks;
+      document.getElementById('kpi-repl-lag').textContent = `${data.replicationLagMs} ms`;
+
+      loadDatabaseRegistry();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadDatabaseRegistry() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/recovery/registry', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('registry-table-body');
+      tbody.innerHTML = '';
+
+      list.forEach(r => {
+        const tr = document.createElement('tr');
+        const st = r.status || 'Online';
+        const stClass = st !== 'Online' ? 'status-badge offline' : 'status-badge';
+
+        tr.innerHTML = `
+          <td><strong style="color:var(--primary); font-family:monospace;">${r.id}</strong></td>
+          <td>${r.display_name}</td>
+          <td style="font-family:monospace; font-size:0.78rem;">${r.primary_node}</td>
+          <td>${r.purpose}</td>
+          <td><span class="${stClass}">${st}</span></td>
+          <td><strong>${r.health_score}%</strong></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TAB 2: Backups
+  async function loadBackupsList() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/recovery/backups', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const tbody = document.getElementById('backups-table-body');
+      tbody.innerHTML = '';
+
+      list.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span style="font-size:0.75rem; font-family:monospace; color:var(--text-muted);">${b.id.substring(0, 8)}...</span></td>
+          <td><strong>${b.backup_name}</strong></td>
+          <td>${parseFloat(b.size_mb).toFixed(2)} MB</td>
+          <td><span class="status-badge">${b.backup_type || 'Full'}</span></td>
+          <td>${b.encryption_status || 'AES-256'}</td>
+          <td style="font-family:monospace; font-size:0.7rem; color:var(--text-muted);">${(b.checksum_hash || '').substring(0, 16)}...</td>
+          <td>${new Date(b.created_at).toLocaleDateString()}</td>
+          <td>
+            <button class="btn-submit" style="font-size:0.7rem; padding:0.25rem 0.5rem; box-shadow:none;" onclick="triggerRestoreValidation('${b.id}')">Run PITR Dry-Run</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function createBackup(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+    const payload = {
+      backupType: document.getElementById('backup-type').value,
+      compression: document.getElementById('backup-compress').value,
+      encrypt: document.getElementById('backup-encrypt').value === 'true'
+    };
+
+    try {
+      const res = await fetch('/api/recovery/backups/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Backup failed');
+      alert('Manual backup snapshot compiled successfully!');
+      loadBackupsList();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function triggerRestoreValidation(backupId) {
+    const token = await getAuthToken();
+    const box = document.getElementById('pitr-report-box');
+    box.innerHTML = '<span style="color:var(--primary);">Running checksum consistency validation scanners...</span>';
+
+    try {
+      const res = await fetch('/api/recovery/backups/restore', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ backupId, dryRun: true })
+      });
+      if (!res.ok) throw new Error('PITR validation checks failed');
+      const data = await res.json();
+      const rep = data.validationReport;
+
+      box.innerHTML = `
+        <h4 style="color:var(--primary); font-family:'Sora'; margin-bottom:0.75rem;">Consistency Verification Report</h4>
+        <p><strong>Backup File:</strong> ${data.backupName}</p>
+        <p><strong>Checksum Verification:</strong> <span style="color:var(--success);">${rep.checksum}</span></p>
+        <p><strong>Index Integrity:</strong> <span style="color:var(--success);">${rep.sequences}</span></p>
+        <p><strong>Orphans Detected:</strong> <span style="${rep.orphansDetected > 0 ? 'color:var(--danger);' : 'color:var(--success);'}">${rep.orphansDetected} records</span></p>
+        <p><strong>FK constraints:</strong> <span style="color:var(--success);">${rep.foreignKeys}</span></p>
+        <p><strong>Final Verdict:</strong> <span style="color:var(--success); font-weight:700;">${rep.status}</span></p>
+      `;
+    } catch (err) {
+      box.innerHTML = `<span style="color:var(--danger)">Validation failed: ${err.message}</span>`;
+    }
+  }
+
+  // TAB 3: Failover
+  async function executeFailover(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+    const payload = {
+      primaryNodeId: document.getElementById('failover-primary').value,
+      targetReplicaId: document.getElementById('failover-replica').value,
+      reason: document.getElementById('failover-reason').value
+    };
+
+    try {
+      const res = await fetch('/api/recovery/failover', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failover promotion execution failed');
+      const data = await res.json();
+      alert(`Outage resolved successfully! Read replica node promoted as Master: ${payload.targetReplicaId}`);
+      switchTab('dashboard');
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDashboardData();
+  });
+</script>
+
+</body>
+</html>

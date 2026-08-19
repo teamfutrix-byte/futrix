@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | FUTRIX Competitor</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="description" content="Login to Futrix and continue your exam journey." />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d1017;
+      --surface: #161b27;
+      --surface-hi: #1e2433;
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #adc6ff;
+      --primary-btn: #4d8eff;
+      --text: #e1e2ec;
+      --text-muted: #6b7280;
+      --danger: #ff5252;
+      --success: #00e676;
+      --accent: #ffa94d;
+    }
+
+    html,
+    body {
+      min-height: 100vh;
+      font-family: 'Geist', 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ── BACKGROUND ── */
+    body {
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(77, 142, 255, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(255, 169, 77, 0.07) 0%, transparent 60%),
+        #0d1017;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 1rem 2rem;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(13, 16, 23, 0.75);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--primary);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sound-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .sound-toggle-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+      transform: scale(1.05);
+    }
+
+    .sound-toggle-btn:active {
+      transform: scale(0.95);
+    }
+
+    .header-tagline {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: none;
+    }
+
+    @media(min-width: 640px) {
+      .header-tagline {
+        display: block;
+      }
+    }
+
+    /* ── CARD ── */
+    .login-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      background: rgba(22, 27, 39, 0.92);
+      backdrop-filter: blur(24px);
+      border-radius: 20px;
+      padding: 2.5rem 2.2rem;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+      overflow: hidden;
+    }
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: conic-gradient(
+        transparent, 
+        rgba(77, 142, 255, 0.4), 
+        rgba(34, 211, 238, 0.4), 
+        transparent 60%
+      );
+      animation: rotateBorder 6s linear infinite;
+      z-index: -2;
+    }
+    .login-card::after {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      background: rgba(22, 27, 39, 0.95);
+      border-radius: 19px;
+      z-index: -1;
+      backdrop-filter: blur(24px);
+    }
+    @keyframes rotateBorder {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.25;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .card-sub {
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* ── INPUTS ── */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      background: rgba(13, 16, 23, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.95rem 2.8rem 0.95rem 1.1rem;
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      caret-color: var(--primary-btn);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .input-wrap input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-wrap input:focus {
+      transform: scale(1.02);
+      border-color: var(--primary-btn) !important;
+      background: rgba(13, 16, 23, 0.75);
+      box-shadow: 0 0 16px rgba(77, 142, 255, 0.3) !important;
+    }
+
+    .input-wrap input.error {
+      border-color: var(--danger);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Eye toggle */
+    .eye-btn {
+      position: absolute;
+      right: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 0.25rem;
+      line-height: 0;
+      transition: color 0.2s;
+    }
+
+    .eye-btn:hover {
+      color: var(--primary);
+    }
+
+    /* ── REMEMBER + FORGOT ── */
+    .row-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.4rem;
+      font-size: 0.83rem;
+    }
+
+    .remember-label {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    .remember-label input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--primary-btn);
+      cursor: pointer;
+    }
+
+    .forgot-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.83rem;
+      transition: color 0.2s;
+    }
+
+    .forgot-link:hover {
+      color: var(--primary);
+    }
+
+    /* ── LOGIN BUTTON ── */
+    .btn-login {
+      width: 100%;
+      padding: 0.95rem;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #4d8eff, #6fa3ff);
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 20px rgba(77, 142, 255, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(77, 142, 255, 0.5);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .btn-login:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-login .arrow {
+      font-size: 1.1rem;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 17px;
+      height: 17px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      margin: 1.5rem 0 1.2rem;
+    }
+
+    /* ── FOOTER LINKS ── */
+    .card-footer {
+      text-align: center;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .card-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .card-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Security badges */
+    .security-badges {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .badge-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-item svg {
+      opacity: 0.6;
+    }
+
+    /* Error message */
+    .error-msg {
+      background: rgba(255, 82, 82, 0.08);
+      border: 1px solid rgba(255, 82, 82, 0.25);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.82rem;
+      color: #ff7b7b;
+      margin-bottom: 1rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .error-msg.show {
+      display: flex;
+    }
+
+    /* ── FOOTER BAR ── */
+    .page-footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.2);
+      text-transform: uppercase;
+    }
+
+    .footer-line {
+      width: 60px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      body {
+        padding: 80px 0.9rem 1.5rem;
+        justify-content: flex-start;
+      }
+
+      .login-card {
+        padding: 1.8rem 1.4rem;
+        border-radius: 16px;
+      }
+
+      .card-title {
+        font-size: 1.5rem;
+      }
+
+      .page-footer {
+        margin-top: 1.5rem;
+      }
+    }
+
+    /* Split OTP Digit Input Styles */
+    .otp-digits-wrapper {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: center;
+      margin: 1.5rem 0;
+    }
+    .otp-digit-input {
+      width: 48px;
+      height: 52px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(22, 27, 39, 0.8);
+      color: #fff;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .otp-digit-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 12px rgba(77, 142, 255, 0.25), inset 0 2px 4px rgba(0,0,0,0.1);
+      transform: scale(1.08);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="#" class="logo">Fut<span>rix</span></a>
+    <div class="header-right">
+      <span class="header-tagline">Secure Login Portal</span>
+      <button id="soundToggleBtn" onclick="toggleGlobalSound()" class="sound-toggle-btn" title="Toggle Sound/Music" aria-label="Toggle Sound and Music">
+        <span class="sound-icon">🔇</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Login Card -->
+  <div class="login-card">
+    <h1 class="card-title">Welcome Back<br>Competitor🚀</h1>
+    <p class="card-sub">Login to continue your test journey</p>
+
+    <!-- Error Banner -->
+    <div class="error-msg" id="errorMsg">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span id="errorText">Invalid email or mobile number.</span>
+    </div>
+
+    <form id="loginForm" novalidate>
+      <div class="input-group">
+        <!-- Email -->
+        <div class="input-wrap">
+          <input type="email" id="loginEmail" placeholder="Email Address" autocomplete="email" />
+        </div>
+        <!-- Mobile / Password -->
+        <div class="input-wrap">
+          <input type="password" id="loginPhone" placeholder="Mobile Number / Password" autocomplete="current-password"
+            maxlength="15" />
+          <button type="button" class="eye-btn" id="eyeBtn" aria-label="Toggle password visibility">
+            <svg id="eyeOpen" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <svg id="eyeClosed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" style="display:none">
+              <path
+                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Options Row -->
+      <div class="row-options">
+        <label class="remember-label">
+          <input type="checkbox" id="rememberMe" />
+          Remember me
+        </label>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <a href="#" class="forgot-link" id="forgotPasswordBtn">Forgot Password?</a>
+          <span style="color: rgba(255,255,255,0.15);">|</span>
+          <a href="#" class="forgot-link" id="forgotIdLink">Forgot ID?</a>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-login" id="loginBtn">
+        <span id="btnText">Login to Dashboard</span>
+        <span class="arrow" id="btnArrow">→</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+    </form>
+
+    <hr class="divider" />
+
+    <p class="card-footer">
+      Don't have an account? <a href="index.html">Request Access</a>
+    </p>
+
+    <!-- Security badges -->
+    <div class="security-badges">
+      <div class="badge-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        Secure Session
+      </div>
+      <div class="badge-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        AES-256
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Footer -->
+  <div class="page-footer"
+    style="flex-direction: column; gap: 0.8rem; text-transform: none; letter-spacing: normal; color: var(--text-muted); font-size: 0.8rem; margin-top: 2rem;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+      <span>Join WhatsApp Community to earn <strong style="color: var(--primary);">+100 XP</strong> points instantly and get daily updates!</span>
+      <div style="display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; justify-content: center;">
+        <a href="https://chat.whatsapp.com/EuQwlgresyD4fYxrxXJAjc" target="_blank"
+          style="color: var(--primary-btn); text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; transition: color 0.2s;"
+          onmouseover="this.style.color='#7caaff'" onmouseout="this.style.color='var(--primary-btn)'">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.517 2.266 2.27 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.45 5.426-.003 9.885-4.464 9.888-9.89.002-2.628-1.02-5.1-2.871-6.955C16.386 1.904 13.9 1.9 12.01 1.9c-5.433 0-9.892 4.457-9.896 9.886-.002 1.765.467 3.491 1.357 5.025l-.989 3.607 3.693-.968z" />
+          </svg>
+          Join WhatsApp Community
+        </a>
+        <span style="color: var(--text-muted); opacity: 0.4; font-size: 0.82rem;">|</span>
+        <a href="https://www.instagram.com/futrix_official/" target="_blank"
+          style="color: var(--accent); text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; transition: color 0.2s;"
+          onmouseover="this.style.color='#ffd09b'" onmouseout="this.style.color='var(--accent)'">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+          Follow on Instagram
+        </a>
+      </div>
+    </div>
+    <div
+      style="display: flex; align-items: center; gap: 1rem; font-size: 0.65rem; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 0.4rem;">
+      <div class="footer-line"></div>
+    </div>
+  </div>
+
+  <script src="/supabase-js.js"></script>
+  <script src="/supabase-client.js?v=3"></script>
+  <script>
+    // ── Eye Toggle
+    const eyeBtn = document.getElementById('eyeBtn');
+    const phoneInput = document.getElementById('loginPhone');
+    const eyeOpen = document.getElementById('eyeOpen');
+    const eyeClosed = document.getElementById('eyeClosed');
+
+    eyeBtn.addEventListener('click', () => {
+      const isPass = phoneInput.type === 'password';
+      phoneInput.type = isPass ? 'text' : 'password';
+      eyeOpen.style.display = isPass ? 'none' : 'block';
+      eyeClosed.style.display = isPass ? 'block' : 'none';
+    });
+
+    // ── Error / Loading helpers
+    function showError(msg) {
+      const box = document.getElementById('errorMsg');
+      let finalMsg = 'Invalid email/User ID or password. Please try again.';
+      if (msg) {
+        if (typeof msg === 'string') {
+          finalMsg = msg;
+        } else if (msg.message && typeof msg.message === 'string') {
+          finalMsg = msg.message;
+        } else if (msg.error && typeof msg.error === 'string') {
+          finalMsg = msg.error;
+        } else {
+          try {
+            finalMsg = JSON.stringify(msg);
+          } catch (_) {
+            finalMsg = String(msg);
+          }
+        }
+      }
+      
+      if (!finalMsg || finalMsg === '{}' || finalMsg === '{"isTrusted":true}' || finalMsg.includes('{') || finalMsg.includes('}') || finalMsg.startsWith('[object')) {
+        finalMsg = 'Invalid email/User ID or password. Please try again.';
+      }
+      
+      document.getElementById('errorText').textContent = finalMsg;
+      box.classList.add('show');
+    }
+    function hideError() {
+      document.getElementById('errorMsg').classList.remove('show');
+    }
+    function setLoading(on) {
+      const btn = document.getElementById('loginBtn');
+      const txt = document.getElementById('btnText');
+      const arrow = document.getElementById('btnArrow');
+      const spinner = document.getElementById('spinner');
+      btn.disabled = on;
+      txt.style.display = on ? 'none' : 'inline';
+      arrow.style.display = on ? 'none' : 'inline';
+      spinner.style.display = on ? 'block' : 'none';
+    }
+
+    // ── Remember me — pre-fill
+    window.addEventListener('load', () => {
+      const saved = localStorage.getItem('futrix_email');
+      if (saved) {
+        document.getElementById('loginEmail').value = saved;
+        document.getElementById('rememberMe').checked = true;
+      }
+    });
+
+    /* ══════════════════════════════════════════════
+       FORM SUBMIT (SUPABASE)
+       ══════════════════════════════════════════════ */
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      const email = document.getElementById('loginEmail').value.trim();
+      const phone = document.getElementById('loginPhone').value.trim();
+
+      if (!email || !phone) {
+        showError('Please enter both your Email Address and Mobile Number.');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('Please enter a valid email address.');
+        document.getElementById('loginEmail').classList.add('error');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const userObj = await signInUser(email, phone);
+
+        // Check if role is student
+        if (userObj.role !== 'student') {
+          await signOutUser();
+          setLoading(false);
+          showError('Invalid email/User ID or password. Please try again.');
+          return;
+        }
+
+        if (document.getElementById('rememberMe').checked) {
+          localStorage.setItem('futrix_email', email);
+          localStorage.setItem('futrix_remember_me', 'true');
+        } else {
+          localStorage.removeItem('futrix_email');
+          localStorage.removeItem('futrix_remember_me');
+        }
+
+        window.location.href = '/features/tests/instruction.html';
+      } catch (err) {
+        console.error('Supabase login error:', err.message);
+        setLoading(false);
+        if (err.message.includes('Email not confirmed') || err.message.toLowerCase().includes('confirm') || err.message.toLowerCase().includes('verify')) {
+          showError('Verification pending. Please verify the OTP sent to your email.');
+          try {
+            // Generate OTP code
+            const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
+            console.log('[TEST OTP] ' + generatedOtp); // Printable for automated tests
+
+            // Update otp_code in database
+            await supabase
+              .from('profiles')
+              .update({ otp_code: generatedOtp })
+              .eq('email', email.toLowerCase());
+
+            window.openOtpModal(email, phone);
+          } catch (otpErr) {
+            console.error('Failed to generate OTP:', otpErr);
+            showError('Error initializing verification code. Please try again.');
+          }
+        } else if (err.message.toLowerCase().includes('blocked') || err.message.toLowerCase().includes('suspended')) {
+          showError(err.message + '. Please contact the Futrix support team at support@futrix.com or teamfutrix@gmail.com for assistance.');
+        } else {
+          showError('The Email Address or Password you entered is incorrect. Please try again.');
+        }
+      }
+    });
+
+    // Clear errors on typing
+    ['loginEmail', 'loginPhone'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        hideError();
+        document.getElementById(id).classList.remove('error');
+      });
+    });
+
+    // ── Forgot Password Flow (SUPABASE OTP)
+    window.addEventListener('DOMContentLoaded', () => {
+      const forgotBtn = document.getElementById('forgotPasswordBtn');
+      const forgotModal = document.getElementById('forgotPasswordModal');
+      const closeForgotModalBtn = document.getElementById('closeForgotModalBtn');
+      
+      // Screens
+      const forgotScreenRequest = document.getElementById('forgotScreenRequest');
+      const forgotScreenVerify = document.getElementById('forgotScreenVerify');
+      const forgotScreenReset = document.getElementById('forgotScreenReset');
+      const forgotScreenSuccess = document.getElementById('forgotScreenSuccess');
+
+      // State Variables
+      let forgotEmailVal = '';
+      let forgotOtpVal = '';
+      let forgotTimer = 0;
+      let forgotTimerInterval = null;
+
+      function showForgotScreen(screenId) {
+        document.querySelectorAll('.forgot-screen').forEach(s => s.style.display = 'none');
+        document.getElementById(screenId).style.display = 'block';
+      }
+
+      forgotBtn.onclick = (e) => {
+        e.preventDefault();
+        forgotEmailVal = '';
+        forgotOtpVal = '';
+        document.getElementById('forgotEmail').value = '';
+        document.getElementById('forgotOtp').value = '';
+        document.getElementById('forgotNewPassword').value = '';
+        document.getElementById('forgotConfirmPassword').value = '';
+        document.getElementById('forgotEmailError').style.display = 'none';
+        document.getElementById('forgotOtpError').style.display = 'none';
+        document.getElementById('forgotPasswordError').style.display = 'none';
+        
+        showForgotScreen('forgotScreenRequest');
+        forgotModal.classList.add('show');
+      };
+
+      closeForgotModalBtn.onclick = () => {
+        forgotModal.classList.remove('show');
+        if (forgotTimerInterval) clearInterval(forgotTimerInterval);
+      };
+
+      document.getElementById('btnForgotSuccessClose').onclick = () => {
+        forgotModal.classList.remove('show');
+      };
+
+      // Step 1: Send OTP
+      document.getElementById('btnRequestOtp').onclick = async () => {
+        const emailInput = document.getElementById('forgotEmail');
+        const email = emailInput.value.trim().toLowerCase();
+        const err = document.getElementById('forgotEmailError');
+        err.style.display = 'none';
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          err.textContent = 'Please enter a valid registered email address.';
+          err.style.display = 'block';
+          return;
+        }
+
+        const btn = document.getElementById('btnRequestOtp');
+        const spinner = document.getElementById('forgotRequestSpinner');
+        btn.disabled = true;
+        spinner.style.display = 'inline-block';
+
+        try {
+          const { error } = await supabase.auth.signInWithOtp({
+            email: email,
+            options: {
+              shouldCreateUser: false
+            }
+          });
+
+          if (!error) {
+            forgotEmailVal = email;
+            document.getElementById('forgotVerifyEmailDisplay').textContent = email;
+            showForgotScreen('forgotScreenVerify');
+            startForgotTimer();
+          } else {
+            err.textContent = error.message || 'Error sending code. Try again.';
+            err.style.display = 'block';
+          }
+        } catch (err1) {
+          err.textContent = 'Network error. Please try again.';
+          err.style.display = 'block';
+        } finally {
+          btn.disabled = false;
+          spinner.style.display = 'none';
+        }
+      };
+
+      // Timer Cooldown for Resend OTP
+      function startForgotTimer() {
+        const timerText = document.getElementById('forgotOtpTimer');
+        const resendBtn = document.getElementById('btnResendForgotOtp');
+        forgotTimer = 60;
+        resendBtn.disabled = true;
+        timerText.textContent = `Resend OTP in ${forgotTimer}s`;
+
+        if (forgotTimerInterval) clearInterval(forgotTimerInterval);
+        forgotTimerInterval = setInterval(() => {
+          forgotTimer--;
+          if (forgotTimer <= 0) {
+            clearInterval(forgotTimerInterval);
+            resendBtn.disabled = false;
+            timerText.textContent = 'You can now resend the code.';
+          } else {
+            timerText.textContent = `Resend OTP in ${forgotTimer}s`;
+          }
+        }, 1000);
+      }
+
+      // Resend OTP inside modal
+      document.getElementById('btnResendForgotOtp').onclick = async () => {
+        const btn = document.getElementById('btnResendForgotOtp');
+        btn.disabled = true;
+        try {
+          const { error } = await supabase.auth.signInWithOtp({
+            email: forgotEmailVal,
+            options: {
+              shouldCreateUser: false
+            }
+          });
+          if (!error) {
+            startForgotTimer();
+          } else {
+            alert(error.message || 'Error resending code.');
+            btn.disabled = false;
+          }
+        } catch (e) {
+          alert('Network error.');
+          btn.disabled = false;
+        }
+      };
+
+      // Step 2: Verify OTP
+      document.getElementById('btnVerifyOtp').onclick = async () => {
+        const otpInput = document.getElementById('forgotOtp');
+        const otp = otpInput.value.trim();
+        const err = document.getElementById('forgotOtpError');
+        err.style.display = 'none';
+
+        if (!otp || otp.length !== 6 || isNaN(otp)) {
+          err.textContent = 'Please enter a valid 6-digit OTP code.';
+          err.style.display = 'block';
+          return;
+        }
+
+        const btn = document.getElementById('btnVerifyOtp');
+        const spinner = document.getElementById('forgotVerifySpinner');
+        btn.disabled = true;
+        spinner.style.display = 'inline-block';
+
+        try {
+          const { data, error } = await supabase.auth.verifyOtp({
+            email: forgotEmailVal,
+            token: otp,
+            type: 'email'
+          });
+
+          if (!error && data.session) {
+            forgotOtpVal = otp;
+            showForgotScreen('forgotScreenReset');
+          } else {
+            err.textContent = (error && error.message) || 'Invalid or expired OTP.';
+            err.style.display = 'block';
+          }
+        } catch (e) {
+          err.textContent = 'Network error. Please try again.';
+          err.style.display = 'block';
+        } finally {
+          btn.disabled = false;
+          spinner.style.display = 'none';
+        }
+      };
+
+      // Step 3: Reset Password
+      document.getElementById('btnResetPassword').onclick = async () => {
+        const pass = document.getElementById('forgotNewPassword').value;
+        const confirmPass = document.getElementById('forgotConfirmPassword').value;
+        const err = document.getElementById('forgotPasswordError');
+        err.style.display = 'none';
+
+        if (pass !== confirmPass) {
+          err.textContent = 'New password and confirm password do not match.';
+          err.style.display = 'block';
+          return;
+        }
+
+        if (pass.length < 8) {
+          err.textContent = 'Password must be at least 8 characters long.';
+          err.style.display = 'block';
+          return;
+        }
+
+        const btn = document.getElementById('btnResetPassword');
+        const spinner = document.getElementById('forgotResetSpinner');
+        btn.disabled = true;
+        spinner.style.display = 'inline-block';
+
+        try {
+          const { error } = await supabase.auth.updateUser({
+            password: pass
+          });
+
+          if (!error) {
+            await logAuditEvent('PasswordReset', { email: forgotEmailVal });
+            await supabase.auth.signOut();
+            showForgotScreen('forgotScreenSuccess');
+          } else {
+            err.textContent = error.message || 'Failed to reset password. Please try again.';
+            err.style.display = 'block';
+          }
+        } catch (e) {
+          err.textContent = 'Network error. Please try again.';
+          err.style.display = 'block';
+        } finally {
+          btn.disabled = false;
+          spinner.style.display = 'none';
+        }
+      };
+
+      // ── Forgot ID Flow
+      const forgotIdLink = document.getElementById('forgotIdLink');
+      const forgotIdModal = document.getElementById('forgotIdModal');
+      const closeForgotIdModalBtn = document.getElementById('closeForgotIdModalBtn');
+      const btnFindEmail = document.getElementById('btnFindEmail');
+      const btnForgotIdSuccessClose = document.getElementById('btnForgotIdSuccessClose');
+
+      forgotIdLink.onclick = (e) => {
+        e.preventDefault();
+        document.getElementById('forgotIdPhone').value = '';
+        document.getElementById('forgotIdPhoneError').style.display = 'none';
+        document.getElementById('forgotIdScreenRequest').style.display = 'block';
+        document.getElementById('forgotIdScreenSuccess').style.display = 'none';
+        forgotIdModal.classList.add('show');
+      };
+
+      closeForgotIdModalBtn.onclick = () => {
+        forgotIdModal.classList.remove('show');
+      };
+
+      btnForgotIdSuccessClose.onclick = () => {
+        forgotIdModal.classList.remove('show');
+      };
+
+      btnFindEmail.onclick = async () => {
+        const phoneInput = document.getElementById('forgotIdPhone');
+        const phoneErr = document.getElementById('forgotIdPhoneError');
+        const spinner = document.getElementById('forgotIdSpinner');
+        const enteredPhone = phoneInput.value.trim();
+
+        phoneErr.style.display = 'none';
+
+        if (!enteredPhone || enteredPhone.length !== 10 || isNaN(enteredPhone)) {
+          phoneErr.textContent = 'Please enter a valid 10-digit mobile number.';
+          phoneErr.style.display = 'block';
+          return;
+        }
+
+        btnFindEmail.disabled = true;
+        spinner.style.display = 'inline-block';
+
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('email, full_name')
+            .eq('phone', enteredPhone)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          if (data && data.email) {
+            document.getElementById('retrievedEmailDisplay').textContent = data.email;
+            document.getElementById('forgotIdScreenRequest').style.display = 'none';
+            document.getElementById('forgotIdScreenSuccess').style.display = 'block';
+            await logAuditEvent('EmailIDRetrieval', { phone: enteredPhone });
+          } else {
+            phoneErr.textContent = 'No account registered with this mobile number.';
+            phoneErr.style.display = 'block';
+          }
+        } catch (err) {
+          console.error('Error retrieving ID:', err);
+          phoneErr.textContent = 'Database error. Please try again later.';
+          phoneErr.style.display = 'block';
+        } finally {
+          btnFindEmail.disabled = false;
+          spinner.style.display = 'none';
+        }
+      };
+      // ── Email OTP Verification Fallback Flow
+      let otpCooldown = 0;
+      let cooldownInterval = null;
+      let verifyEmailVal = '';
+      let verifyPhoneVal = '';
+
+      function startCooldown() {
+        const modalResendBtn = document.getElementById('modalResendBtn');
+        const modalOtpTimer = document.getElementById('modalOtpTimer');
+        otpCooldown = 60;
+        modalResendBtn.disabled = true;
+        modalOtpTimer.textContent = `Resend OTP in ${otpCooldown}s`;
+        
+        if (cooldownInterval) clearInterval(cooldownInterval);
+        cooldownInterval = setInterval(() => {
+          otpCooldown--;
+          if (otpCooldown <= 0) {
+            clearInterval(cooldownInterval);
+            modalResendBtn.disabled = false;
+            modalOtpTimer.textContent = 'You can now resend the verification code.';
+          } else {
+            modalOtpTimer.textContent = `Resend OTP in ${otpCooldown}s`;
+          }
+        }, 1000);
+      }
+
+      window.openOtpModal = function(email, phone) {
+        verifyEmailVal = email;
+        verifyPhoneVal = phone;
+        document.getElementById('otpModalEmailText').textContent = email;
+        document.getElementById('modalOtpInput').value = '';
+        
+        // Reset split inputs
+        const digits = document.querySelectorAll('#loginOtpDigits .otp-digit-input');
+        digits.forEach(input => input.value = '');
+        if (digits.length > 0) setTimeout(() => digits[0].focus(), 150);
+        
+        document.getElementById('otpModal').classList.add('show');
+        startCooldown();
+      };
+
+      function closeOtpModal() {
+        document.getElementById('otpModal').classList.remove('show');
+        if (cooldownInterval) clearInterval(cooldownInterval);
+      }
+
+      document.getElementById('closeOtpModalBtn').onclick = closeOtpModal;
+      document.getElementById('otpModal').onclick = (e) => {
+        if (e.target.id === 'otpModal') closeOtpModal();
+      };
+
+      // Setup split OTP logic
+      function setupSplitOtp(containerId, hiddenInputId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const inputs = container.querySelectorAll('.otp-digit-input');
+        const hiddenInput = document.getElementById(hiddenInputId);
+        
+        inputs.forEach((input, index) => {
+          input.addEventListener('input', (e) => {
+            // Allow only digits
+            input.value = input.value.replace(/\D/g, '');
+            
+            // Sync values to hidden input
+            let code = '';
+            inputs.forEach(inp => code += inp.value);
+            hiddenInput.value = code;
+            
+            // Auto focus next input
+            if (input.value && index < inputs.length - 1) {
+              inputs[index + 1].focus();
+            }
+          });
+          
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+              if (!input.value && index > 0) {
+                inputs[index - 1].focus();
+                inputs[index - 1].value = '';
+                // Sync values
+                let code = '';
+                inputs.forEach(inp => code += inp.value);
+                hiddenInput.value = code;
+              } else {
+                input.value = '';
+                // Sync values
+                let code = '';
+                inputs.forEach(inp => code += inp.value);
+                hiddenInput.value = code;
+              }
+              e.preventDefault();
+            }
+          });
+          
+          input.addEventListener('paste', (e) => {
+            const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
+            if (/^\d{6}$/.test(pasteData)) {
+              for (let i = 0; i < inputs.length; i++) {
+                inputs[i].value = pasteData[i] || '';
+              }
+              hiddenInput.value = pasteData;
+              inputs[inputs.length - 1].focus();
+            }
+            e.preventDefault();
+          });
+        });
+      }
+      
+      setupSplitOtp('loginOtpDigits', 'modalOtpInput');
+
+      function getApiUrl(path) {
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+          return 'http://localhost:8000' + path;
+        }
+        return 'https://futrix-backend-7ly8.onrender.com' + path;
+      }
+
+      // Resend OTP
+      document.getElementById('modalResendBtn').onclick = async () => {
+        const resendBtn = document.getElementById('modalResendBtn');
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Sending...';
+        try {
+          const res = await fetch(getApiUrl('/api/auth/send-otp'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: verifyEmailVal.toLowerCase(),
+              role: 'user',
+              full_name: 'User'
+            })
+          });
+          const data = await res.json();
+          if (res.ok && (data.success || data.otpSent)) {
+            alert('Verification code resent successfully!');
+            startCooldown();
+          } else {
+            alert(data.error || data.message || 'Failed to resend verification code.');
+          }
+        } catch (e) {
+          console.error(e);
+          alert('Error sending OTP. Please check server connection.');
+        } finally {
+          resendBtn.textContent = 'Resend Code';
+        }
+      };
+
+      // Verify OTP and complete login
+      document.getElementById('modalVerifyBtn').onclick = async () => {
+        const otpInput = document.getElementById('modalOtpInput');
+        const token = otpInput.value.trim();
+        const verifyBtn = document.getElementById('modalVerifyBtn');
+        const spinner = document.getElementById('modalOtpSpinner');
+
+        if (!token || token.length !== 6 || isNaN(token)) {
+          alert('Please enter a valid 6-digit OTP code.');
+          return;
+        }
+
+        verifyBtn.disabled = true;
+        spinner.style.display = 'inline-block';
+
+        try {
+          // Query profile
+          const { data: profile, error: fetchErr } = await supabase
+            .from('profiles')
+            .select('otp_code')
+            .eq('email', verifyEmailVal.toLowerCase())
+            .maybeSingle();
+
+          if (!fetchErr && profile && profile.otp_code === token) {
+            // Update to verified
+            await supabase
+              .from('profiles')
+              .update({ email_verified: true, otp_code: null })
+              .eq('email', verifyEmailVal.toLowerCase());
+
+            alert('Email verified successfully! Logging you in...');
+            closeOtpModal();
+            setLoading(true);
+            const userObj = await signInUser(verifyEmailVal, verifyPhoneVal);
+            window.location.href = '/features/tests/instruction.html';
+          } else {
+            alert('Invalid OTP code. Please try again.');
+          }
+        } catch (e) {
+          alert('Error verifying OTP: ' + e.message);
+        } finally {
+          verifyBtn.disabled = false;
+          spinner.style.display = 'none';
+        }
+      };
+    });
+
+    // ── Web Audio API Retro Synth Engine
+    let audioCtx = null;
+    let isSoundMuted = true;
+    let ambientOscs = [];
+    let ambientGain = null;
+    let musicTimer = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSynthSound(type) {
+      if (isSoundMuted) return;
+      initAudio();
+      const now = audioCtx.currentTime;
+
+      if (type === 'hover') {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, now);
+        osc.frequency.exponentialRampToValueAtTime(750, now + 0.08);
+        gainNode.gain.setValueAtTime(0.02, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'click') {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(60, now + 0.12);
+        gainNode.gain.setValueAtTime(0.1, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } else if (type === 'error') {
+        const osc1 = audioCtx.createOscillator();
+        const gainNode1 = audioCtx.createGain();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(110, now);
+        gainNode1.gain.setValueAtTime(0.08, now);
+        gainNode1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc1.connect(gainNode1);
+        gainNode1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.15);
+
+        setTimeout(() => {
+          if (isSoundMuted) return;
+          const osc2 = audioCtx.createOscillator();
+          const gainNode2 = audioCtx.createGain();
+          osc2.type = 'sawtooth';
+          osc2.frequency.setValueAtTime(90, audioCtx.currentTime);
+          gainNode2.gain.setValueAtTime(0.08, audioCtx.currentTime);
+          gainNode2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+          osc2.connect(gainNode2);
+          gainNode2.connect(audioCtx.destination);
+          osc2.start(audioCtx.currentTime);
+          osc2.stop(audioCtx.currentTime + 0.2);
+        }, 180);
+      } else if (type === 'success') {
+        const notes = [261.63, 329.63, 392.00, 523.25];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            if (isSoundMuted) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.35);
+          }, idx * 100);
+        });
+      }
+    }
+
+    function toggleGlobalSound() {
+      const btn = document.getElementById('soundToggleBtn');
+      const icon = btn.querySelector('.sound-icon');
+      isSoundMuted = !isSoundMuted;
+      
+      if (!isSoundMuted) {
+        icon.textContent = '🔊';
+        btn.title = 'Mute Sound';
+        initAudio();
+        playSynthSound('success');
+        startAmbientMusic();
+      } else {
+        icon.textContent = '🔇';
+        btn.title = 'Unmute Sound';
+        stopAmbientMusic();
+      }
+    }
+
+    function startAmbientMusic() {
+      if (musicTimer) clearInterval(musicTimer);
+      
+      const sequence = [
+        [196.00, 246.94, 293.66],
+        [220.00, 261.63, 329.63],
+        [174.61, 220.00, 261.63],
+        [196.00, 246.94, 293.66]
+      ];
+      let step = 0;
+
+      musicTimer = setInterval(() => {
+        if (isSoundMuted) return;
+        initAudio();
+        const now = audioCtx.currentTime;
+        const chord = sequence[step % sequence.length];
+        
+        chord.forEach(freq => {
+          const osc = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+          gainNode.gain.setValueAtTime(0.008, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+          osc.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 1.8);
+        });
+        step++;
+      }, 2000);
+    }
+
+    function stopAmbientMusic() {
+      if (musicTimer) {
+        clearInterval(musicTimer);
+        musicTimer = null;
+      }
+    }
+
+    // Attach retro sound feedback to inputs and buttons
+    window.addEventListener('load', () => {
+      document.querySelectorAll('input, button, .xp-badge').forEach(el => {
+        el.addEventListener('mouseenter', () => playSynthSound('hover'));
+        el.addEventListener('focus', () => playSynthSound('hover'));
+        if (el.tagName === 'BUTTON' || el.classList.contains('xp-badge') || el.id === 'loginBtn') {
+          el.addEventListener('click', () => playSynthSound('click'));
+        }
+      });
+    });
+  </script>
+
+  <!-- Forgot Password Modal Overlay -->
+  <div id="forgotPasswordModal" class="otp-modal-overlay">
+    <div class="otp-modal-content" style="text-align: left; max-width: 440px; padding: 2.2rem 2rem;">
+      <button type="button" class="otp-modal-close" id="closeForgotModalBtn">&times;</button>
+      
+      <!-- Screen 1: Request OTP -->
+      <div id="forgotScreenRequest" class="forgot-screen">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div class="otp-modal-icon" style="font-size: 2.8rem; margin-bottom: 0.5rem; display: block;">🔑</div>
+          <h2 style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: #fff; margin-bottom: 0.4rem; text-align: center;">Reset Password</h2>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; text-align: center;">Enter your registered email address and we'll send you an OTP to verify your identity.</p>
+        </div>
+        <div class="field" style="margin-bottom: 1.5rem; position: relative;">
+          <input type="email" id="forgotEmail" placeholder="e.g. rajesh@gmail.com" style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: var(--surface); color: var(--text); font-family: 'Geist', sans-serif; font-size: 0.92rem;" />
+          <div class="field-error" id="forgotEmailError" style="font-size: 0.72rem; color: var(--danger); margin-top: 0.35rem; display: none;">Please enter a valid email.</div>
+        </div>
+        <button type="button" class="btn-login" id="btnRequestOtp" style="width: 100%; justify-content: center; gap: 0.5rem; padding: 0.85rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #4d8eff, #6fa3ff); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center;">
+          <span>Send OTP</span>
+          <div class="spinner" id="forgotRequestSpinner" style="display: none; border-color: #fff; border-top-color: transparent;"></div>
+        </button>
+      </div>
+
+      <!-- Screen 2: Verify OTP -->
+      <div id="forgotScreenVerify" class="forgot-screen" style="display: none;">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div class="otp-modal-icon" style="font-size: 2.8rem; margin-bottom: 0.5rem; display: block;">✉️</div>
+          <h2 style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: #fff; margin-bottom: 0.4rem; text-align: center;">Verify OTP</h2>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; text-align: center;">We have sent a 6-digit OTP code to <strong id="forgotVerifyEmailDisplay" style="color: var(--primary);"></strong>. Enter the code below.</p>
+        </div>
+        <div class="field" style="margin-bottom: 1.2rem; position: relative;">
+          <input type="text" id="forgotOtp" placeholder="••••••" maxlength="6" style="width: 100%; text-align: center; font-size: 1.3rem; letter-spacing: 6px; padding: 0.85rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: var(--surface); color: var(--text);" />
+          <div class="field-error" id="forgotOtpError" style="font-size: 0.72rem; color: var(--danger); margin-top: 0.35rem; display: none;">Invalid or expired OTP.</div>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;" id="forgotOtpTimer">Resend OTP in 60s</div>
+        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+          <button type="button" class="btn-login" id="btnVerifyOtp" style="width: 100%; justify-content: center; gap: 0.5rem; padding: 0.85rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #4d8eff, #6fa3ff); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center;">
+            <span>Verify &amp; Continue</span>
+            <div class="spinner" id="forgotVerifySpinner" style="display: none; border-color: #fff; border-top-color: transparent;"></div>
+          </button>
+          <button type="button" class="otp-modal-resend" id="btnResendForgotOtp" disabled style="background: none; border: none; color: var(--primary); font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-align: center;">Resend Code</button>
+        </div>
+      </div>
+
+      <!-- Screen 3: Create New Password -->
+      <div id="forgotScreenReset" class="forgot-screen" style="display: none;">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div class="otp-modal-icon" style="font-size: 2.8rem; margin-bottom: 0.5rem; display: block;">🛡️</div>
+          <h2 style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: #fff; margin-bottom: 0.4rem; text-align: center;">New Password</h2>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; text-align: center;">Create a strong, secure password for your account.</p>
+        </div>
+        <div class="field" style="margin-bottom: 1rem; position: relative;">
+          <input type="password" id="forgotNewPassword" placeholder="New Password" style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: var(--surface); color: var(--text);" />
+        </div>
+        <div class="field" style="margin-bottom: 1.4rem; position: relative;">
+          <input type="password" id="forgotConfirmPassword" placeholder="Confirm Password" style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: var(--surface); color: var(--text);" />
+          <div class="field-error" id="forgotPasswordError" style="font-size: 0.72rem; color: var(--danger); margin-top: 0.35rem; display: none;">Passwords must match and meet complexity rules.</div>
+        </div>
+        <button type="button" class="btn-login" id="btnResetPassword" style="width: 100%; justify-content: center; gap: 0.5rem; padding: 0.85rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #4d8eff, #6fa3ff); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center;">
+          <span>Update Password</span>
+          <div class="spinner" id="forgotResetSpinner" style="display: none; border-color: #fff; border-top-color: transparent;"></div>
+        </button>
+      </div>
+
+      <!-- Screen 4: Success -->
+      <div id="forgotScreenSuccess" class="forgot-screen" style="display: none; text-align: center;">
+        <div class="success-icon" style="width: 54px; height: 54px; background: rgba(22, 163, 74, 0.2); border: 2px solid var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--success); margin: 0 auto 1.2rem;">✓</div>
+        <h2 style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: #fff; margin-bottom: 0.6rem;">Success!</h2>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.8rem;">Your password has been updated successfully. Please login using your new password.</p>
+        <button type="button" class="btn-login" id="btnForgotSuccessClose" style="width: 100%; justify-content: center; padding: 0.85rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #4d8eff, #6fa3ff); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700;">
+          <span>Back to Login</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot ID Modal Overlay -->
+  <div id="forgotIdModal" class="otp-modal-overlay">
+    <div class="otp-modal-content" style="text-align: left; max-width: 440px; padding: 2.2rem 2rem;">
+      <button type="button" class="otp-modal-close" id="closeForgotIdModalBtn">&times;</button>
+      
+      <!-- Screen 1: Request Email via Phone -->
+      <div id="forgotIdScreenRequest" class="forgot-screen">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div class="otp-modal-icon" style="font-size: 2.8rem; margin-bottom: 0.5rem; display: block;">🆔</div>
+          <h2 style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: #fff; margin-bottom: 0.4rem; text-align: center;">Forgot Registered Email (ID)</h2>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; text-align: center;">Enter your registered Mobile Number to retrieve your email address.</p>
+        </div>
+        <div class="field" style="margin-bottom: 1.5rem; position: relative;">
+          <input type="tel" id="forgotIdPhone" placeholder="e.g. 9876543210" maxlength="10" style="width: 100%; padding: 0.85rem 1.1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: var(--surface); color: var(--text); font-family: 'Geist', sans-serif; font-size: 0.92rem;" />
+          <div class="field-error" id="forgotIdPhoneError" style="font-size: 0.72rem; color: var(--danger); margin-top: 0.35rem; display: none;">Please enter a valid 10-digit mobile number.</div>
+        </div>
+        <button type="button" class="btn-login" id="btnFindEmail" style="width: 100%; justify-content: center; gap: 0.5rem; padding: 0.85rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #4d8eff, #6fa3ff); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center;">
+          <span>Find Email ID</span>
+          <div class="spinner" id="forgotIdSpinner" style="display: none; border-color: #fff; border-top-color: transparent;"></div>
+        </button>
+      </div>
+
+      <!-- Screen 2: Success / Show Email -->
+      <div id="forgotIdScreenSuccess" class="forgot-screen" style="display: none; text-align: center;">
+        <div class="success-icon" style="width: 54px; height: 54px; background: rgba(22, 163, 74, 0.2); border: 2px solid var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--success); margin: 0 auto 1.2rem;">✓</div>
+        <h2 style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: #fff; margin-bottom: 0.6rem;">Email Retrieved!</h2>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">We found an account linked to your mobile number.</p>
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 1rem; margin-bottom: 1.8rem; font-family: monospace; font-size: 1.05rem; color: var(--primary); font-weight: bold; letter-spacing: 0.5px; word-break: break-all;" id="retrievedEmailDisplay">
+          user@example.com
+        </div>
+        <button type="button" class="btn-login" id="btnForgotIdSuccessClose" style="width: 100%; justify-content: center; padding: 0.85rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #4d8eff, #6fa3ff); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700;">
+          <span>Back to Login</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- OTP Verification Modal -->
+  <div id="otpModal" class="otp-modal-overlay">
+    <div class="otp-modal-content" style="text-align: center; max-width: 440px; padding: 2.2rem 2rem; color: #fff;">
+      <button type="button" class="otp-modal-close" id="closeOtpModalBtn">&times;</button>
+      <div class="otp-modal-header">
+        <div class="otp-modal-icon" style="font-size: 2.8rem; margin-bottom: 0.5rem; display: block;">✉️</div>
+        <h2 style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: #fff; margin-bottom: 0.4rem; text-align: center;">Verify Your Email</h2>
+        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; text-align: center;">We have sent a verification code to <span id="otpModalEmailText" style="color: var(--primary); font-weight: 600;">your email</span>.<br>Enter it below to confirm your account.</p>
+      </div>
+      <div class="field" style="margin-bottom: 1.2rem; position: relative;">
+        <input type="hidden" id="modalOtpInput" />
+        <div class="otp-digits-wrapper" id="loginOtpDigits">
+          <input type="text" class="otp-digit-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+          <input type="text" class="otp-digit-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+          <input type="text" class="otp-digit-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+          <input type="text" class="otp-digit-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+          <input type="text" class="otp-digit-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+          <input type="text" class="otp-digit-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" />
+        </div>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;" id="modalOtpTimer">Resend OTP in 60s</div>
+      <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+        <button type="button" class="btn-login" id="modalVerifyBtn" style="width: 100%; justify-content: center; gap: 0.5rem; padding: 0.85rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #4d8eff, #6fa3ff); color: #fff; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center;">
+          <span>Verify Code</span>
+          <div class="spinner" id="modalOtpSpinner" style="display: none; border-color: #fff; border-top-color: transparent;"></div>
+        </button>
+        <button type="button" class="otp-modal-resend" id="modalResendBtn" disabled style="background: none; border: none; color: var(--primary); font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-align: center;">Resend Code</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

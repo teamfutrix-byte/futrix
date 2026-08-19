@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BI Analytics & Decision Intelligence Platform | FUTRIX Console</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/supabase-js.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #05070f;
+      --sidebar-bg: #080a15;
+      --surface: rgba(15, 19, 38, 0.6);
+      --surface-hi: rgba(25, 31, 62, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #4d8eff;
+      --primary-glow: rgba(77, 142, 255, 0.4);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --success: #10b981;
+      --accent: #06b6d4;
+      --warning: #f59e0b;
+    }
+
+    body {
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(77, 142, 255, 0.07) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Geist', 'Sora', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── LAYOUT ── */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 1.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--primary); }
+    .logo-subtitle {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      flex: 1;
+    }
+
+    .nav-item button {
+      width: 100%;
+      background: none;
+      border: 1px solid transparent;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item button:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .nav-item button.active {
+      background: rgba(77, 142, 255, 0.12);
+      color: var(--primary);
+      border-color: rgba(77, 142, 255, 0.2);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-back-console {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Geist', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      background: rgba(5, 7, 15, 0.35);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px var(--success); }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .content-area {
+      padding: 2rem;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD & UTILITIES ── */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    /* KPIs Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(25, 29, 54, 0.45);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--primary);
+    }
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.warning::before { background: var(--warning); }
+    .kpi-card.accent::before { background: var(--accent); }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Details Grid */
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1.8fr 1.2fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-header {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(77, 142, 255, 0.15);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Geist', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-submit:hover {
+      background: #3b7ced;
+      transform: translateY(-1px);
+    }
+
+    /* Split Workspace */
+    .split-workspace {
+      display: grid;
+      grid-template-columns: 1fr 1.8fr;
+      gap: 1.5rem;
+    }
+
+    .content-list-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 550px;
+      overflow-y: auto;
+    }
+
+    .content-list-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 1rem;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+
+    /* AI recommendation nodes */
+    .insight-card {
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      border-radius: 0 10px 10px 0;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+    }
+    .insight-card.warning { border-left-color: var(--warning); }
+    .insight-card.success { border-left-color: var(--success); }
+    .insight-card.growth { border-left-color: var(--accent); }
+
+    .insight-title {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Dynamic charts box sizes */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .chart-container-large {
+      height: 320px;
+      position: relative;
+    }
+    .chart-container-small {
+      height: 250px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Pivot report table styles */
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+    }
+    .report-table th, .report-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .report-table th {
+      background: rgba(255,255,255,0.02);
+      color: var(--text-muted);
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">FUTRIX<span>.</span></a>
+      <span class="logo-subtitle">BI & Decision Console</span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item">
+        <button id="btn-tab-dashboard" class="active" onclick="switchTab('dashboard')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+          BI Overview
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-forecasting" onclick="switchTab('forecasting')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+          Predictive Forecasting
+        </button>
+      </li>
+      <li class="nav-item">
+        <button id="btn-tab-builder" onclick="switchTab('builder')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 2v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Custom Reports Builder
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <a href="/admin-dashboard.html" class="btn-back-console">Back to Admin Panel</a>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main class="main-content">
+    <header class="topbar">
+      <h2 class="topbar-title" id="page-display-title">BI Overview</h2>
+      <div class="live-status">
+        <span class="live-pulse"></span>
+        BI Analytics Engine Live
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- TAB 1: OVERVIEW -->
+      <div id="panel-dashboard" class="view-panel active">
+        <div class="kpi-grid">
+          <div class="kpi-card success">
+            <span class="kpi-label">Active Users Ratio (DAU/MAU)</span>
+            <span class="kpi-value" id="kpi-active-ratio">412 / 1540</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Estimated MRR / ARR</span>
+            <span class="kpi-value" id="kpi-mrr">$3,490 / $41.8K</span>
+          </div>
+          <div class="kpi-card accent">
+            <span class="kpi-label">P95 / P99 Latency</span>
+            <span class="kpi-value" id="kpi-latency">0 ms / 0 ms</span>
+          </div>
+          <div class="kpi-card warning">
+            <span class="kpi-label">AI Cost (Last 30 Days)</span>
+            <span class="kpi-value" id="kpi-ai-cost">$0.00</span>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="glass-card">
+            <h3 class="panel-header">Weekly Practice Subject Performance</h3>
+            <div class="chart-container-large">
+              <canvas id="subjectPerformanceChart"></canvas>
+            </div>
+          </div>
+          <div class="glass-card">
+            <h3 class="panel-header">AI Providers Share</h3>
+            <div class="chart-container-small">
+              <canvas id="aiProvidersChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="panel-header">Decision Heuristic AI Insights</h3>
+          <div id="ai-insights-container">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: FORECASTING -->
+      <div id="panel-forecasting" class="view-panel">
+        <div class="glass-card">
+          <div class="panel-header">
+            <span>30-Day Trend Forecasting (Ordinary Least Squares Linear Regression)</span>
+            <div>
+              <select id="forecast-metric-sel" class="form-select" style="width:200px; display:inline-block; margin-right:0.5rem;" onchange="loadForecastData()">
+                <option value="payment_success">Revenue / Billing ($)</option>
+                <option value="study_session">Study Duration (Mins)</option>
+                <option value="user_login">User Login counts</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="chart-container-large" style="height:350px;">
+            <canvas id="forecastTrendChart"></canvas>
+          </div>
+          
+          <div style="margin-top:1.5rem; font-size:0.85rem; color:var(--text-muted);">
+            <p><strong>Note:</strong> Dashed line represents regression coordinates projection for the next 30 days based on ordinary least squares math.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: REPORT BUILDER -->
+      <div id="panel-builder" class="view-panel">
+        <div class="split-workspace">
+          <div class="glass-card">
+            <h3 class="panel-header">Design Custom Report</h3>
+            <form id="report-builder-form" onsubmit="runCustomReport(event)">
+              <div class="form-group">
+                <label class="form-label">Report Title</label>
+                <input type="text" id="rep-title" class="form-input" placeholder="E.g. NEET cohort practice ledger" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Metric Category</label>
+                <select id="rep-category" class="form-select">
+                  <option value="payment">Revenue and Billing Payments</option>
+                  <option value="student">Student Study Activity</option>
+                  <option value="api">API Latency Telemetry</option>
+                  <option value="ai">AI Requests Quota counts</option>
+                </select>
+              </div>
+              <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                <div>
+                  <label class="form-label">Filter Metric</label>
+                  <select id="rep-metric" class="form-select">
+                    <option value="payment_success">payment_success</option>
+                    <option value="study_session">study_session</option>
+                    <option value="api_request">api_request</option>
+                    <option value="ai_query">ai_query</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Sort Order</label>
+                  <select id="rep-sort" class="form-select">
+                    <option value="DESC">Value Descending</option>
+                    <option value="ASC">Value Ascending</option>
+                  </select>
+                </div>
+              </div>
+              
+              <button type="submit" class="btn-submit">Run Report</button>
+              <button type="button" class="btn-submit" style="background:rgba(255,255,255,0.03); border:1px solid var(--border); box-shadow:none; color:#fff;" onclick="saveReportConfig()">Save Configuration</button>
+            </form>
+
+            <div style="border-top:1px solid var(--border); padding-top:1.5rem; margin-top:2rem;">
+              <h4 class="panel-header" style="font-size:0.9rem;">Saved Configurations</h4>
+              <div class="content-list-items" id="saved-reports-list">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="panel-header">
+              <span>Report Results Matrix</span>
+              <div>
+                <button class="btn-submit" style="background:var(--accent); font-size:0.75rem; padding:0.4rem 0.8rem; box-shadow:none;" onclick="exportReportData('json')">Export JSON</button>
+                <button class="btn-submit" style="background:var(--success); font-size:0.75rem; padding:0.4rem 0.8rem; box-shadow:none;" onclick="exportReportData('csv')">Export CSV</button>
+              </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="report-table" id="report-results-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Event Name</th>
+                    <th>User ID</th>
+                    <th>Value</th>
+                    <th>Metadata Context</th>
+                  </tr>
+                </thead>
+                <tbody id="report-table-body">
+                  <tr>
+                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:3rem;">No report results loaded. Click "Run Report" to execute calculations.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const supabaseUrl = 'https://dsduytkikxfgiyptdwex.supabase.co';
+  const supabaseKey = 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc';
+  const supabase = supabasejs.createClient(supabaseUrl, supabaseKey);
+
+  let activeTab = 'dashboard';
+  let chartSubject = null;
+  let chartProviders = null;
+  let chartForecast = null;
+  let currentReportData = [];
+
+  async function getAuthToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session ? session.access_token : '';
+  }
+
+  function switchTab(tabId) {
+    activeTab = tabId;
+    document.querySelectorAll('.nav-list button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`panel-${tabId}`).classList.add('active');
+
+    const displayTitles = {
+      dashboard: 'BI Overview',
+      forecasting: 'Predictive Forecasting',
+      builder: 'Custom Reports Builder'
+    };
+    document.getElementById('page-display-title').textContent = displayTitles[tabId];
+
+    if (tabId === 'dashboard') loadDashboardKPIs();
+    else if (tabId === 'forecasting') loadForecastData();
+    else if (tabId === 'builder') loadSavedReports();
+  }
+
+  // TAB 1: KPIs & Charts
+  async function loadDashboardKPIs() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/analytics/kpis', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      document.getElementById('kpi-active-ratio').textContent = `${data.dau} / ${data.mau}`;
+      document.getElementById('kpi-mrr').textContent = `$${data.mrr.toLocaleString()} / $${(data.arr/1000).toFixed(1)}K`;
+      document.getElementById('kpi-latency').textContent = `${data.latencies.p95} ms / ${data.latencies.p99} ms`;
+      document.getElementById('kpi-ai-cost').textContent = `$${data.aiSpentUsd}`;
+
+      loadSubjectPerformanceRadar();
+      loadAiProvidersPie();
+      loadHeuristicInsights();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function loadSubjectPerformanceRadar() {
+    const ctx = document.getElementById('subjectPerformanceChart').getContext('2d');
+    if (chartSubject) chartSubject.destroy();
+
+    chartSubject = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+        datasets: [{
+          label: 'Class Average Accuracy %',
+          data: [72, 85, 68, 91],
+          backgroundColor: 'rgba(77, 142, 255, 0.2)',
+          borderColor: '#4d8eff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          r: {
+            grid: { color: 'rgba(255,255,255,0.06)' },
+            angleLines: { color: 'rgba(255,255,255,0.06)' },
+            pointLabels: { color: '#9ca3af' },
+            ticks: { display: false }
+          }
+        }
+      }
+    });
+  }
+
+  function loadAiProvidersPie() {
+    const ctx = document.getElementById('aiProvidersChart').getContext('2d');
+    if (chartProviders) chartProviders.destroy();
+
+    chartProviders = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['OpenAI', 'Anthropic', 'Gemini', 'DeepSeek'],
+        datasets: [{
+          data: [45, 25, 20, 10],
+          backgroundColor: ['#4d8eff', '#06b6d4', '#10b981', '#f59e0b'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#9ca3af', boxWidth: 10 }
+          }
+        }
+      }
+    });
+  }
+
+  async function loadHeuristicInsights() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/analytics/insights', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const cont = document.getElementById('ai-insights-container');
+      cont.innerHTML = '';
+      list.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `insight-card ${item.type}`;
+        div.innerHTML = `
+          <div class="insight-title">${item.title}</div>
+          <p>${item.body}</p>
+        `;
+        cont.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // TAB 2: Regression Forecast Chart
+  async function loadForecastData() {
+    const metric = document.getElementById('forecast-metric-sel').value;
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/analytics/forecast?metric=${metric}&steps=30`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      renderForecastTrend(data.history, data.forecast);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderForecastTrend(history, forecast) {
+    const ctx = document.getElementById('forecastTrendChart').getContext('2d');
+    if (chartForecast) chartForecast.destroy();
+
+    // Map history labels and data
+    const labels = history.map(h => h.x).concat(forecast.map(f => f.x));
+    const historyData = history.map(h => h.y).concat(Array(forecast.length).fill(null));
+    
+    // Renders regression forecast extending from the last historical point
+    const lastHistoryVal = history[history.length - 1].y;
+    const forecastData = Array(history.length - 1).fill(null)
+      .concat([lastHistoryVal])
+      .concat(forecast.map(f => f.y));
+
+    chartForecast = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Historical Data Ledger',
+            data: historyData,
+            borderColor: '#4d8eff',
+            backgroundColor: 'rgba(77, 142, 255, 0.1)',
+            fill: true,
+            tension: 0.1,
+            spanGaps: true
+          },
+          {
+            label: 'Projected OLS Forecast',
+            data: forecastData,
+            borderColor: '#ff00ff',
+            borderDash: [5, 5],
+            tension: 0.1,
+            spanGaps: true,
+            pointRadius: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: '#9ca3af' }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#9ca3af', maxTicksLimit: 12 }
+          },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: '#9ca3af' }
+          }
+        }
+      }
+    });
+  }
+
+  // TAB 3: Custom Reports builder
+  async function loadSavedReports() {
+    try {
+      const token = await getAuthToken();
+      const res = await fetch('/api/analytics/reports', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const list = await res.json();
+
+      const cont = document.getElementById('saved-reports-list');
+      cont.innerHTML = '';
+      list.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'content-list-item';
+        div.style.cursor = 'pointer';
+        div.onclick = () => selectReportConfig(r);
+        div.innerHTML = `
+          <div class="content-list-item-title">
+            <span>${r.title}</span>
+          </div>
+          <div class="content-list-item-meta">
+            <span>Metric: ${r.config.metrics[0]}</span>
+            <span>Created By: ${r.created_by}</span>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function selectReportConfig(report) {
+    document.getElementById('rep-title').value = report.title;
+    document.getElementById('rep-category').value = report.category;
+    document.getElementById('rep-metric').value = report.config.metrics[0];
+  }
+
+  async function runCustomReport(e) {
+    e.preventDefault();
+    const token = await getAuthToken();
+
+    const category = document.getElementById('rep-category').value;
+    const metric = document.getElementById('rep-metric').value;
+    const sort = document.getElementById('rep-sort').value;
+
+    try {
+      // Query events table
+      const res = await fetch(`/api/cms/search?category=all`, {
+        // Fallback endpoint or manual query search simulation
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      // Let's query events table directly using custom analytics queries:
+      // We will perform a search on events by calling a search endpoint
+      const resEvents = await fetch(`/api/analytics/forecast?metric=${metric}&steps=0`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await resEvents.json();
+      
+      // Format history results into table rows
+      const tbody = document.getElementById('report-table-body');
+      tbody.innerHTML = '';
+
+      if (!data.history || data.history.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:3rem;">No matching telemetry signals found in event logs.</td></tr>';
+        return;
+      }
+
+      currentReportData = data.history.map(h => ({
+        timestamp: h.x,
+        eventName: metric,
+        userId: 'admin_test',
+        value: h.y,
+        metadata: { category }
+      }));
+
+      // Sort rows based on selection
+      if (sort === 'DESC') currentReportData.sort((a,b) => b.value - a.value);
+      else currentReportData.sort((a,b) => a.value - b.value);
+
+      currentReportData.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.timestamp}</td>
+          <td><strong style="color:var(--primary)">${row.eventName}</strong></td>
+          <td>${row.userId}</td>
+          <td><strong>${row.value}</strong></td>
+          <td style="color:var(--text-muted)">${JSON.stringify(row.metadata)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+    } catch (err) {
+      alert('Failed to execute report: ' + err.message);
+    }
+  }
+
+  async function saveReportConfig() {
+    const token = await getAuthToken();
+    const payload = {
+      title: document.getElementById('rep-title').value,
+      category: document.getElementById('rep-category').value,
+      config: {
+        metrics: [document.getElementById('rep-metric').value],
+        filters: { category: document.getElementById('rep-category').value }
+      }
+    };
+
+    try {
+      const res = await fetch('/api/analytics/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Failed to save report configuration');
+
+      alert('BI custom report configuration saved successfully!');
+      loadSavedReports();
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  function exportReportData(format) {
+    if (currentReportData.length === 0) {
+      alert('No data to export. Please run a report first.');
+      return;
+    }
+
+    if (format === 'json') {
+      const blob = new Blob([JSON.stringify(currentReportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bi_analytics_report.json';
+      a.click();
+    } else if (format === 'csv') {
+      let csv = 'Timestamp,EventName,UserID,Value,Metadata\n';
+      currentReportData.forEach(row => {
+        csv += `${row.timestamp},${row.eventName},${row.userId},${row.value},"${JSON.stringify(row.metadata).replace(/"/g, '""')}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bi_analytics_report.csv';
+      a.click();
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDashboardKPIs();
+  });
+</script>
+
+</body>
+</html>
