@@ -1,24 +1,24 @@
-const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
-function fetchUrl(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'NodeJS' } }, (res) => {
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => resolve({ statusCode: res.statusCode, data }));
-    }).on('error', reject);
+function walk(dir) {
+  let results = [];
+  const list = fs.readdirSync(dir);
+  list.forEach(file => {
+    const fullPath = path.join(dir, file);
+    const stat = fs.statSync(fullPath);
+    if (stat && stat.isDirectory()) {
+      if (file !== '.git' && file !== 'node_modules' && file !== 'futrix-react-app') {
+        results = results.concat(walk(fullPath));
+      }
+    } else {
+      if (file.endsWith('.html')) {
+        results.push(fullPath);
+      }
+    }
   });
+  return results;
 }
 
-async function run() {
-  try {
-    const res = await fetchUrl('https://api.github.com/repos/teamfutrix-byte/futrix/contents');
-    const files = JSON.parse(res.data);
-    console.log('Files at root:');
-    files.forEach(f => console.log(`- ${f.name} (${f.type})`));
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-run();
+const htmlFiles = walk('C:\\Users\\L470\\Desktop\\Futrix\\Web App\\host');
+console.log('HTML files in host/:\n', htmlFiles.map(p => path.relative('C:\\Users\\L470\\Desktop\\Futrix\\Web App\\host', p)).join('\n'));
