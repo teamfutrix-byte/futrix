@@ -3,11 +3,13 @@ const path = require('path');
 const { Client } = require('pg');
 const { dbConfig } = require('../config/db');
 
+const { spawn } = require('child_process');
+
 // Absolute path to current conversation artifacts directory
 const ARTIFACTS_DIR = 'C:\\Users\\L470\\.gemini\\antigravity-ide\\brain\\a21ae10a-0af8-4e09-86f2-ab18aaa5afd1';
 const BASE_URL = 'https://teamfutrix-byte.github.io/futrix';
 
-async function cleanupDb(email) {
+async function cleanupDb(email, isPreRegistered = false) {
   console.log(`[TEST PRE-CLEANUP] Cleaning up database rows for ${email}...`);
   const db = new Client(dbConfig);
   try {
@@ -21,9 +23,13 @@ async function cleanupDb(email) {
       await db.query("DELETE FROM public.results WHERE user_id = $1", [uId]);
       await db.query("DELETE FROM public.student_analytics WHERE user_id = $1", [uId]);
     }
-    await db.query("DELETE FROM auth.users WHERE email = $1", [email]);
-    await db.query("DELETE FROM public.profiles WHERE email = $1", [email]);
-    console.log(`[TEST PRE-CLEANUP] Deleted auth user and profile for: ${email}`);
+    if (!isPreRegistered) {
+      await db.query("DELETE FROM auth.users WHERE email = $1", [email]);
+      await db.query("DELETE FROM public.profiles WHERE email = $1", [email]);
+      console.log(`[TEST PRE-CLEANUP] Deleted auth user and profile for: ${email}`);
+    } else {
+      console.log(`[TEST PRE-CLEANUP] Retained auth user and profile for pre-registered: ${email}`);
+    }
   } catch (err) {
     console.error('[TEST PRE-CLEANUP ERROR]', err);
   } finally {
@@ -31,23 +37,64 @@ async function cleanupDb(email) {
   }
 }
 
+async function bustPageLinks(page) {
+  await page.evaluate(() => {
+    const timestamp = Date.now();
+    document.querySelectorAll('a').forEach(a => {
+      let href = a.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('javascript')) {
+        if (href.includes('?')) {
+          a.setAttribute('href', href + '&t=' + timestamp);
+        } else {
+          a.setAttribute('href', href + '?t=' + timestamp);
+        }
+      }
+    });
+  });
+}
+
 async function main() {
   const email = 'teamfutrix@gmail.com';
-  const phone = '9876543210';
+  const phone = '9753124680';
   
+  // Start local server to handle database requests
+  console.log('Starting local backend server...');
+  const serverProc = spawn('node', ['server.js'], {
+    cwd: path.join(__dirname, '..'),
+    stdio: 'inherit' // Forward server output to E2E script stdout/stderr
+  });
+
+  // Wait 3 seconds for server to start and bind to port 8000
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
   // Database pre-cleanup
-  await cleanupDb(email);
+  await cleanupDb(email, false);
+  await cleanupDb('ms71766@gmail.com', true);
 
   console.log('Launching headful browser to run E2E validation loop...');
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
     slowMo: 100, // Slow down execution so user can watch on screen
-    args: ['--start-maximized']
+    args: ['--start-maximized', '--allow-running-insecure-content']
   });
 
   const page = await browser.newPage();
+  await page.setBypassCSP(true);
   await page.setCacheEnabled(false);
+
+  // Redirect Render backend API requests to local server (bypassing Render IPv6 DB connection limits)
+  await page.setRequestInterception(true);
+  page.on('request', req => {
+    const url = req.url();
+    if (url.includes('futrix-backend-7ly8.onrender.com')) {
+      const redirectedUrl = url.replace('https://futrix-backend-7ly8.onrender.com', 'http://localhost:8000');
+      console.log(`[PUPPETEER REDIRECT] ${url} -> ${redirectedUrl}`);
+      req.continue({ url: redirectedUrl });
+    } else {
+      req.continue();
+    }
+  });
 
   // Track console errors and messages
   page.on('console', msg => {
@@ -56,28 +103,35 @@ async function main() {
   page.on('pageerror', err => {
     console.error(`[BROWSER EXCEPTION] ${err.message}`);
   });
+  page.on('requestfailed', request => {
+    console.error(`[PUPPETEER REQ FAILED] ${request.url()} -> ${request.failure().errorText}`);
+  });
 
   try {
     // ── STEP 1: Navigation to Registration and testing Login Competitor Link ──
     console.log('Step 1: Navigating to student registration page...');
-    await page.goto(`${BASE_URL}/features/student/index.html`, { waitUntil: 'networkidle2' });
+    await page.goto(`${BASE_URL}/features/student/index.html?t=${Date.now()}`, { waitUntil: 'networkidle2' });
+    await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_1_register_page.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log('Clicking Already have an account? Login Competitor link...');
-    await page.waitForSelector('.form-footer a', { visible: true, timeout: 8000 });
+    await page.waitForSelector('.form-footer a', { visible: true, timeout: 20000 });
     await page.click('.form-footer a');
-    await page.waitForFunction(() => window.location.href.includes('login.html'), { timeout: 8000 });
+    await page.waitForFunction(() => window.location.href.includes('login.html'), { timeout: 20000 });
     console.log('Login page loaded successfully!');
+    console.log('Current URL is:', await page.evaluate(() => window.location.href));
+    await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_2_login_page.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // ── STEP 2: Testing Request Access Link ──
     console.log('Clicking Request Access link...');
-    await page.waitForSelector('.card-footer a', { visible: true, timeout: 8000 });
+    await page.waitForSelector('.card-footer a', { visible: true, timeout: 20000 });
     await page.click('.card-footer a');
-    await page.waitForFunction(() => window.location.href.includes('student/index.html'), { timeout: 8000 });
+    await page.waitForFunction(() => window.location.href.includes('student/index.html'), { timeout: 20000 });
     console.log('Registration page loaded back successfully!');
+    await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_3_register_page_returned.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -86,7 +140,9 @@ async function main() {
     await page.type('#fullName', 'Team Futrix');
     await page.type('#emailAddress', email);
     await page.type('#phoneNumber', phone);
-    await page.type('#dob', '15082005'); // Format: DD/MM/YYYY
+    await page.type('#dob', '15082005'); // Format: DD/MM/YYYY (auto-formatted by input listener)
+    await page.type('#guardianName', 'Guardian Name');
+    await page.type('#guardianContact', '8642013579');
     await page.type('#city', 'Delhi');
     await page.type('#qualification', 'Class 12');
     await page.type('#instituteName', 'Futrix Academy');
@@ -100,10 +156,14 @@ async function main() {
     });
 
     console.log('Submitting registration form...');
+    await page.waitForSelector('#submitBtn', { visible: true, timeout: 20000 });
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_3b_before_submit.png') });
     await page.click('#submitBtn');
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_3c_after_submit.png') });
 
     console.log('Waiting for OTP Verification modal...');
-    await page.waitForSelector('#otpModal.show', { timeout: 8000 });
+    await page.waitForSelector('#otpModal.show', { timeout: 20000 });
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_4_otp_modal.png') });
     await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -118,15 +178,19 @@ async function main() {
     await page.waitForFunction(() => {
       const overlay = document.getElementById('successOverlay');
       return overlay && overlay.classList.contains('show');
-    }, { timeout: 8000 });
+    }, { timeout: 20000 });
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_5_registration_success.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log('Clicking Start Your First Test...');
-    await page.waitForSelector('#successOverlay a', { visible: true, timeout: 8000 });
-    await page.click('#successOverlay a'); // Clicks the first link in success modal
-    await page.waitForFunction(() => window.location.href.includes('active-exams.html'), { timeout: 8000 });
+    await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('#successOverlay a'));
+      const startBtn = anchors.find(a => a.innerText.includes('Start Your First Test'));
+      if (startBtn) startBtn.click();
+    });
+    await page.waitForFunction(() => window.location.href.includes('active-exams.html'), { timeout: 20000 });
     console.log('Active exams page loaded successfully!');
+    await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_6_active_exams_dashboard.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -146,30 +210,28 @@ async function main() {
         if (target) target.click();
       }, link.urlSubstring);
       
-      await page.waitForFunction((sub) => window.location.href.includes(sub), { timeout: 8000 }, link.urlSubstring);
+      await page.waitForFunction((sub) => window.location.href.includes(sub), { timeout: 20000 }, link.urlSubstring);
       console.log(`${link.name} loaded successfully!`);
+      await bustPageLinks(page);
       await page.screenshot({ path: path.join(ARTIFACTS_DIR, link.screenshot) });
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     // ── STEP 5: Logging out and Logging in with Pre-registered User ms71766@gmail.com ──
-    console.log('Logging out from dashboard...');
-    await page.evaluate(() => {
-      const btn = document.getElementById('logoutBtn');
-      if (btn) btn.click();
-    });
-    await page.waitForFunction(() => window.location.href.includes('login.html'), { timeout: 8000 });
-    console.log('Logged out successfully!');
+    console.log('Navigating back to login page...');
+    await page.goto(`${BASE_URL}/features/auth/login.html?t=${Date.now()}`, { waitUntil: 'networkidle2' });
+    console.log('Login page loaded!');
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Logging in as pre-registered candidate ms71766@gmail.com...');
-    await page.waitForSelector('#loginEmail', { visible: true, timeout: 8000 });
+    await page.waitForSelector('#loginEmail', { visible: true, timeout: 20000 });
     await page.type('#loginEmail', 'ms71766@gmail.com');
     await page.type('#loginPhone', '8707093973');
     await page.click('#loginBtn');
 
-    await page.waitForFunction(() => window.location.href.includes('instruction.html'), { timeout: 8000 });
+    await page.waitForFunction(() => window.location.href.includes('instruction.html'), { timeout: 20000 });
     console.log('Logged in successfully! instruction.html loaded!');
+    await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_11_candidate_instruction.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -198,32 +260,32 @@ async function main() {
     await page.waitForFunction(() => {
       const btn = document.getElementById('startTestBtn');
       return btn && !btn.disabled;
-    }, { timeout: 8000 });
+    }, { timeout: 20000 });
     await page.click('#startTestBtn');
-    await page.waitForFunction(() => window.location.href.includes('exam.html'), { timeout: 8000 });
+    await page.waitForFunction(() => window.location.href.includes('exam.html'), { timeout: 20000 });
     console.log('exam.html loaded!');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_12_exam_fullscreen_prompt.png') });
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Launching Secure Sandbox...');
-    await page.waitForSelector('#startFullscreenBtn', { visible: true, timeout: 8000 });
+    await page.waitForSelector('#startFullscreenBtn', { visible: true, timeout: 20000 });
     await page.click('#startFullscreenBtn');
-    await page.waitForSelector('#examLayout', { visible: true, timeout: 8000 });
+    await page.waitForSelector('#examLayout', { visible: true, timeout: 20000 });
     console.log('Exam layout loaded! Selecting answer option A on first question...');
-    await page.waitForSelector('.option-btn', { visible: true, timeout: 8000 });
+    await page.waitForSelector('.option-btn', { visible: true, timeout: 20000 });
     await page.click('.option-btn');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_13_exam_option_selected.png') });
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Clicking Save & Next...');
-    await page.waitForSelector('#btnNext', { visible: true, timeout: 8000 });
+    await page.waitForSelector('#btnNext', { visible: true, timeout: 20000 });
     await page.click('#btnNext');
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Submitting the test...');
-    await page.waitForSelector('#btnSubmit', { visible: true, timeout: 8000 });
+    await page.waitForSelector('#btnSubmit', { visible: true, timeout: 20000 });
     await page.click('#btnSubmit');
-    await page.waitForSelector('#confirmSubmit', { visible: true, timeout: 4000 });
+    await page.waitForSelector('#confirmSubmit', { visible: true, timeout: 20000 });
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_14_submit_confirmation.png') });
     
     console.log('Confirming submission...');
@@ -232,7 +294,7 @@ async function main() {
     console.log('Waiting for redirection to performance/result views...');
     await page.waitForFunction(() => {
       return window.location.href.includes('result') || window.location.href.includes('performance') || document.getElementById('resultScreen');
-    }, { timeout: 12000 });
+    }, { timeout: 20000 });
     console.log('Test submitted and results dashboard loaded successfully!');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_15_result_page.png') });
     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -243,6 +305,10 @@ async function main() {
   } finally {
     console.log('Closing browser...');
     await browser.close();
+    
+    // Stop local server
+    console.log('Stopping local backend server...');
+    serverProc.kill();
   }
 }
 

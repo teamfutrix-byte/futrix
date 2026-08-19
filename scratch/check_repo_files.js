@@ -1,24 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 
-function walk(dir) {
-  let results = [];
-  const list = fs.readdirSync(dir);
-  list.forEach(file => {
-    const fullPath = path.join(dir, file);
-    const stat = fs.statSync(fullPath);
-    if (stat && stat.isDirectory()) {
-      if (file !== '.git' && file !== 'node_modules' && file !== 'futrix-react-app') {
-        results = results.concat(walk(fullPath));
-      }
-    } else {
-      if (file.endsWith('.html')) {
-        results.push(fullPath);
-      }
-    }
-  });
-  return results;
+const filePath = path.join(__dirname, '..', 'host', 'features', 'tests', 'instruction.html');
+if (fs.existsSync(filePath)) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  console.log('File length:', content.length);
+  // Search for occurrence of exam.html
+  const index = content.indexOf('exam.html');
+  if (index !== -1) {
+    console.log('Found exam.html! Context:');
+    console.log(content.substring(Math.max(0, index - 100), Math.min(content.length, index + 100)));
+  } else {
+    console.log('exam.html not found in compiled instruction.html!');
+  }
+} else {
+  console.log('compiled instruction.html not found!');
 }
-
-const htmlFiles = walk('C:\\Users\\L470\\Desktop\\Futrix\\Web App\\host');
-console.log('HTML files in host/:\n', htmlFiles.map(p => path.relative('C:\\Users\\L470\\Desktop\\Futrix\\Web App\\host', p)).join('\n'));

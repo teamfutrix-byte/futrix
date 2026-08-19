@@ -107,8 +107,16 @@ function copyAndProcessRecursive(currentSrc, currentDest) {
       console.log(`Obfuscating JS: ${path.relative(srcDir, currentSrc)}`);
       let content = fs.readFileSync(currentSrc, 'utf8');
 
+      const relativePath = path.relative(srcDir, currentSrc);
+      const isReactApp = relativePath.split(path.sep).includes('futrix-react-app');
+
+      if (!isReactApp) {
+        // Direct relative API fetch calls to absolute backend URLs via getApiUrl
+        content = content.replace(/(?<!getApiUrl\()fetch\((["'`])\/api\/([^"'`]*)(["'`])/g, 'fetch(getApiUrl($1/api/$2$3)');
+      }
+
       // Replace leading slash redirects (location.href = '/...') with relative paths
-      content = content.replace(/(location\.href\s*=\s*|location\.replace\()(["'])\/([^/][^"']*)(["'])/g, `$1$2${relativePrefix}$3$4`);
+      content = content.replace(/((?:window\.)?location\.href\s*=\s*|location\.replace\()(["'])\/([^/][^"']*)(["'])/g, `$1$2${relativePrefix}$3$4`);
 
       try {
         const result = Obfuscator.obfuscate(content, obfuscatorOptions);
@@ -122,12 +130,24 @@ function copyAndProcessRecursive(currentSrc, currentDest) {
       console.log(`Securing HTML: ${path.relative(srcDir, currentSrc)}`);
       let html = fs.readFileSync(currentSrc, 'utf8');
 
+      const relativePath = path.relative(srcDir, currentSrc);
+      const isReactApp = relativePath.split(path.sep).includes('futrix-react-app');
+
+      if (!isReactApp) {
+        // Direct relative API fetch calls to absolute backend URLs via getApiUrl
+        html = html.replace(/(?<!getApiUrl\()fetch\((["'`])\/api\/([^"'`]*)(["'`])/g, 'fetch(getApiUrl($1/api/$2$3)');
+      }
+
+      // Normalize root-level assets to have leading slashes if they are loaded relatively from sub-directories
+      html = html.replace(/(src|href)="(?!(?:https?:)?\/\/)(supabase-js\.js|supabase-client\.js|floating-ai-mentor\.js|favicon\.png)(?:\?[^"]*)?"/g, `$1="/$2"`);
+      html = html.replace(/(src|href)='(?!(?:https?:)?\/\/)(supabase-js\.js|supabase-client\.js|floating-ai-mentor\.js|favicon\.png)(?:\?[^']*)?'/g, `$1='/$2'`);
+
       // Replace leading slash links (src="/..." and href="/...") with relative paths
       html = html.replace(/(src|href)="\/([^/][^"]*)"/g, `$1="${relativePrefix}$2"`);
       html = html.replace(/(src|href)='\/([^/][^']*)'/g, `$1='${relativePrefix}$2'`);
 
       // Replace leading slash redirects (location.href = '/...') with relative paths in HTML script blocks
-      html = html.replace(/(location\.href\s*=\s*|location\.replace\()(["'])\/([^/][^"']*)(["'])/g, `$1$2${relativePrefix}$3$4`);
+      html = html.replace(/((?:window\.)?location\.href\s*=\s*|location\.replace\()(["'])\/([^/][^"']*)(["'])/g, `$1$2${relativePrefix}$3$4`);
 
       // Bust browser cache for key JS files (supabase-js.js and supabase-client.js)
       html = html.replace(/src="([^"]*supabase-js\.js)(?:\?v=[^"]*)?"/g, 'src="$1?v=202608183"');

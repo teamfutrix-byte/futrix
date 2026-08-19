@@ -17,9 +17,9 @@ async function main() {
     const res = await client.query(`
       SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
       FROM pg_policies
-      WHERE tablename = 'profiles'
+      WHERE tablename IN ('xp_transactions', 'referrals')
     `);
-    console.log("=== RLS Policies on profiles ===");
+    console.log("=== RLS Policies on gamification/referral tables ===");
     console.log(JSON.stringify(res.rows, null, 2));
 
   } catch (err) {

@@ -1,29 +1,14 @@
-const https = require('https');
-
-function fetchUrl(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'NodeJS' } }, (res) => {
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => resolve({ statusCode: res.statusCode, data }));
-    }).on('error', reject);
-  });
-}
-
-async function run() {
+async function check() {
   try {
-    const res = await fetchUrl('https://teamfutrix-byte.github.io/futrix/features/student/index.html?t=' + Date.now());
-    console.log('Live GitHub Pages Status Code:', res.statusCode);
-    const startIdx = res.data.indexOf('Login Competitor');
-    if (startIdx !== -1) {
-      console.log('HTML around Login Competitor:');
-      console.log(res.data.substring(startIdx - 100, startIdx + 100));
-    } else {
-      console.log('Login Competitor text not found!');
-    }
+    const url = 'https://futrix-backend-7ly8.onrender.com/api/ai/test-series/NEET-CELL-DIV/questions';
+    console.log('Fetching:', url);
+    const res = await fetch(url);
+    console.log('Status:', res.status);
+    const text = await res.text();
+    console.log('Response body:', text);
   } catch (err) {
-    console.error(err);
+    console.error('Fetch error:', err.message);
   }
 }
 
-run();
+check();

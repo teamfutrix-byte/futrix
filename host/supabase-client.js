@@ -299,9 +299,13 @@ async function signInUser(email, phone) {
   await logAuditEvent('Login', { email: cleanEmail });
 
   // Log active login session to session_logs for Founder KPIs dashboard
-  await supabase.from('session_logs').insert({
-    user_id: data.user.id
-  }).catch(err => console.warn('Failed to log active session:', err.message));
+  try {
+    await supabase.from('session_logs').insert({
+      user_id: data.user.id
+    });
+  } catch (err) {
+    console.warn('Failed to log active session:', err.message || err);
+  }
 
   return userObj;
 }

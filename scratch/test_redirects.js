@@ -1,40 +1,58 @@
-const https = require('https');
-
-function fetchUrl(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => resolve({ statusCode: res.statusCode, headers: res.headers, data }));
-    }).on('error', reject);
-  });
-}
+const puppeteer = require('puppeteer');
 
 async function run() {
-  try {
-    console.log('Fetching live index.html...');
-    const res = await fetchUrl('https://teamfutrix-byte.github.io/futrix/features/student/index.html?t=' + Date.now());
-    console.log('Status Code:', res.statusCode);
-    
-    // Check for correct relative path redirection
-    const hasCorrectStartTestLink = res.data.includes('href="../../features/tests/active-exams.html"');
-    console.log('Contains correct relative Start Test Link:', hasCorrectStartTestLink);
-    
-    const hasCorrectLoginLink = res.data.includes('href="../../features/auth/login.html"');
-    console.log('Contains correct relative Login Competitor Link:', hasCorrectLoginLink);
-
-    if (!hasCorrectStartTestLink || !hasCorrectLoginLink) {
-      console.log('WARNING: Some links are not correctly resolved relative to the page depth!');
-      console.log('Sample data near links:');
-      const startIdx = res.data.indexOf('active-exams.html');
-      if (startIdx !== -1) {
-        console.log(res.data.substring(startIdx - 100, startIdx + 200));
-      }
-    } else {
-      console.log('All links verified successfully on the live site! ✅');
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  
+  page.on('console', msg => console.log('[CONSOLE]', msg.text()));
+  page.on('requestfailed', request => {
+    console.log('Request Failed:', request.url(), 'Error:', request.failure().errorText);
+  });
+  page.on('response', response => {
+    if (response.status() >= 400) {
+      console.log('HTTP Error:', response.url(), 'Status:', response.status());
     }
+  });
+
+  try {
+    // 1. Login first to set the session
+    console.log('Logging in...');
+    await page.goto('https://teamfutrix-byte.github.io/futrix/features/auth/login.html?t=' + Date.now(), { waitUntil: 'networkidle2' });
+    await page.type('#loginEmail', 'ms71766@gmail.com');
+    await page.type('#loginPhone', '8707093973');
+    await page.click('#loginBtn');
+    
+    // Wait for navigation to instruction.html
+    await page.waitForFunction(() => window.location.href.includes('instruction.html'), { timeout: 15000 });
+    console.log('Logged in! Current URL:', page.url());
+
+    // 2. Select test and click start
+    await page.evaluate(() => {
+      const select = document.getElementById('dashboardSelectTest');
+      if (select) {
+        select.value = 'NEET-CELL-DIV';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      const checkbox = document.getElementById('confirmCheck');
+      if (checkbox) {
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    
+    // Wait a bit
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    console.log('Clicking start test button...');
+    await page.click('#startTestBtn');
+    
+    // Wait and track next URL / navigation failures
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    console.log('Final URL after click:', page.url());
   } catch (err) {
-    console.error('Validation error:', err);
+    console.error('Error:', err.message);
+  } finally {
+    await browser.close();
   }
 }
 
