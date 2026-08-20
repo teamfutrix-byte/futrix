@@ -7,7 +7,7 @@ const { spawn } = require('child_process');
 
 // Absolute path to current conversation artifacts directory
 const ARTIFACTS_DIR = 'C:\\Users\\L470\\.gemini\\antigravity-ide\\brain\\a21ae10a-0af8-4e09-86f2-ab18aaa5afd1';
-const BASE_URL = 'https://teamfutrix-byte.github.io/futrix';
+const BASE_URL = 'http://localhost:8000/host';
 
 async function cleanupDb(email, isPreRegistered = false) {
   console.log(`[TEST PRE-CLEANUP] Cleaning up database rows for ${email}...`);
@@ -106,6 +106,13 @@ async function main() {
   page.on('requestfailed', request => {
     console.error(`[PUPPETEER REQ FAILED] ${request.url()} -> ${request.failure().errorText}`);
   });
+  page.on('response', res => {
+    const url = res.url();
+    const status = res.status();
+    if (url.includes('supabase') || url.includes('exam-categories') || url.includes('.js') || url.includes('.html')) {
+      console.log(`[PUPPETEER RESPONSE] ${url} -> Status: ${status}`);
+    }
+  });
 
   try {
     // ── STEP 1: Navigation to Registration and testing Login Competitor Link ──
@@ -149,10 +156,11 @@ async function main() {
     await page.type('#pinCode', '110001');
 
     console.log('Selecting NEET preparation stream...');
+    await page.waitForSelector('.prep-btn', { visible: true, timeout: 20000 });
     await page.evaluate(() => {
-      const cards = Array.from(document.querySelectorAll('.prep-card'));
-      const neetCard = cards.find(c => c.innerText.includes('NEET'));
-      if (neetCard) neetCard.click();
+      const buttons = Array.from(document.querySelectorAll('.prep-btn'));
+      const neetBtn = buttons.find(b => b.innerText.includes('NEET'));
+      if (neetBtn) neetBtn.click();
     });
 
     console.log('Submitting registration form...');
@@ -218,6 +226,11 @@ async function main() {
     }
 
     // ── STEP 5: Logging out and Logging in with Pre-registered User ms71766@gmail.com ──
+    console.log('Clearing browser sessionStorage and localStorage to ensure clean logout...');
+    await page.evaluate(() => {
+      sessionStorage.clear();
+      localStorage.clear();
+    });
     console.log('Navigating back to login page...');
     await page.goto(`${BASE_URL}/features/auth/login.html?t=${Date.now()}`, { waitUntil: 'networkidle2' });
     console.log('Login page loaded!');
@@ -233,27 +246,17 @@ async function main() {
     console.log('Logged in successfully! instruction.html loaded!');
     await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_11_candidate_instruction.png') });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    console.log('Waiting 4 seconds for SWR background catalog query to settle...');
+    await new Promise(resolve => setTimeout(resolve, 4000));
 
     // Force select test and run a test lifecycle
     console.log('Selecting NEET-CELL-DIV test...');
-    await page.evaluate(() => {
-      const select = document.getElementById('dashboardSelectTest');
-      if (select) {
-        select.value = 'NEET-CELL-DIV';
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await page.select('#dashboardSelectTest', 'NEET-CELL-DIV');
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log('Agreeing to rules and guidelines...');
-    await page.evaluate(() => {
-      const checkbox = document.getElementById('confirmCheck');
-      if (checkbox) {
-        checkbox.checked = true;
-        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    await page.click('#confirmCheck');
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     console.log('Clicking Start Test...');

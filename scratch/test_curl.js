@@ -1,13 +1,16 @@
 async function check() {
   try {
-    const url = 'https://futrix-backend-7ly8.onrender.com/api/ai/test-series/NEET-CELL-DIV/questions';
-    console.log('Fetching:', url);
-    const res = await fetch(url);
+    const res = await fetch('https://dsduytkikxfgiyptdwex.supabase.co/rest/v1/exam_categories', {
+      headers: {
+        'apikey': 'sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc',
+        'Authorization': 'Bearer sb_publishable_2JjhenlD2BmOyojrNwIb4w_yO60inNc'
+      }
+    });
     console.log('Status:', res.status);
-    const text = await res.text();
-    console.log('Response body:', text);
-  } catch (err) {
-    console.error('Fetch error:', err.message);
+    const data = await res.json();
+    console.log('Data:', data);
+  } catch (e) {
+    console.error('Error:', e.message);
   }
 }
 
