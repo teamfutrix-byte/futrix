@@ -9,7 +9,10 @@ const dbConfig = {
   port: parseInt(process.env.DB_PORT || '5432'),
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '$anjana@123man',
-  database: process.env.DB_NAME || 'postgres'
+  database: process.env.DB_NAME || 'postgres',
+  ssl: {
+    rejectUnauthorized: false
+  }
 };
 
 function getDbClient() {
