@@ -3,11 +3,9 @@ const path = require('path');
 const { Client } = require('pg');
 const { dbConfig } = require('../config/db');
 
-const { spawn } = require('child_process');
-
 // Absolute path to current conversation artifacts directory
 const ARTIFACTS_DIR = 'C:\\Users\\L470\\.gemini\\antigravity-ide\\brain\\a21ae10a-0af8-4e09-86f2-ab18aaa5afd1';
-const BASE_URL = 'http://localhost:8000/host';
+const BASE_URL = 'https://teamfutrix-byte.github.io/futrix';
 
 async function cleanupDb(email, isPreRegistered = false) {
   console.log(`[TEST PRE-CLEANUP] Cleaning up database rows for ${email}...`);
@@ -57,44 +55,21 @@ async function main() {
   const email = 'teamfutrix@gmail.com';
   const phone = '9753124680';
   
-  // Start local server to handle database requests
-  console.log('Starting local backend server...');
-  const serverProc = spawn('node', ['server.js'], {
-    cwd: path.join(__dirname, '..'),
-    stdio: 'inherit' // Forward server output to E2E script stdout/stderr
-  });
-
-  // Wait 3 seconds for server to start and bind to port 8000
-  await new Promise(resolve => setTimeout(resolve, 3000));
-
-  // Database pre-cleanup
+  // Database pre-cleanup for teamfutrix@gmail.com (so it can register fresh)
   await cleanupDb(email, false);
   await cleanupDb('ms71766@gmail.com', true);
 
-  console.log('Launching headful browser to run E2E validation loop...');
+  console.log('Launching headful Chrome browser for live site E2E verification loop...');
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
-    slowMo: 100, // Slow down execution so user can watch on screen
+    slowMo: 140, // Slow down execution so user can watch on screen
     args: ['--start-maximized', '--allow-running-insecure-content']
   });
 
   const page = await browser.newPage();
   await page.setBypassCSP(true);
   await page.setCacheEnabled(false);
-
-  // Redirect Render backend API requests to local server (bypassing Render IPv6 DB connection limits)
-  await page.setRequestInterception(true);
-  page.on('request', req => {
-    const url = req.url();
-    if (url.includes('futrix-backend-7ly8.onrender.com')) {
-      const redirectedUrl = url.replace('https://futrix-backend-7ly8.onrender.com', 'http://localhost:8000');
-      console.log(`[PUPPETEER REDIRECT] ${url} -> ${redirectedUrl}`);
-      req.continue({ url: redirectedUrl });
-    } else {
-      req.continue();
-    }
-  });
 
   // Track console errors and messages
   page.on('console', msg => {
@@ -103,51 +78,45 @@ async function main() {
   page.on('pageerror', err => {
     console.error(`[BROWSER EXCEPTION] ${err.message}`);
   });
-  page.on('requestfailed', request => {
-    console.error(`[PUPPETEER REQ FAILED] ${request.url()} -> ${request.failure().errorText}`);
-  });
   page.on('response', res => {
     const url = res.url();
     const status = res.status();
-    if (url.includes('supabase') || url.includes('exam-categories') || url.includes('.js') || url.includes('.html')) {
+    if (url.includes('supabase') || url.includes('verify-otp') || url.includes('.html')) {
       console.log(`[PUPPETEER RESPONSE] ${url} -> Status: ${status}`);
     }
   });
 
   try {
-    // ── STEP 1: Navigation to Registration and testing Login Competitor Link ──
-    console.log('Step 1: Navigating to student registration page...');
+    // ── STEP 1: Registration Page Navigation & Login Competitor Transition ──
+    console.log('Step 1: Navigating to student registration page on live site...');
     await page.goto(`${BASE_URL}/features/student/index.html?t=${Date.now()}`, { waitUntil: 'networkidle2' });
-    await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_1_register_page.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    console.log('Clicking Already have an account? Login Competitor link...');
+    console.log('Step 2: Clicking Already have an account? Login Competitor link...');
     await page.waitForSelector('.form-footer a', { visible: true, timeout: 20000 });
     await page.click('.form-footer a');
     await page.waitForFunction(() => window.location.href.includes('login.html'), { timeout: 20000 });
-    console.log('Login page loaded successfully!');
+    console.log('Login page loaded successfully on live site!');
     console.log('Current URL is:', await page.evaluate(() => window.location.href));
-    await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_2_login_page.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // ── STEP 2: Testing Request Access Link ──
-    console.log('Clicking Request Access link...');
+    // ── STEP 3: Request Access Transition ──
+    console.log('Step 3: Clicking Request Access link...');
     await page.waitForSelector('.card-footer a', { visible: true, timeout: 20000 });
     await page.click('.card-footer a');
     await page.waitForFunction(() => window.location.href.includes('student/index.html'), { timeout: 20000 });
     console.log('Registration page loaded back successfully!');
-    await bustPageLinks(page);
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_3_register_page_returned.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // ── STEP 3: Registration Submission & OTP Verification ──
-    console.log('Filling registration fields...');
+    // ── STEP 4: Submit Registration for teamfutrix@gmail.com ──
+    console.log('Step 4: Filling registration fields for teamfutrix@gmail.com...');
     await page.type('#fullName', 'Team Futrix');
     await page.type('#emailAddress', email);
     await page.type('#phoneNumber', phone);
-    await page.type('#dob', '15082005'); // Format: DD/MM/YYYY (auto-formatted by input listener)
+    await page.type('#dob', '15082005'); 
     await page.type('#guardianName', 'Guardian Name');
     await page.type('#guardianContact', '8642013579');
     await page.type('#city', 'Delhi');
@@ -165,10 +134,8 @@ async function main() {
 
     console.log('Submitting registration form...');
     await page.waitForSelector('#submitBtn', { visible: true, timeout: 20000 });
-    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_3b_before_submit.png') });
     await page.click('#submitBtn');
     await new Promise(resolve => setTimeout(resolve, 1500));
-    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_3c_after_submit.png') });
 
     console.log('Waiting for OTP Verification modal...');
     await page.waitForSelector('#otpModal.show', { timeout: 20000 });
@@ -190,67 +157,74 @@ async function main() {
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_5_registration_success.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    console.log('Clicking Start Your First Test...');
-    await page.evaluate(() => {
-      const anchors = Array.from(document.querySelectorAll('#successOverlay a'));
-      const startBtn = anchors.find(a => a.innerText.includes('Start Your First Test'));
-      if (startBtn) startBtn.click();
-    });
-    await page.waitForFunction(() => window.location.href.includes('active-exams.html'), { timeout: 20000 });
-    console.log('Active exams page loaded successfully!');
-    await bustPageLinks(page);
-    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_6_active_exams_dashboard.png') });
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // ── STEP 4: Sidebar Navigation check ──
-    const sidebarPages = [
-      { name: 'PvP Arena', urlSubstring: 'arena.html', screenshot: 'step_7_arena.png' },
-      { name: 'Leaderboard', urlSubstring: 'leaderboard.html', screenshot: 'step_8_leaderboard.png' },
-      { name: 'Performance', urlSubstring: 'performance.html', screenshot: 'step_9_performance.png' },
-      { name: 'Memory Lab', urlSubstring: 'memory-lab.html', screenshot: 'step_10_memory_lab.png' }
-    ];
-
-    for (const link of sidebarPages) {
-      console.log(`Navigating to ${link.name}...`);
-      await page.evaluate((sub) => {
-        const anchors = Array.from(document.querySelectorAll('aside.sidebar a, ul.nav-list a'));
-        const target = anchors.find(a => a.getAttribute('href').includes(sub));
-        if (target) target.click();
-      }, link.urlSubstring);
-      
-      await page.waitForFunction((sub) => window.location.href.includes(sub), { timeout: 20000 }, link.urlSubstring);
-      console.log(`${link.name} loaded successfully!`);
-      await bustPageLinks(page);
-      await page.screenshot({ path: path.join(ARTIFACTS_DIR, link.screenshot) });
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    // ── STEP 5: Logging out and Logging in with Pre-registered User ms71766@gmail.com ──
-    console.log('Clearing browser sessionStorage and localStorage to ensure clean logout...');
+    // Close onboarding success modal and go to login page to verify candidate logins
+    console.log('Clearing sessionStorage and localStorage...');
     await page.evaluate(() => {
       sessionStorage.clear();
       localStorage.clear();
     });
+
+    // ── STEP 5: Logging in as the newly registered teamfutrix@gmail.com ──
+    console.log('Navigating to login page to test login with teamfutrix@gmail.com...');
+    await page.goto(`${BASE_URL}/features/auth/login.html?t=${Date.now()}`, { waitUntil: 'networkidle2' });
+    await page.waitForSelector('#loginEmail', { visible: true, timeout: 20000 });
+    await page.type('#loginEmail', email);
+    await page.type('#loginPhone', phone);
+    await page.click('#loginBtn');
+
+    await page.waitForFunction(() => window.location.href.includes('instruction.html'), { timeout: 20000 });
+    console.log('Successfully logged in as newly registered user: teamfutrix@gmail.com!');
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'new_user_dashboard_success.png') });
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Logout again to test the pre-registered user
+    console.log('Logging out newly registered user...');
+    await page.evaluate(() => {
+      sessionStorage.clear();
+      localStorage.clear();
+    });
+
+    // ── STEP 6: Logging in as ms71766@gmail.com ──
     console.log('Navigating back to login page...');
     await page.goto(`${BASE_URL}/features/auth/login.html?t=${Date.now()}`, { waitUntil: 'networkidle2' });
-    console.log('Login page loaded!');
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    console.log('Logging in as pre-registered candidate ms71766@gmail.com...');
     await page.waitForSelector('#loginEmail', { visible: true, timeout: 20000 });
     await page.type('#loginEmail', 'ms71766@gmail.com');
     await page.type('#loginPhone', '8707093973');
     await page.click('#loginBtn');
 
     await page.waitForFunction(() => window.location.href.includes('instruction.html'), { timeout: 20000 });
-    console.log('Logged in successfully! instruction.html loaded!');
-    await bustPageLinks(page);
+    console.log('Logged in successfully as ms71766@gmail.com! Dashboard (instruction.html) loaded!');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_11_candidate_instruction.png') });
-    
-    console.log('Waiting 4 seconds for SWR background catalog query to settle...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // ── STEP 7: Check Dashboard Buttons and Functions ──
+    console.log('Opening Profile Settings Modal...');
+    await page.waitForSelector('.settings-btn', { visible: true, timeout: 20000 });
+    await page.click('.settings-btn');
+    await page.waitForSelector('#profileSettingsModal', { visible: true, timeout: 20000 });
+    console.log('Profile Settings modal opened successfully!');
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'profile_settings_modal.png') });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    console.log('Closing Profile Settings Modal...');
+    await page.click('#closeProfileModalBtn');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // ── STEP 8: Test pricing upgrade checks ──
+    console.log('Checking Upgrade to Pro button...');
+    await page.waitForSelector('.btn-upgrade', { visible: true, timeout: 20000 });
+    await page.click('.btn-upgrade');
+    await page.waitForFunction(() => window.location.href.includes('pricing.html'), { timeout: 20000 });
+    console.log('Pricing/Pro page loaded successfully!');
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'pricing_page_pro.png') });
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
+    // Go back to instruction dashboard
+    console.log('Navigating back to instruction dashboard...');
+    await page.goto(`${BASE_URL}/features/tests/instruction.html?t=${Date.now()}`, { waitUntil: 'networkidle2' });
     await new Promise(resolve => setTimeout(resolve, 4000));
 
-    // Force select test and run a test lifecycle
+    // ── STEP 9: Active Exam Page & Test Lifecycle ──
     console.log('Selecting NEET-CELL-DIV test...');
     await page.select('#dashboardSelectTest', 'NEET-CELL-DIV');
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -268,7 +242,7 @@ async function main() {
     await page.waitForFunction(() => window.location.href.includes('exam.html'), { timeout: 20000 });
     console.log('exam.html loaded!');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_12_exam_fullscreen_prompt.png') });
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log('Launching Secure Sandbox...');
     await page.waitForSelector('#startFullscreenBtn', { visible: true, timeout: 20000 });
@@ -290,6 +264,7 @@ async function main() {
     await page.click('#btnSubmit');
     await page.waitForSelector('#confirmSubmit', { visible: true, timeout: 20000 });
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_14_submit_confirmation.png') });
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     console.log('Confirming submission...');
     await page.click('#confirmSubmit');
@@ -302,16 +277,97 @@ async function main() {
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_15_result_page.png') });
     await new Promise(resolve => setTimeout(resolve, 3000));
 
+    // ── STEP 10: PvP Arena check ──
+    console.log('Navigating to PvP Arena...');
+    await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('aside.sidebar a, ul.nav-list a'));
+      const target = anchors.find(a => a.getAttribute('href').includes('arena.html'));
+      if (target) target.click();
+    });
+    await page.waitForFunction(() => window.location.href.includes('arena.html'), { timeout: 20000 });
+    console.log('PvP Arena page loaded successfully!');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    console.log('Clicking Create Challenge button...');
+    await page.waitForSelector('#btnOpenCreateModal', { visible: true, timeout: 20000 });
+    await page.click('#btnOpenCreateModal');
+    await page.waitForSelector('#createBattleModal', { visible: true, timeout: 20000 });
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'pvp_create_modal.png') });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    console.log('Selecting Battle Test and Difficulty...');
+    await page.select('#selectBattleTest', 'NEET-CELL-DIV');
+    await page.select('#selectBattleDifficulty', 'level_5');
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    console.log('Submitting Challenge...');
+    await page.click('#btnSubmitChallenge');
+    console.log('Challenge submitted!');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'pvp_battle_created.png') });
+
+    // ── STEP 11: Memory Lab check ──
+    console.log('Navigating to Memory Lab...');
+    await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('aside.sidebar a, ul.nav-list a'));
+      const target = anchors.find(a => a.getAttribute('href').includes('memory-lab.html'));
+      if (target) target.click();
+    });
+    await page.waitForFunction(() => window.location.href.includes('memory-lab.html'), { timeout: 20000 });
+    console.log('Memory Lab page loaded successfully!');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Check if default cards are seeded, if not seed them
+    const importBtn = await page.$('#btnImportCards');
+    if (importBtn && await page.evaluate(btn => btn.style.display !== 'none', importBtn)) {
+      console.log('Seeding default memory lab cards...');
+      await page.click('#btnImportCards');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    console.log('Clicking Show Answer to flip flashcard...');
+    await page.waitForSelector('#btnPersonalShowAnswer', { visible: true, timeout: 20000 });
+    await page.click('#btnPersonalShowAnswer');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'flashcard_flipped.png') });
+
+    console.log('Rating card confidence as Easy...');
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('.btn-confidence'));
+      const easyBtn = buttons.find(b => b.innerText.toLowerCase().includes('easy'));
+      if (easyBtn) easyBtn.click();
+    });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // ── STEP 12: Leaderboard & Performance Navigation ──
+    console.log('Navigating to Leaderboard...');
+    await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('aside.sidebar a, ul.nav-list a'));
+      const target = anchors.find(a => a.getAttribute('href').includes('leaderboard.html'));
+      if (target) target.click();
+    });
+    await page.waitForFunction(() => window.location.href.includes('leaderboard.html'), { timeout: 20000 });
+    console.log('Leaderboard page loaded successfully!');
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'leaderboard_loaded.png') });
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    console.log('Navigating to Performance page...');
+    await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('aside.sidebar a, ul.nav-list a'));
+      const target = anchors.find(a => a.getAttribute('href').includes('performance.html'));
+      if (target) target.click();
+    });
+    await page.waitForFunction(() => window.location.href.includes('performance.html'), { timeout: 20000 });
+    console.log('Performance page loaded successfully!');
+    await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'performance_loaded.png') });
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
     console.log('All steps in the user test plan executed successfully! E2E validation finished. ✅');
   } catch (err) {
     console.error('Test execution failed with error:', err);
   } finally {
     console.log('Closing browser...');
     await browser.close();
-    
-    // Stop local server
-    console.log('Stopping local backend server...');
-    serverProc.kill();
   }
 }
 
