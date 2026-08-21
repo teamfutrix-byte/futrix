@@ -22,22 +22,27 @@ if (typeof window !== 'undefined') {
   // Global fetch interceptor to swap mock JWTs with the valid anon key on direct Supabase REST calls
   const originalFetch = window.fetch;
   window.fetch = async function(resource, options) {
-    if (typeof resource === 'string' && resource.includes('supabase.co')) {
-      if (options && options.headers) {
-        let authHeader = null;
-        if (options.headers instanceof Headers) {
-          authHeader = options.headers.get('Authorization');
-        } else {
-          authHeader = options.headers['Authorization'] || options.headers['authorization'];
-        }
-        
-        if (authHeader && authHeader.startsWith('Bearer ') && !authHeader.includes(SUPABASE_ANON_KEY)) {
+    if (typeof resource === 'string') {
+      if (resource.startsWith('/api/') && typeof getApiUrl === 'function') {
+        resource = getApiUrl(resource);
+      }
+      if (resource.includes('supabase.co')) {
+        if (options && options.headers) {
+          let authHeader = null;
           if (options.headers instanceof Headers) {
-            options.headers.set('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
+            authHeader = options.headers.get('Authorization');
           } else {
-            options.headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
-            if (options.headers['authorization']) {
-              options.headers['authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+            authHeader = options.headers['Authorization'] || options.headers['authorization'];
+          }
+          
+          if (authHeader && authHeader.startsWith('Bearer ') && !authHeader.includes(SUPABASE_ANON_KEY)) {
+            if (options.headers instanceof Headers) {
+              options.headers.set('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
+            } else {
+              options.headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+              if (options.headers['authorization']) {
+                options.headers['authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+              }
             }
           }
         }

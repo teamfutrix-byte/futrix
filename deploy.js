@@ -88,7 +88,7 @@ async function pushToGitHub(dir, repoName) {
 
   try {
     // Force fresh git history for host deployment to prevent dirty secret states
-    if (repoName === 'host-code-web-app') {
+    if (repoName === 'futrix') {
       const gitPath = path.join(dir, '.git');
       if (fs.existsSync(gitPath)) {
         fs.rmSync(gitPath, { recursive: true, force: true });
@@ -176,7 +176,7 @@ async function deployToRender() {
     existingService = servicesRes.body.find(s => s.service.name === 'futrix-backend');
   }
 
-  const repoUrl = `https://github.com/${GITHUB_USERNAME}/host-code-web-app`;
+  const repoUrl = `https://github.com/${GITHUB_USERNAME}/futrix`;
 
   if (existingService) {
     const serviceId = existingService.service.id;
@@ -225,9 +225,9 @@ async function deployToRender() {
           },
           envVars: [
             { key: 'NODE_ENV', value: 'production' },
-            { key: 'DB_HOST', value: 'db.dsduytkikxfgiyptdwex.supabase.co' },
-            { key: 'DB_PORT', value: '5432' },
-            { key: 'DB_USER', value: 'postgres' },
+            { key: 'DB_HOST', value: 'aws-1-ap-south-1.pooler.supabase.com' },
+            { key: 'DB_PORT', value: '6543' },
+            { key: 'DB_USER', value: 'postgres.dsduytkikxfgiyptdwex' },
             { key: 'DB_PASSWORD', value: '$anjana@123man' },
             { key: 'DB_NAME', value: 'postgres' }
           ]
@@ -271,17 +271,17 @@ async function run() {
   try {
     // 1. Create GitHub Repositories
     await createGitHubRepo('raw-code-web-app', true);
-    await createGitHubRepo('host-code-web-app', true);
+    await createGitHubRepo('futrix', true);
 
     // 2. Push Raw Project Code
     await pushToGitHub(__dirname, 'raw-code-web-app');
 
     // 3. Push Host Compiled Code
-    await pushToGitHub(path.join(__dirname, 'host'), 'host-code-web-app');
+    await pushToGitHub(path.join(__dirname, 'host'), 'futrix');
 
     // Make host repository public to allow Render fetching
     try {
-      await makeRepoPublic('host-code-web-app');
+      await makeRepoPublic('futrix');
     } catch (e) {
       console.log(`ℹ Repository visibility check: ${e.message}`);
     }

@@ -20,6 +20,8 @@ async function cleanupDb(email, isPreRegistered = false) {
       await db.query("DELETE FROM public.assessment_attempts WHERE user_id = $1", [uId]);
       await db.query("DELETE FROM public.results WHERE user_id = $1", [uId]);
       await db.query("DELETE FROM public.student_analytics WHERE user_id = $1", [uId]);
+      await db.query("DELETE FROM public.revision_queue WHERE user_id = $1", [uId]);
+      await db.query("DELETE FROM public.personal_memory_cards WHERE user_id = $1", [uId]);
     }
     if (!isPreRegistered) {
       await db.query("DELETE FROM auth.users WHERE email = $1", [email]);
@@ -64,13 +66,25 @@ async function main() {
     headless: false,
     defaultViewport: null,
     slowMo: 140, // Slow down execution so user can watch on screen
-    args: ['--start-maximized', '--allow-running-insecure-content']
+    args: ['--start-maximized', '--allow-running-insecure-content', '--disable-web-security']
   });
 
   const page = await browser.newPage();
   await page.setBypassCSP(true);
-  await page.setCacheEnabled(false);
-
+  page.on('dialog', async dialog => {
+    console.log(`[DIALOG SYSTEM] Dismissing native browser dialog: "${dialog.message()}"`);
+    await dialog.accept();
+  });
+  await page.setRequestInterception(true);
+  page.on('request', request => {
+    const url = request.url();
+    if (url.includes('futrix-backend-7ly8.onrender.com')) {
+      const localUrl = url.replace('https://futrix-backend-7ly8.onrender.com', 'http://localhost:8000');
+      request.continue({ url: localUrl });
+    } else {
+      request.continue();
+    }
+  });
   // Track console errors and messages
   page.on('console', msg => {
     console.log(`[BROWSER CONSOLE] ${msg.type().toUpperCase()}: ${msg.text()}`);
@@ -106,7 +120,7 @@ async function main() {
     console.log('Step 3: Clicking Request Access link...');
     await page.waitForSelector('.card-footer a', { visible: true, timeout: 20000 });
     await page.click('.card-footer a');
-    await page.waitForFunction(() => window.location.href.includes('student/index.html'), { timeout: 20000 });
+    await page.waitForSelector('#fullName', { visible: true, timeout: 20000 });
     console.log('Registration page loaded back successfully!');
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_3_register_page_returned.png') });
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -277,6 +291,13 @@ async function main() {
     await page.screenshot({ path: path.join(ARTIFACTS_DIR, 'step_15_result_page.png') });
     await new Promise(resolve => setTimeout(resolve, 3000));
 
+    console.log('Returning to student dashboard...');
+    await page.waitForSelector('.btn-home', { visible: true, timeout: 20000 });
+    await page.click('.btn-home');
+    await page.waitForFunction(() => window.location.href.includes('instruction.html'), { timeout: 20000 });
+    console.log('Back on instruction dashboard!');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     // ── STEP 10: PvP Arena check ──
     console.log('Navigating to PvP Arena...');
     await page.evaluate(() => {
@@ -297,7 +318,7 @@ async function main() {
 
     console.log('Selecting Battle Test and Difficulty...');
     await page.select('#selectBattleTest', 'NEET-CELL-DIV');
-    await page.select('#selectBattleDifficulty', 'level_5');
+    await page.select('#selectBattleDifficulty', 'level_1');
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     console.log('Submitting Challenge...');
@@ -317,13 +338,48 @@ async function main() {
     console.log('Memory Lab page loaded successfully!');
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // Check if default cards are seeded, if not seed them
+    console.log('Checking for Skip Diagnostic button...');
+    const skipBtn = await page.$('#assessmentOverlay button[title="Skip Diagnostic"]');
+    if (skipBtn) {
+      console.log('Clicking Skip Diagnostic button...');
+      await page.click('#assessmentOverlay button[title="Skip Diagnostic"]');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    console.log('Waiting for Memory Lab decks to load...');
+    await page.waitForFunction(() => {
+      const importBtn = document.getElementById('btnImportCards');
+      const hasDecks = document.querySelectorAll('.deck-item').length > 0;
+      const isImportVisible = importBtn && importBtn.style.display !== 'none';
+      return hasDecks || isImportVisible;
+    }, { timeout: 20000 });
+
     const importBtn = await page.$('#btnImportCards');
     if (importBtn && await page.evaluate(btn => btn.style.display !== 'none', importBtn)) {
       console.log('Seeding default memory lab cards...');
       await page.click('#btnImportCards');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
+
+    console.log('[TEST DATABASE] Updating revision queue items to be due immediately...');
+    const dbTemp = new Client(dbConfig);
+    await dbTemp.connect();
+    const pRows = await dbTemp.query("SELECT id FROM public.profiles WHERE email = $1", ['ms71766@gmail.com']);
+    if (pRows.rows.length > 0) {
+      const uId = pRows.rows[0].id;
+      await dbTemp.query("UPDATE public.revision_queue SET next_revision_at = NOW() - INTERVAL '1 day' WHERE user_id = $1", [uId]);
+      console.log('[TEST DATABASE] Revision queue updated.');
+    }
+    await dbTemp.end();
+
+    console.log('Reloading page to fetch updated queue items...');
+    await page.reload({ waitUntil: 'networkidle2' });
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    console.log('Starting deck study session...');
+    await page.waitForSelector('button[onclick*="startStudyDeck"]', { visible: true, timeout: 20000 });
+    await page.click('button[onclick*="startStudyDeck"]');
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     console.log('Clicking Show Answer to flip flashcard...');
     await page.waitForSelector('#btnPersonalShowAnswer', { visible: true, timeout: 20000 });

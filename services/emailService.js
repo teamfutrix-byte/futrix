@@ -1,16 +1,10 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
 const fs = require('fs');
-const { Client } = require('pg');
+const { getDbClient } = require('../config/db');
 
 async function getEmailConfigFromDb() {
-  const db = new Client({
-    host: 'db.dsduytkikxfgiyptdwex.supabase.co',
-    port: 5432,
-    user: 'postgres',
-    password: '$anjana@123man',
-    database: 'postgres'
-  });
+  const db = getDbClient();
   try {
     await db.connect();
     const { rows } = await db.query("SELECT value FROM public.platform_configs WHERE key = 'email_gateway_config'");
