@@ -40,7 +40,8 @@ async function sendOtpEmail(email, otpCode, fullName = 'User', role = 'student')
       auth: {
         user,
         pass
-      }
+      },
+      family: 4
     });
   } else {
     transporter = nodemailer.createTransport({
@@ -168,7 +169,8 @@ async function sendWelcomeKitEmail(email, fullName, role = 'student') {
       host,
       port,
       secure: port === 465,
-      auth: { user, pass }
+      auth: { user, pass },
+      family: 4
     });
   } else {
     transporter = nodemailer.createTransport({ jsonTransport: true });

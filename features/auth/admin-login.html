@@ -530,7 +530,7 @@
           localStorage.removeItem('futrix_admin_email');
         }
 
-        if (userObj.role === 'admin') {
+        if (userObj.role === 'admin' || userObj.role === 'superadmin') {
           window.location.href = '/features/super-admin/admin-dashboard.html';
         } else if (userObj.role === 'teacher') {
           window.location.href = '/features/teacher/teacher-dashboard.html';

@@ -1949,6 +1949,20 @@ function initStudentProfileManager() {
       });
     }
 
+    function getLoginUrl() {
+      const path = window.location.pathname;
+      if (path.includes('/features/')) {
+        const parts = path.substring(path.indexOf('/features/')).split('/');
+        const depth = parts.length - 3;
+        if (depth > 0) {
+          return '../'.repeat(depth) + 'auth/login.html';
+        } else {
+          return './login.html';
+        }
+      }
+      return 'features/auth/login.html';
+    }
+
     // 4. Logout Handler
     function handleLogout(e) {
       if (e) e.preventDefault();
@@ -1958,7 +1972,7 @@ function initStudentProfileManager() {
       localStorage.removeItem('sb-dsduytkikxfgiyptdwex-auth-token');
       
       // Perform direct root-relative redirect to prevent 404 paths
-      window.location.href = '/login.html';
+      window.location.href = getLoginUrl();
     }
 
     if (ddLogoutBtn) {
@@ -1967,7 +1981,7 @@ function initStudentProfileManager() {
 
     // Dynamic clean up of all page-level logout buttons
     document.querySelectorAll('a[href="login.html"], #logoutBtn').forEach(el => {
-      el.href = '/login.html';
+      el.href = getLoginUrl();
       el.addEventListener('click', handleLogout);
     });
   }

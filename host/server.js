@@ -531,7 +531,7 @@ app.post('/api/auth/login', async (req, res) => {
       is_pro: profile.is_pro
     };
 
-    const token = profile.role === 'admin' ? 'test-admin-token' : (profile.role === 'teacher' ? 'test-teacher-token' : 'test-student-token');
+    const token = (profile.role === 'admin' || profile.role === 'superadmin') ? 'test-admin-token' : (profile.role === 'teacher' ? 'test-teacher-token' : 'test-student-token');
 
     console.log(`[AUTH API] User ${profile.email} (${profile.role}) logged in successfully.`);
     res.json({
