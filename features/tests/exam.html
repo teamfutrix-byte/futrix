@@ -518,6 +518,36 @@
       .palette-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); }
       .palette-grid { grid-template-columns: repeat(6,1fr); }
       .question-panel { overflow: visible; }
+
+      /* Answer Key Review Responsive */
+      .review-topbar {
+        padding: 0.5rem 1rem;
+        flex-wrap: wrap;
+        height: auto;
+        gap: 0.5rem;
+        justify-content: center;
+      }
+      .review-header-title {
+        display: none; /* Hide long title on mobile */
+      }
+      .review-container {
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .review-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 1rem;
+        overflow-y: visible;
+      }
+      .review-grid {
+        grid-template-columns: repeat(10, 1fr);
+      }
+      .review-main-pane {
+        padding: 1rem;
+        overflow-y: visible;
+      }
     }
     @media (max-width: 480px) {
       .topbar { padding: 0 0.8rem; }
@@ -526,6 +556,15 @@
       .candidate-id { display: none; }
       .question-panel { padding: 0.8rem 0.8rem 0; }
       .palette-grid { grid-template-columns: repeat(5,1fr); }
+      
+      .review-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      .review-exit-btn, .review-close-btn {
+        width: 100%;
+        text-align: center;
+      }
+
       .result-card {
         padding: 1.5rem 1.1rem;
         border-radius: 16px;

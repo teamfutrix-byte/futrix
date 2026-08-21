@@ -565,6 +565,78 @@
       pointer-events: none;
       z-index: 9999;
     }
+
+    /* ══════════════ RESPONSIVENESS ══════════════ */
+    @media (max-width: 1024px) {
+      .layout {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        position: static;
+      }
+      .sidebar-profile {
+        padding: 1rem;
+      }
+      .nav-list {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0.5rem 1rem;
+        gap: 0.5rem;
+        flex: none;
+        scrollbar-width: none;
+      }
+      .nav-list::-webkit-scrollbar {
+        display: none;
+      }
+      .nav-item {
+        margin-bottom: 0 !important;
+      }
+      .nav-item a {
+        padding: 0.5rem 1rem;
+        white-space: nowrap;
+        border-radius: 8px;
+      }
+      .main-content {
+        grid-template-columns: 1fr !important;
+        height: auto;
+        overflow: visible;
+        padding: 1rem;
+        gap: 1.5rem;
+      }
+      .topbar {
+        padding: 0 1rem;
+        flex-wrap: wrap;
+        height: auto;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        gap: 0.5rem;
+      }
+      .sidebar-bottom {
+        padding: 1rem;
+        border-top: 1px solid var(--border-color);
+      }
+    }
+    @media (max-width: 480px) {
+      .flashcard-box {
+        height: 320px !important;
+        padding: 1.5rem !important;
+      }
+      .action-row {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .action-row button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>

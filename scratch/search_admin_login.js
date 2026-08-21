@@ -5,8 +5,11 @@ const filePath = path.join(__dirname, '..', 'features', 'auth', 'admin-login.htm
 const content = fs.readFileSync(filePath, 'utf8');
 const lines = content.split('\n');
 
+let inStyle = false;
 lines.forEach((line, index) => {
-  if (line.includes('signIn') || line.includes('session') || line.includes('role') || line.includes('admin') || line.includes('dashboard')) {
+  if (line.includes('<style>')) inStyle = true;
+  if (line.includes('</style>')) inStyle = false;
+  if (inStyle && (line.includes('display: flex') || line.includes('display: grid') || line.includes('.container') || line.includes('.login-'))) {
     console.log(`L${index + 1}: ${line.trim()}`);
   }
 });
