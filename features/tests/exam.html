@@ -519,6 +519,24 @@
       .palette-grid { grid-template-columns: repeat(6,1fr); }
       .question-panel { overflow: visible; }
 
+      /* Topbar Mobile Optimizations */
+      .topbar {
+        height: auto !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem !important;
+      }
+      .topbar > div:first-child {
+        gap: 0.5rem !important;
+        flex-wrap: wrap;
+      }
+      .topbar span {
+        display: none !important;
+      }
+      .candidate-info {
+        display: none !important;
+      }
+
       /* Answer Key Review Responsive */
       .review-topbar {
         padding: 0.5rem 1rem;

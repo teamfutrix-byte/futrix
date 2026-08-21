@@ -567,7 +567,7 @@
     }
 
     /* ══════════════ RESPONSIVENESS ══════════════ */
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
       .layout {
         flex-direction: column;
         height: auto;
@@ -605,6 +605,7 @@
         border-radius: 8px;
       }
       .main-content {
+        margin-left: 0 !important;
         grid-template-columns: 1fr !important;
         height: auto;
         overflow: visible;
@@ -624,10 +625,16 @@
         border-top: 1px solid var(--border-color);
       }
     }
-    @media (max-width: 480px) {
-      .flashcard-box {
-        height: 320px !important;
-        padding: 1.5rem !important;
+    @media (max-width: 580px) {
+      .flashcard-container {
+        aspect-ratio: auto !important;
+        height: 290px !important;
+      }
+      .card-face {
+        padding: 1.2rem !important;
+      }
+      .card-text {
+        font-size: 1.1rem !important;
       }
       .action-row {
         flex-direction: column;

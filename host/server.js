@@ -241,11 +241,23 @@ app.post('/api/auth/send-otp', async (req, res) => {
     const emailResult = await sendOtpEmail(cleanEmail, otpCode, full_name, role);
 
     console.log(`[AUTH API] OTP ${otpCode} generated & sent to ${cleanEmail}. EmailResult:`, emailResult);
-    res.json({
-      success: true,
-      message: `Verification code sent to ${cleanEmail}`,
-      otpSent: true
-    });
+    
+    if (emailResult && emailResult.success === false) {
+      res.json({
+        success: true,
+        message: `Verification code generated (Email delivery failed: ${emailResult.error})`,
+        otpSent: true,
+        otp_delivery_failed: true,
+        otp_code: otpCode
+      });
+    } else {
+      res.json({
+        success: true,
+        message: `Verification code sent to ${cleanEmail}`,
+        otpSent: true,
+        otp_delivery_failed: false
+      });
+    }
   } catch (err) {
     console.error('Error sending OTP:', err);
     try { await db.end(); } catch (_) {}
@@ -587,6 +599,14 @@ app.post('/api/student/save-attempt', async (req, res) => {
     // 2. Mistake-to-Flashcard Automator
     if (options.incorrectQuestions && Array.isArray(options.incorrectQuestions) && options.incorrectQuestions.length > 0) {
       for (const item of options.incorrectQuestions) {
+        let qId = item.question_id;
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (typeof qId !== 'string' || !uuidRegex.test(qId.trim())) {
+          qId = null;
+        } else {
+          qId = qId.trim();
+        }
+
         const wrongQInsertQuery = `
           INSERT INTO public.wrong_questions (
             user_id, question_id, question_text, correct_answer, explanation, status
@@ -596,7 +616,7 @@ app.post('/api/student/save-attempt', async (req, res) => {
         `;
         const { rows: wrongQRows } = await db.query(wrongQInsertQuery, [
           userId,
-          item.question_id || null,
+          qId,
           item.question_text,
           item.correct_answer,
           item.explanation || 'Mistake recorded during exam review.'
@@ -719,7 +739,13 @@ app.post('/api/student/save-attempt', async (req, res) => {
             [oppId]
           );
 
-          let oppAttempt = oppAttempts.find(a => a.question_navigation_log && a.question_navigation_log.battleId === battleId);
+          let oppAttempt = oppAttempts.find(a => {
+            let nav = a.question_navigation_log;
+            if (typeof nav === 'string') {
+              try { nav = JSON.parse(nav); } catch (e) {}
+            }
+            return nav && nav.battleId === battleId;
+          });
           if (oppAttempt) {
             const creatorScore = (battle.creator_id === userId) ? score : parseFloat(oppAttempt.score);
             const opponentScore = (battle.creator_id === userId) ? parseFloat(oppAttempt.score) : score;

@@ -763,7 +763,7 @@
               .update({ otp_code: generatedOtp })
               .eq('email', email.toLowerCase());
 
-            window.openOtpModal(email, phone);
+            window.openOtpModal(email, phone, true, generatedOtp);
           } catch (otpErr) {
             console.error('Failed to generate OTP:', otpErr);
             showError('Error initializing verification code. Please try again.');
@@ -1101,11 +1101,21 @@
         }, 1000);
       }
 
-      window.openOtpModal = function(email, phone) {
+      window.openOtpModal = function(email, phone, deliveryFailed = false, fallbackOtp = '') {
         verifyEmailVal = email;
         verifyPhoneVal = phone;
         document.getElementById('otpModalEmailText').textContent = email;
         document.getElementById('modalOtpInput').value = '';
+        
+        const fallbackContainer = document.getElementById('otpFallbackNotice');
+        if (fallbackContainer) {
+          if (deliveryFailed && fallbackOtp) {
+            fallbackContainer.style.display = 'block';
+            fallbackContainer.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">[Render SMTP Port Blocked Notice]</span> Since Render blocks outgoing email ports on the Free plan, we retrieved your verification code: <strong style="font-size:1.35em; color:#38bdf8; letter-spacing:0.08em; font-family:monospace; margin-left:3px;">${fallbackOtp}</strong>. Please enter this code.`;
+          } else {
+            fallbackContainer.style.display = 'none';
+          }
+        }
         
         // Reset split inputs
         const digits = document.querySelectorAll('#loginOtpDigits .otp-digit-input');
@@ -1210,7 +1220,16 @@
           });
           const data = await res.json();
           if (res.ok && (data.success || data.otpSent)) {
-            alert('Verification code resent successfully!');
+            if (data && data.otp_delivery_failed) {
+              alert('Verification code regenerated (email delivery blocked by Render). Code: ' + data.otp_code);
+              const fallbackContainer = document.getElementById('otpFallbackNotice');
+              if (fallbackContainer) {
+                fallbackContainer.style.display = 'block';
+                fallbackContainer.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">[Render SMTP Port Blocked Notice]</span> Since Render blocks outgoing email ports on the Free plan, we retrieved your verification code: <strong style="font-size:1.35em; color:#38bdf8; letter-spacing:0.08em; font-family:monospace; margin-left:3px;">${data.otp_code}</strong>. Please enter this code.`;
+              }
+            } else {
+              alert('Verification code resent successfully!');
+            }
             startCooldown();
           } else {
             alert(data.error || data.message || 'Failed to resend verification code.');
@@ -1549,6 +1568,7 @@
         <div class="otp-modal-icon" style="font-size: 2.8rem; margin-bottom: 0.5rem; display: block;">✉️</div>
         <h2 style="font-family: 'Sora', sans-serif; font-size: 1.35rem; font-weight: 750; color: #fff; margin-bottom: 0.4rem; text-align: center;">Verify Your Email</h2>
         <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; text-align: center;">We have sent a verification code to <span id="otpModalEmailText" style="color: var(--primary); font-weight: 600;">your email</span>.<br>Enter it below to confirm your account.</p>
+        <div id="otpFallbackNotice" style="display: none; margin-top: 15px; padding: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; font-size: 13px; color: #cbd5e1; line-height: 1.5; text-align: left; margin-bottom: 1.2rem;"></div>
       </div>
       <div class="field" style="margin-bottom: 1.2rem; position: relative;">
         <input type="hidden" id="modalOtpInput" />

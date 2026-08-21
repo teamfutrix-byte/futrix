@@ -5,11 +5,6 @@ const filePath = path.join(__dirname, '..', 'features', 'memory-lab', 'memory-la
 const content = fs.readFileSync(filePath, 'utf8');
 const lines = content.split('\n');
 
-let inStyle = false;
-lines.forEach((line, index) => {
-  if (line.includes('<style>')) inStyle = true;
-  if (line.includes('</style>')) inStyle = false;
-  if (inStyle && (line.includes('display: flex') || line.includes('display: grid') || line.includes('grid-template-columns') || line.includes('.container') || line.includes('.layout') || line.includes('.main-'))) {
-    console.log(`L${index + 1}: ${line.trim()}`);
-  }
+lines.slice(15, 180).forEach((line, index) => {
+  console.log(`L${16 + index}: ${line}`);
 });

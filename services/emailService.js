@@ -41,7 +41,12 @@ async function sendOtpEmail(email, otpCode, fullName = 'User', role = 'student')
         user,
         pass
       },
-      family: 4
+      family: 4,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   } else {
     transporter = nodemailer.createTransport({
@@ -170,7 +175,12 @@ async function sendWelcomeKitEmail(email, fullName, role = 'student') {
       port,
       secure: port === 465,
       auth: { user, pass },
-      family: 4
+      family: 4,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      tls: {
+        rejectUnauthorized: false
+      }
     });
   } else {
     transporter = nodemailer.createTransport({ jsonTransport: true });

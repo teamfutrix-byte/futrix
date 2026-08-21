@@ -297,6 +297,7 @@
       <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
         We've sent a 6-digit verification code to <strong id="modalEmailText" style="color: var(--primary);">teacher@gmail.com</strong>.
       </p>
+      <div id="otpFallbackNotice" style="display: none; margin-top: 15px; padding: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; font-size: 13px; color: #cbd5e1; line-height: 1.5; text-align: left;"></div>
 
       <input type="hidden" id="modalOtpInput" />
       <div class="otp-digits-wrapper" id="teacherOtpDigits">
@@ -384,19 +385,34 @@
         }
 
         // 3. Send email OTP via Nodemailer API
-        await fetch('/api/auth/send-otp', {
+        const otpRes = await fetch(getApiUrl('/api/auth/send-otp'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, role: 'teacher', full_name: name })
         });
+        const otpData = await otpRes.json();
 
         document.getElementById('modalEmailText').textContent = email;
         document.getElementById('modalOtpInput').value = '';
+        
+        const fallbackContainer = document.getElementById('otpFallbackNotice');
+        if (fallbackContainer) {
+          if (otpData && otpData.otp_delivery_failed) {
+            fallbackContainer.style.display = 'block';
+            fallbackContainer.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">[Render SMTP Port Blocked Notice]</span> Since Render blocks outgoing email ports on the Free plan, we retrieved your verification code: <strong style="font-size:1.35em; color:#38bdf8; letter-spacing:0.08em; font-family:monospace; margin-left:3px;">${otpData.otp_code}</strong>. Please enter this code.`;
+            showToast('Verification code generated (email delivery blocked by Render)', 'warning');
+          } else {
+            fallbackContainer.style.display = 'none';
+            showToast('Verification code sent to your email address!', 'success');
+          }
+        } else {
+          showToast('Verification code sent to your email address!', 'success');
+        }
+
         const digits = document.querySelectorAll('#teacherOtpDigits .otp-digit-input');
         digits.forEach(input => input.value = '');
         if (digits.length > 0) setTimeout(() => digits[0].focus(), 150);
         document.getElementById('teacherOtpModal').classList.add('show');
-        showToast('Verification code sent to your email address!', 'success');
       } catch (err) {
         showToast('Registration error: ' + err.message, 'error');
       } finally {
@@ -420,7 +436,7 @@
       try {
         let isVerified = false;
 
-        const res = await fetch('/api/auth/verify-otp', {
+        const res = await fetch(getApiUrl('/api/auth/verify-otp'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: tempTeacherData.email, otp_code: otp })
@@ -440,7 +456,7 @@
           showToast('Email verified successfully! Welcome to FUTRIX.', 'success');
 
           // Dispatch Teacher Welcome Kit Email
-          fetch('/api/auth/send-welcome-kit', {
+          fetch(getApiUrl('/api/auth/send-welcome-kit'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: tempTeacherData.email, full_name: tempTeacherData.name, role: 'teacher' })
@@ -457,8 +473,8 @@
           sessionStorage.setItem('futrix_user', JSON.stringify(teacherUser));
 
           // Hide OTP modal & show Teacher Registration Success Card
-          const otpModal = document.getElementById('otpModal');
-          if (otpModal) otpModal.style.display = 'none';
+          const otpModal = document.getElementById('teacherOtpModal');
+          if (otpModal) otpModal.classList.remove('show');
 
           const card = document.querySelector('.register-card');
           if (card) {
@@ -508,12 +524,26 @@
     async function resendTeacherOtp() {
       if (!tempTeacherData) return;
       try {
-        await fetch(getApiUrl('/api/auth/send-otp'), {
+        const res = await fetch(getApiUrl('/api/auth/send-otp'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: tempTeacherData.email, role: 'teacher', full_name: tempTeacherData.name })
         });
-        showToast('New verification code sent to your email!', 'success');
+        const data = await res.json();
+        if (res.ok && (data.success || data.otpSent)) {
+          if (data && data.otp_delivery_failed) {
+            showToast('Verification code regenerated (email delivery blocked by Render)', 'warning');
+            const fallbackContainer = document.getElementById('otpFallbackNotice');
+            if (fallbackContainer) {
+              fallbackContainer.style.display = 'block';
+              fallbackContainer.innerHTML = `<span style="color:#f59e0b; font-weight:bold;">[Render SMTP Port Blocked Notice]</span> Since Render blocks outgoing email ports on the Free plan, we retrieved your verification code: <strong style="font-size:1.35em; color:#38bdf8; letter-spacing:0.08em; font-family:monospace; margin-left:3px;">${data.otp_code}</strong>. Please enter this code.`;
+            }
+          } else {
+            showToast('New verification code sent to your email!', 'success');
+          }
+        } else {
+          showToast('Failed to resend code.', 'error');
+        }
       } catch (e) {
         showToast('Failed to resend code: ' + e.message, 'error');
       }

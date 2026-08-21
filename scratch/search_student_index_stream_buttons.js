@@ -6,9 +6,7 @@ const content = fs.readFileSync(filePath, 'utf8');
 const lines = content.split('\n');
 
 lines.forEach((line, index) => {
-  if (line.includes('stream') || line.includes('Stream') || line.includes('button') || line.includes('class="btn') || line.includes('NEET')) {
-    if (line.includes('<button') || line.includes('class=')) {
-      console.log(`L${index + 1}: ${line.trim()}`);
-    }
+  if (line.includes('otpModal') || line.includes('closeOtpModalBtn') || line.includes('modalOtpInput')) {
+    console.log(`L${index + 1}: ${line.trim()}`);
   }
 });

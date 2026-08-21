@@ -542,16 +542,20 @@
     /* ══════════════ SIDEBAR TOGGLE (mobile) ══════════════ */
     .sidebar-toggle {
       display: none;
-      position: fixed;
-      top: 60px;
-      left: 1rem;
-      z-index: 300;
-      background: var(--surface-hi);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.4rem;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
       cursor: pointer;
       color: var(--text-muted);
+      padding: 0.4rem;
+      margin-right: 0.25rem;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
     }
     .sidebar-overlay {
       display: none;
@@ -563,13 +567,14 @@
 
     /* ══════════════ RESPONSIVE ══════════════ */
     @media (max-width: 900px) {
+      .topbar-nav { display: none !important; }
+      .sidebar-toggle { display: inline-flex !important; }
       .sidebar {
         transform: translateX(-100%);
       }
       .sidebar.open {
         transform: translateX(0);
       }
-      .sidebar-toggle { display: flex; }
       .sidebar-overlay.open { display: block; }
       .main-content { margin-left: 0; padding: 1rem; }
     }
@@ -712,6 +717,15 @@
 
 <!-- Top Bar -->
 <header class="topbar">
+  <div style="display: flex; align-items: center; gap: 0.5rem;">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <ul class="topbar-nav" style="margin-left: 0; margin-right: 1.5rem; gap: 1.25rem;">
+      <li><a href="/features/tests/instruction.html" class="active">Dashboard</a></li>
+      <li><a href="/features/tests/active-exams.html">Active Exams</a></li>
+    </ul>
+  </div>
   <a href="#" class="topbar-logo">Fut<span>rix</span></a>
   <div class="topbar-center">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -730,10 +744,6 @@
   </div>
 </header>
 
-<!-- Sidebar Toggle (mobile) -->
-<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-</button>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <div class="layout">
