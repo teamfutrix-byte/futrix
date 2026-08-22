@@ -1,0 +1,77 @@
+=== FUTRIX EXAM PORTAL - GOOGLE SPREADSHEET TEMPLATES & SERIES ID SCHEMES ===
+Aap is file se headers aur rows ko copy karke directly Google Sheets me paste (Ctrl+V) kar sakte hain. Jab aap tab-separated data copy karte hain, to Google Sheets use automatically alag-alag columns (cells) me split kar deta hai.
+
+================================================================================
+PART 1: MASTER LIST HEADERS (Use for Topic-Wise, Subject-Wise, Series-Wise, Full Mock Sheets)
+Copy-paste this row as the header (Row 1) of all 4 master index sheets.
+--------------------------------------------------------------------------------
+Series ID	Exam Type	Topic/Chapter	Upload Time	Duration (mins)	XP Reward	Max Marks	Status	Test Type	Price	Has Questions
+
+================================================================================
+PART 2: NEET MASTER LIST TEMPLATE ROWS (Sample Rows)
+Copy-paste these rows into their respective master sheets.
+--------------------------------------------------------------------------------
+-- For Topic-Wise Series Sheet --
+N11-PHY-MEASURE-01	NEET	Units & Measurements (Topic 1)	2026-06-10 10:00:00	15	10	15	active	topic	free	FALSE
+N11-CHEM-BOND-01	NEET	Chemical Bonding (Topic 1)	2026-06-10 10:00:00	15	10	15	active	topic	free	FALSE
+N12-BIO-GENETICS-01	NEET	Principles of Inheritance (Topic 1)	2026-06-10 10:00:00	15	10	15	active	topic	free	FALSE
+
+-- For Subject-Wise Series Sheet --
+NEET-PHY-SUB-01	NEET	Complete Physics Syllabus (Subject Test 1)	2026-06-10 10:00:00	45	30	45	active	subject	7.00	FALSE
+NEET-CHEM-SUB-01	NEET	Complete Chemistry Syllabus (Subject Test 1)	2026-06-10 10:00:00	45	30	45	active	subject	7.00	FALSE
+NEET-BIO-SUB-01	NEET	Complete Biology Syllabus (Subject Test 1)	2026-06-10 10:00:00	50	40	90	active	subject	free	FALSE
+
+-- For Series-Wise Series Sheet --
+NEET-SERIES-BOTANY-01	NEET	Botany Unit Booster Series 1	2026-06-10 10:00:00	30	20	30	active	series	free	FALSE
+
+-- For Full Mock Series Sheet --
+NEET-FULL-MOCK-01	NEET	NEET Full Mock Test 1	2026-06-10 10:00:00	180	100	180	active	full	9.00	FALSE
+NEET-FULL-MOCK-02	NEET	NEET Full Mock Test 2	2026-06-10 10:00:00	180	100	180	active	full	9.00	FALSE
+
+
+================================================================================
+PART 3: JEE MASTER LIST TEMPLATE ROWS (Sample Rows)
+Copy-paste these rows into their respective master sheets.
+--------------------------------------------------------------------------------
+-- For Topic-Wise Series Sheet --
+J11-MATH-SET-01	JEE	Sets & Relations (Topic 1)	2026-06-10 10:00:00	15	10	15	active	topic	free	FALSE
+J11-PHY-KINE-01	JEE	Kinematics 1D (Topic 1)	2026-06-10 10:00:00	15	10	15	active	topic	free	FALSE
+J12-CHEM-ELECTRO-01	JEE	Electrochemistry (Topic 1)	2026-06-10 10:00:00	15	10	15	active	topic	free	FALSE
+
+-- For Subject-Wise Series Sheet --
+JEE-MATH-SUB-01	JEE	Complete Mathematics Syllabus (Subject Test 1)	2026-06-10 10:00:00	60	40	25	active	subject	7.00	FALSE
+JEE-PHY-SUB-01	JEE	Complete Physics Syllabus (Subject Test 1)	2026-06-10 10:00:00	60	40	25	active	subject	7.00	FALSE
+JEE-CHEM-SUB-01	JEE	Complete Chemistry Syllabus (Subject Test 1)	2026-06-10 10:00:00	60	40	25	active	subject	7.00	FALSE
+
+-- For Series-Wise Series Sheet --
+JEE-SERIES-CALCULUS-01	JEE	Calculus Special Series 1	2026-06-10 10:00:00	30	25	30	active	series	free	FALSE
+
+-- For Full Mock Series Sheet --
+JEE-FULL-MOCK-01	JEE	JEE Main Full Mock Test 1	2026-06-10 10:00:00	180	100	75	active	full	9.00	FALSE
+
+
+================================================================================
+PART 4: SINGLE QUESTIONS SHEET HEADER & ROWS (Use in the 'Questions' sheet)
+Copy-paste this header row as the first row in the 'Questions' tab, then add question rows underneath.
+--------------------------------------------------------------------------------
+Question Number	Question	Option A	Option B	Option C	Option D	Correct Answer	Marks	Negative Marks	Topic	Series ID
+
+-- Sample Question Rows (NEET & JEE Mixed inside single Questions sheet) --
+1	What is the dimensions of force?	[M L T^-2]	[M L^2 T^-2]	[M L^-1 T^-1]	[M L T^-1]	A	4	-1	Force	N11-PHY-MEASURE-01
+2	The value of acceleration due to gravity on poles is:	Maximum	Minimum	Zero	Same as equator	A	4	-1	Gravity	N11-PHY-MEASURE-01
+1	Which chemical bond is strongest?	Covalent	Ionic	Hydrogen	Van der Waals	B	4	-1	Bonding	N11-CHEM-BOND-01
+1	If A and B are sets, then A intersection B is:	Common elements	All elements	Only A elements	Only B elements	A	4	-1	Sets	J11-MATH-SET-01
+1	A complete cycle of NEET Mock Test Biology has how many questions?	90	100	180	200	A	4	-1	Biology	NEET-BIO-SUB-01
+1	Solve the integral of x dx:	(x^2)/2 + C	x + C	x^2 + C	1 + C	A	4	-1	Calculus	JEE-FULL-MOCK-01
+
+
+================================================================================
+💡 QUICK GUIDE: HOW TO UPLOAD IN GOOGLE SHEET
+--------------------------------------------------------------------------------
+1. Is file ke tab-separated rows ko select karke copy (Ctrl+C) karein.
+2. Apne Google Sheet me target cell select karein (e.g. A1 header ke liye, ya A2 next row ke liye).
+3. Paste (Ctrl+V) kar dein. Google Sheet is tab-separated data ko pure table columns me distribute kar dega automatically.
+4. Naya test series active karne ke liye:
+   - Master Catalog sheet (jaise Topic-Wise Series) me details fill karein.
+   - 'Questions' sheet me us test ke questions fill karein (aakhri column 'Series ID' me correct matching ID set karna na bhulein).
+   - Top menu me **Futrix Portal > Sync Question Counts** run karein. Wo status ko check karke portal par test live kar dega!
