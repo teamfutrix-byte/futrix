@@ -1248,13 +1248,87 @@ function saveRegistration(e) {
     }
   }
   
-  return { success: true, message: 'Registration successful!' };
+  return { success: true, me// Helper to build the dark-themed Futrix verification email template
+function getVerificationEmailHtml(fullName, role, otp) {
+  var titleRole = (role || 'student').trim().toUpperCase();
+  var spacedOtp = otp.split('').join(' ');
+  
+  return '<!DOCTYPE html>' +
+    '<html lang="en">' +
+    '<head>' +
+    '  <meta charset="utf-8">' +
+    '  <meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    '  <meta name="color-scheme" content="dark">' +
+    '  <meta name="supported-color-schemes" content="dark">' +
+    '  <title>Futrix Verification Code</title>' +
+    '  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
+    '  <style>' +
+    '    body { font-family: \'Outfit\', sans-serif; margin: 0; padding: 0; }' +
+    '  </style>' +
+    '</head>' +
+    '<body style="background-color: #0b0f19 !important; background-image: linear-gradient(180deg, #0b0f19 0%, #0b0f19 100%) !important; font-family: \'Outfit\', sans-serif; padding: 30px 10px; margin: 0; color: #f0f9ff; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">' +
+    '  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #0b0f19 !important; background-image: linear-gradient(180deg, #0b0f19 0%, #0b0f19 100%) !important;">' +
+    '    <tr>' +
+    '      <td align="center" style="padding: 10px;">' +
+    '        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #0f172a !important; background-image: linear-gradient(180deg, #0f172a 0%, #0f172a 100%) !important; border: 2px solid #38bdf8; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: #38bdf8;">' +
+    '          <tr>' +
+    '            <td align="center" style="padding: 35px 20px; background-color: #1e293b !important; background-image: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">' +
+    '              <div style="font-size: 32px; font-weight: 800; font-family: \'Outfit\', sans-serif; line-height: 1.1;">' +
+    '                <span style="color: #f0f9ff !important; -webkit-text-fill-color: #f0f9ff !important;">Fut</span><span style="color: #38bdf8 !important; -webkit-text-fill-color: #38bdf8 !important;">rix</span>' +
+    '              </div>' +
+    '              <div style="font-size: 11px; font-weight: 700; color: #818cf8 !important; -webkit-text-fill-color: #818cf8 !important; font-family: \'Outfit\', sans-serif; text-transform: uppercase; letter-spacing: 0.15em; margin-top: 8px;">' +
+    '                ' + titleRole + ' ACCOUNT VERIFICATION' +
+    '              </div>' +
+    '            </td>' +
+    '          </tr>' +
+    '          <tr>' +
+    '            <td align="center" style="padding: 35px 25px; background-color: #0f172a !important; background-image: linear-gradient(180deg, #0f172a 0%, #0f172a 100%) !important;">' +
+    '              <div style="font-size: 22px; font-weight: 700; color: #f0f9ff !important; -webkit-text-fill-color: #f0f9ff !important; font-family: \'Outfit\', sans-serif; margin-bottom: 14px; letter-spacing: -0.02em;">' +
+    '                System Authentication' +
+    '              </div>' +
+    '              <div style="font-size: 14px; color: #cbd5e1 !important; -webkit-text-fill-color: #cbd5e1 !important; font-family: \'Outfit\', sans-serif; line-height: 1.6; margin-bottom: 25px;">' +
+    '                <span style="color: #cbd5e1 !important; -webkit-text-fill-color: #cbd5e1 !important;">Hello </span><strong style="color: #7dd3fc !important; -webkit-text-fill-color: #7dd3fc !important;">' + fullName + '</strong>,<br>' +
+    '                <span style="color: #cbd5e1 !important; -webkit-text-fill-color: #cbd5e1 !important;">Please use the secure token verification key below:</span>' +
+    '              </div>' +
+    '              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: rgba(255, 255, 255, 0.03) !important; background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%) !important; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 20px; margin: 25px 0;">' +
+    '                <tr>' +
+    '                  <td align="center" style="padding: 25px 15px;">' +
+    '                    <div style="font-size: 10px; font-weight: 700; color: #38bdf8 !important; -webkit-text-fill-color: #38bdf8 !important; font-family: \'Outfit\', sans-serif; text-transform: uppercase; letter-spacing: 0.20em; margin-bottom: 12px;">' +
+    '                      🔑 TOKEN DECRYPTION KEY' +
+    '                    </div>' +
+    '                    <div style="font-size: 32px; font-weight: 800; color: #38bdf8 !important; -webkit-text-fill-color: #38bdf8 !important; letter-spacing: 0.25em; font-family: monospace; line-height: 1; white-space: nowrap; word-break: keep-all; display: inline-block;">' +
+    '                      ' + spacedOtp + '' +
+    '                    </div>' +
+    '                  </td>' +
+    '                </tr>' +
+    '              </table>' +
+    '              <div style="font-size: 12px; color: #64748b !important; -webkit-text-fill-color: #64748b !important; font-family: \'Outfit\', sans-serif; margin-top: 25px;">' +
+    '                This token expires in 10 minutes. Do not share this key with anyone.' +
+    '              </div>' +
+    '            </td>' +
+    '          </tr>' +
+    '          <tr>' +
+    '            <td align="center" style="padding: 20px 30px; background-color: #0a0d14 !important; background-image: linear-gradient(180deg, #0a0d14 0%, #0a0d14 100%) !important; border-top: 1px solid rgba(255, 255, 255, 0.05);">' +
+    '              <div style="font-size: 11px; color: #475569 !important; -webkit-text-fill-color: #475569 !important; font-family: \'Outfit\', sans-serif;">' +
+    '                &copy; 2026 Futrix System Intelligence. All rights reserved.' +
+    '              </div>' +
+    '            </td>' +
+    '          </tr>' +
+    '        </table>' +
+    '      </td>' +
+    '    </tr>' +
+    '  </table>' +
+    '</body>' +
+    '</html>';
 }
 
 // ── SEND OTP: Generates and emails a 6-digit verification code
 function sendOTP(e) {
   var email = (e.parameter.email || '').toLowerCase().trim();
   var phone = (e.parameter.phone || '').trim();
+  var fullName = (e.parameter.fullName || 'Competitor').trim();
+  var role = (e.parameter.role || 'student').trim();
+  
   if (!email) return { success: false, message: 'Email address is required.' };
   
   var ss = getActiveSpreadsheet();
@@ -1294,31 +1368,9 @@ function sendOTP(e) {
   
   // Send email
   try {
-    var subject = "Verify your email address - Futrix Exam Portal";
+    var subject = otp + " is your Futrix Verification Code";
+    var htmlBody = getVerificationEmailHtml(fullName, role, otp);
     
-    var htmlBody = "<div style=\"background-color:#f8fafc;padding:30px 15px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;\">" +
-                   "  <div style=\"max-width:480px;margin:0 auto;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.03);\">" +
-                   "    <div style=\"background-color:#1e3a8a;padding:24px;text-align:center;\">" +
-                   "      <h1 style=\"color:#ffffff;margin:0;font-size:24px;font-weight:700;letter-spacing:1px;\">FUTRIX</h1>" +
-                   "      <p style=\"color:#93c5fd;margin:4px 0 0 0;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;\">Pilot Exam Portal</p>" +
-                   "    </div>" +
-                   "    <div style=\"padding:30px 24px;\">" +
-                   "      <p style=\"font-size:16px;color:#1e293b;margin:0 0 16px 0;line-height:1.5;\">Hello Pilot,</p>" +
-                   "      <p style=\"font-size:14px;color:#475569;margin:0 0 24px 0;line-height:1.6;\">Thank you for initiating your registration at the Futrix Pilot Portal. To verify your email address, please enter the one-time verification code below:</p>" +
-                   "      <div style=\"text-align:center;margin:24px 0;padding:16px;background-color:#f1f5f9;border-radius:12px;\">" +
-                   "        <span style=\"font-family:'Courier New',Courier,monospace;font-size:32px;font-weight:700;color:#1e3a8a;letter-spacing:6px;display:inline-block;padding-left:6px;\">" + otp + "</span>" +
-                   "      </div>" +
-                   "      <p style=\"font-size:12px;color:#64748b;margin:0 0 24px 0;line-height:1.5;text-align:center;\">This verification code is valid for 10 minutes. For security reasons, please do not share this code with anyone.</p>" +
-                   "      <div style=\"border-top:1px solid #e2e8f0;padding-top:20px;text-align:center;\">" +
-                   "        <p style=\"font-size:11px;color:#94a3b8;margin:0;line-height:1.6;\">This is an automated security notification from Futrix.<br>If you did not request this code, you can safely ignore this email.</p>" +
-                   "      </div>" +
-                   "    </div>" +
-                   "    <div style=\"background-color:#f8fafc;padding:16px;text-align:center;border-top:1px solid #e2e8f0;\">" +
-                   "      <p style=\"font-size:10px;color:#94a3b8;margin:0;\">&copy; 2026 Futrix Exam Portal. All rights reserved.</p>" +
-                   "    </div>" +
-                   "  </div>" +
-                   "</div>";
-                   
     var sent = sendEmailViaProvider(email, subject, otp, htmlBody);
     if (sent) {
       return { success: true, message: 'OTP sent successfully to your email.' };
@@ -2775,18 +2827,24 @@ function inspectSheets(e) {
 
 function sendForgotOTP(e) {
   var email = (e.parameter.email || '').toLowerCase().trim();
+  var fullName = (e.parameter.fullName || '').trim();
+  var role = (e.parameter.role || 'student').trim();
   if (!email) return { success: false, message: 'Email address is required.' };
   
   var ss = getActiveSpreadsheet();
   var regSheet = ss.getSheets()[0];
   var regData = regSheet.getDataRange().getValues();
   var emailCol = getColumnIndexByName(regSheet, 'email', 3);
+  var nameCol = getColumnIndexByName(regSheet, 'name', 2);
   
   var exists = false;
   for (var i = 1; i < regData.length; i++) {
     var rowEmail = String(regData[i][emailCol - 1] || '').toLowerCase().trim();
     if (rowEmail === email) {
       exists = true;
+      if (!fullName) {
+        fullName = String(regData[i][nameCol - 1] || '').trim();
+      }
       break;
     }
   }
@@ -2794,6 +2852,8 @@ function sendForgotOTP(e) {
   if (!exists) {
     return { success: false, message: 'This email is not registered with FUTRIX.' };
   }
+  
+  if (!fullName) fullName = 'User';
   
   var otp = Math.floor(100000 + Math.random() * 900000).toString();
   var sheet = ss.getSheetByName('OTPs');
@@ -2809,26 +2869,14 @@ function sendForgotOTP(e) {
   sheet.appendRow([new Date(), email, otp, 'pending']);
   
   try {
-    var subject = "Reset your password - FUTRIX Ecosystem";
-    var htmlBody = "<div style=\"background-color:#f8fafc;padding:30px 15px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;\">" +
-                   "  <div style=\"max-width:480px;margin:0 auto;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.03);\">" +
-                   "    <div style=\"background-color:#ea4335;padding:24px;text-align:center;\">" +
-                   "      <h1 style=\"color:#ffffff;margin:0;font-size:24px;font-weight:700;letter-spacing:1px;\">FUTRIX</h1>" +
-                   "      <p style=\"color:#fca5a5;margin:4px 0 0 0;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;\">Password Recovery</p>" +
-                   "    </div>" +
-                   "    <div style=\"padding:30px 24px;\">" +
-                   "      <p style=\"font-size:16px;color:#1e293b;margin:0 0 16px 0;line-height:1.5;\">Hello Competitor,</p>" +
-                   "      <p style=\"font-size:14px;color:#475569;margin:0 0 24px 0;line-height:1.6;\">We received a request to reset your password. Use the verification code below to authorize this change:</p>" +
-                   "      <div style=\"text-align:center;margin:24px 0;padding:16px;background-color:#f1f5f9;border-radius:12px;\">" +
-                   "        <span style=\"font-family:'Courier New',Courier,monospace;font-size:32px;font-weight:700;color:#ea4335;letter-spacing:6px;display:inline-block;padding-left:6px;\">" + otp + "</span>" +
-                   "      </div>" +
-                   "      <p style=\"font-size:12px;color:#64748b;margin:0 0 24px 0;line-height:1.5;text-align:center;\">This code is valid for 10 minutes. If you did not request a password reset, please ignore this email.</p>" +
-                   "    </div>" +
-                   "  </div>" +
-                   "</div>";
-    
-    sendEmailViaProvider(email, subject, otp, htmlBody);
-    return { success: true };
+    var subject = otp + " is your Reset Verification Code";
+    var htmlBody = getVerificationEmailHtml(fullName, role, otp);
+    var sent = sendEmailViaProvider(email, subject, otp, htmlBody);
+    if (sent) {
+      return { success: true };
+    } else {
+      return { success: false, message: 'Failed to dispatch email verification. Please check settings.' };
+    }
   } catch (err) {
     return { success: false, message: 'Failed to send OTP: ' + err.message };
   }

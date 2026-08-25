@@ -242,7 +242,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
     let scriptSuccess = false;
     let scriptError = null;
     try {
-      const scriptUrl = `https://script.google.com/macros/s/AKfycbysnDWGpDmNvSYvnl9o_SezWAijjXYcV2Vp-47MxmYY3z8pXTLGP82DO3xg1wQ9iQs1/exec?action=sendOTP&email=${encodeURIComponent(cleanEmail)}`;
+      const scriptUrl = `https://script.google.com/macros/s/AKfycbysnDWGpDmNvSYvnl9o_SezWAijjXYcV2Vp-47MxmYY3z8pXTLGP82DO3xg1wQ9iQs1/exec?action=sendOTP&email=${encodeURIComponent(cleanEmail)}&fullName=${encodeURIComponent(full_name)}&role=${encodeURIComponent(role)}`;
       const scriptRes = await fetch(scriptUrl, { redirect: 'follow' });
       const scriptData = await scriptRes.json();
       if (scriptData.success) {
@@ -250,7 +250,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
       } else {
         // Fallback: If user is already registered in Sheets and action=sendOTP fails, call action=sendForgotOTP
         console.warn(`[AUTH API] Apps Script sendOTP returned failure: ${scriptData.message}. Trying sendForgotOTP fallback...`);
-        const forgotUrl = `https://script.google.com/macros/s/AKfycbysnDWGpDmNvSYvnl9o_SezWAijjXYcV2Vp-47MxmYY3z8pXTLGP82DO3xg1wQ9iQs1/exec?action=sendForgotOTP&email=${encodeURIComponent(cleanEmail)}`;
+        const forgotUrl = `https://script.google.com/macros/s/AKfycbysnDWGpDmNvSYvnl9o_SezWAijjXYcV2Vp-47MxmYY3z8pXTLGP82DO3xg1wQ9iQs1/exec?action=sendForgotOTP&email=${encodeURIComponent(cleanEmail)}&fullName=${encodeURIComponent(full_name)}&role=${encodeURIComponent(role)}`;
         const forgotRes = await fetch(forgotUrl, { redirect: 'follow' });
         const forgotData = await forgotRes.json();
         if (forgotData.success) {
