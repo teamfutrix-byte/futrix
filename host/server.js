@@ -237,52 +237,37 @@ app.post('/api/auth/send-otp', async (req, res) => {
 
     await db.end();
 
-    // Send HTML OTP Email via Google Apps Script Web App email relay (bypasses Render SMTP port blocking)
-    console.log(`[AUTH API] Dispatching OTP for ${cleanEmail} via Google Apps Script email relay...`);
-    let scriptSuccess = false;
-    let scriptError = null;
-    try {
-      const scriptUrl = `https://script.google.com/macros/s/AKfycbysnDWGpDmNvSYvnl9o_SezWAijjXYcV2Vp-47MxmYY3z8pXTLGP82DO3xg1wQ9iQs1/exec?action=sendOTP&email=${encodeURIComponent(cleanEmail)}&fullName=${encodeURIComponent(full_name)}&role=${encodeURIComponent(role)}`;
-      const scriptRes = await fetch(scriptUrl, { redirect: 'follow' });
-      const scriptData = await scriptRes.json();
-      if (scriptData.success) {
-        scriptSuccess = true;
-      } else {
-        // Fallback: If user is already registered in Sheets and action=sendOTP fails, call action=sendForgotOTP
-        console.warn(`[AUTH API] Apps Script sendOTP returned failure: ${scriptData.message}. Trying sendForgotOTP fallback...`);
-        const forgotUrl = `https://script.google.com/macros/s/AKfycbysnDWGpDmNvSYvnl9o_SezWAijjXYcV2Vp-47MxmYY3z8pXTLGP82DO3xg1wQ9iQs1/exec?action=sendForgotOTP&email=${encodeURIComponent(cleanEmail)}&fullName=${encodeURIComponent(full_name)}&role=${encodeURIComponent(role)}`;
-        const forgotRes = await fetch(forgotUrl, { redirect: 'follow' });
-        const forgotData = await forgotRes.json();
-        if (forgotData.success) {
-          scriptSuccess = true;
+    // Send HTML OTP Email via Google Apps Script Web App email relay (runs asynchronously in the background)
+    console.log(`[AUTH API] Dispatching OTP for ${cleanEmail} via Google Apps Script email relay (async)...`);
+    (async () => {
+      try {
+        const scriptUrl = `https://script.google.com/macros/s/AKfycbysnDWGpDmNvSYvnl9o_SezWAijjXYcV2Vp-47MxmYY3z8pXTLGP82DO3xg1wQ9iQs1/exec?action=sendOTP&email=${encodeURIComponent(cleanEmail)}&fullName=${encodeURIComponent(full_name)}&role=${encodeURIComponent(role)}`;
+        const scriptRes = await fetch(scriptUrl, { redirect: 'follow' });
+        const scriptData = await scriptRes.json();
+        if (scriptData.success) {
+          console.log(`[AUTH API] OTP sent successfully to ${cleanEmail} via Google Apps Script.`);
         } else {
-          scriptError = forgotData.message || 'Apps Script forgot OTP dispatch failed';
+          console.warn(`[AUTH API] Apps Script sendOTP returned failure: ${scriptData.message}. Trying sendForgotOTP fallback...`);
+          const forgotUrl = `https://script.google.com/macros/s/AKfycbysnDWGpDmNvSYvnl9o_SezWAijjXYcV2Vp-47MxmYY3z8pXTLGP82DO3xg1wQ9iQs1/exec?action=sendForgotOTP&email=${encodeURIComponent(cleanEmail)}&fullName=${encodeURIComponent(full_name)}&role=${encodeURIComponent(role)}`;
+          const forgotRes = await fetch(forgotUrl, { redirect: 'follow' });
+          const forgotData = await forgotRes.json();
+          if (forgotData.success) {
+            console.log(`[AUTH API] OTP sent successfully to ${cleanEmail} via Google Apps Script (fallback).`);
+          } else {
+            console.error(`[AUTH API] Apps Script relay fallback failed: ${forgotData.message}`);
+          }
         }
+      } catch (relayErr) {
+        console.error(`[AUTH API] Apps Script relay network/parsing error:`, relayErr);
       }
-    } catch (relayErr) {
-      console.error(`[AUTH API] Apps Script relay network/parsing error:`, relayErr);
-      scriptError = relayErr.message;
-    }
+    })();
 
-    if (scriptSuccess) {
-      console.log(`[AUTH API] OTP sent successfully to ${cleanEmail} via Google Apps Script.`);
-      res.json({
-        success: true,
-        message: `Verification code sent to ${cleanEmail}`,
-        otpSent: true,
-        otp_delivery_failed: false
-      });
-    } else {
-      // SMTP/Apps Script relay fallback: return generated otpCode directly in response if delivery fails
-      console.warn(`[AUTH API] Apps Script email relay failed: ${scriptError}. Returning local fallback OTP.`);
-      res.json({
-        success: true,
-        message: `Verification code generated (Email delivery failed: ${scriptError})`,
-        otpSent: true,
-        otp_delivery_failed: true,
-        otp_code: otpCode
-      });
-    }
+    res.json({
+      success: true,
+      message: `Verification code sent to ${cleanEmail}`,
+      otpSent: true,
+      otp_delivery_failed: false
+    });
   } catch (err) {
     console.error('Error sending OTP:', err);
     try { await db.end(); } catch (_) {}

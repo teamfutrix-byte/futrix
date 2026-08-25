@@ -1294,7 +1294,7 @@ function getVerificationEmailHtml(fullName, role, otp) {
     '                <tr>' +
     '                  <td align="center" style="padding: 25px 15px;">' +
     '                    <div style="font-size: 10px; font-weight: 700; color: #38bdf8 !important; -webkit-text-fill-color: #38bdf8 !important; font-family: \'Outfit\', sans-serif; text-transform: uppercase; letter-spacing: 0.20em; margin-bottom: 12px;">' +
-    '                      🔑 TOKEN DECRYPTION KEY' +
+    '                      TOKEN DECRYPTION KEY' +
     '                    </div>' +
     '                    <div style="font-size: 32px; font-weight: 800; color: #38bdf8 !important; -webkit-text-fill-color: #38bdf8 !important; letter-spacing: 0.25em; font-family: monospace; line-height: 1; white-space: nowrap; word-break: keep-all; display: inline-block;">' +
     '                      ' + spacedOtp + '' +
