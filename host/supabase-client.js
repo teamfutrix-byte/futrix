@@ -913,6 +913,33 @@ function initStudentProfileManager() {
     // 3. Inject HTML Elements (Dropdown, Modals)
     injectHTML(currentUser);
 
+    // 3.5. Dynamic logo redirection based on user role
+    const dashboardUrls = {
+      student: 'features/tests/active-exams.html',
+      teacher: 'features/teacher/teacher-dashboard.html',
+      admin: 'features/super-admin/admin-dashboard.html',
+      superadmin: 'features/super-admin/admin-dashboard.html'
+    };
+
+    const roleDashboardUrl = dashboardUrls[currentUser.role] || 'features/tests/active-exams.html';
+    let finalLogoUrl = roleDashboardUrl;
+
+    // Compute correct relative path depth
+    const path = window.location.pathname;
+    if (path.includes('/features/')) {
+      const parts = path.substring(path.indexOf('/features/')).split('/');
+      const depth = parts.length - 3; // depth relative to root
+      if (depth > 0) {
+        finalLogoUrl = '../'.repeat(depth) + roleDashboardUrl.replace('features/', '');
+      } else {
+        finalLogoUrl = './' + roleDashboardUrl.replace('features/', '');
+      }
+    }
+
+    document.querySelectorAll('.logo, .topbar-logo, .logo-link').forEach(el => {
+      el.href = finalLogoUrl;
+    });
+
     // 4. Load Profile details from database
     let profileData = null;
     try {
@@ -1951,16 +1978,29 @@ function initStudentProfileManager() {
 
     function getLoginUrl() {
       const path = window.location.pathname;
+      const isAdminSide = path.includes('/super-admin/') ||
+                          path.includes('/teacher/') ||
+                          path.includes('/compliance/') ||
+                          path.includes('/security/') ||
+                          path.includes('/recovery/') ||
+                          path.includes('/notifications/') ||
+                          path.includes('/iam/') ||
+                          path.includes('/cms/') ||
+                          path.includes('/analytics/') ||
+                          path.includes('/ai/');
+      
+      const targetPage = isAdminSide ? 'admin-login.html' : 'login.html';
+      
       if (path.includes('/features/')) {
         const parts = path.substring(path.indexOf('/features/')).split('/');
         const depth = parts.length - 3;
         if (depth > 0) {
-          return '../'.repeat(depth) + 'auth/login.html';
+          return '../'.repeat(depth) + 'auth/' + targetPage;
         } else {
-          return './login.html';
+          return './' + targetPage;
         }
       }
-      return 'features/auth/login.html';
+      return 'features/auth/' + targetPage;
     }
 
     // 4. Logout Handler

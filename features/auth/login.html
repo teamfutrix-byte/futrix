@@ -503,6 +503,71 @@
       box-shadow: 0 0 12px rgba(77, 142, 255, 0.25), inset 0 2px 4px rgba(0,0,0,0.1);
       transform: scale(1.08);
     }
+
+    /* ── OTP / Forgot Modals CSS Overlays ── */
+    .otp-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 10, 16, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .otp-modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .otp-modal-content {
+      background: rgba(22, 27, 39, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 2.2rem 2rem;
+      width: 90%;
+      max-width: 440px;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .otp-modal-overlay.show .otp-modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .otp-modal-close {
+      position: absolute;
+      top: 1.1rem;
+      right: 1.1rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.6rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .otp-modal-close:hover {
+      color: var(--text);
+    }
+
+    .otp-modal-icon {
+      font-size: 2.8rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
   </style>
 </head>
 
