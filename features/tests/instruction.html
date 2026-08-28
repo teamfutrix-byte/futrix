@@ -52,6 +52,38 @@
     .topbar-logo span {
       color: var(--primary);
     }
+    .topbar-nav {
+      display: none;
+      list-style: none;
+      align-items: center;
+      gap: 1.5rem;
+      margin-left: 2.5rem;
+      flex: 1;
+    }
+    @media(min-width: 900px) {
+      .topbar-nav {
+        display: flex;
+      }
+    }
+    .topbar-nav li {
+      list-style: none;
+    }
+    .topbar-nav li a {
+      font-family: 'Sora', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      padding: 0.4rem 0;
+      transition: color 0.2s;
+    }
+    .topbar-nav li a:hover {
+      color: var(--text);
+    }
+    .topbar-nav li a.active {
+      color: var(--text);
+    }
     .topbar-center {
       display: flex;
       align-items: center;
