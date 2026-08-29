@@ -653,6 +653,26 @@ app.post('/api/student/save-attempt', async (req, res) => {
           qId = qId.trim();
         }
 
+        let resolvedAnswer = item.correct_answer || '';
+        if (typeof resolvedAnswer === 'string' && /^[A-D]$/i.test(resolvedAnswer.trim())) {
+          const letter = resolvedAnswer.trim().toUpperCase();
+          if (item['option_' + letter.toLowerCase()]) {
+            resolvedAnswer = item['option_' + letter.toLowerCase()];
+          } else if (item['option' + letter]) {
+            resolvedAnswer = item['option' + letter];
+          } else if (qId) {
+            try {
+              const { rows: qRows } = await db.query(
+                'SELECT option_a, option_b, option_c, option_d FROM public.questions WHERE id = $1',
+                [qId]
+              );
+              if (qRows.length > 0 && qRows[0]['option_' + letter.toLowerCase()]) {
+                resolvedAnswer = qRows[0]['option_' + letter.toLowerCase()];
+              }
+            } catch (_) {}
+          }
+        }
+
         const wrongQInsertQuery = `
           INSERT INTO public.wrong_questions (
             user_id, question_id, question_text, correct_answer, explanation, status
@@ -664,8 +684,8 @@ app.post('/api/student/save-attempt', async (req, res) => {
           userId,
           qId,
           item.question_text,
-          item.correct_answer,
-          item.explanation || 'Mistake recorded during exam review.'
+          resolvedAnswer,
+          item.explanation || `Correct Answer: ${resolvedAnswer}`
         ]);
         const wrongQId = wrongQRows[0].id;
 
@@ -680,7 +700,7 @@ app.post('/api/student/save-attempt', async (req, res) => {
           userId,
           wrongQId,
           item.question_text,
-          item.correct_answer,
+          resolvedAnswer,
           item.subject || 'General'
         ]);
       }
@@ -856,6 +876,22 @@ app.post('/api/student/manual-flashcard', async (req, res) => {
   try {
     await db.connect();
 
+    let resolvedAnswer = correctAnswer || '';
+    if (typeof resolvedAnswer === 'string' && /^[A-D]$/i.test(resolvedAnswer.trim())) {
+      const letter = resolvedAnswer.trim().toUpperCase();
+      if (questionId) {
+        try {
+          const { rows: qRows } = await db.query(
+            'SELECT option_a, option_b, option_c, option_d FROM public.questions WHERE id = $1',
+            [questionId]
+          );
+          if (qRows.length > 0 && qRows[0]['option_' + letter.toLowerCase()]) {
+            resolvedAnswer = qRows[0]['option_' + letter.toLowerCase()];
+          }
+        } catch (_) {}
+      }
+    }
+
     // 1. Insert into wrong_questions
     const wrongQInsertQuery = `
       INSERT INTO public.wrong_questions (
@@ -868,8 +904,8 @@ app.post('/api/student/manual-flashcard', async (req, res) => {
       userId,
       questionId || null,
       questionText,
-      correctAnswer,
-      explanation || 'Mistake recorded during exam review.'
+      resolvedAnswer,
+      explanation || `Correct Answer: ${resolvedAnswer}`
     ]);
     const wrongQId = wrongQRows[0].id;
 
@@ -885,7 +921,7 @@ app.post('/api/student/manual-flashcard', async (req, res) => {
       userId,
       wrongQId,
       questionText,
-      correctAnswer,
+      resolvedAnswer,
       subject || 'General'
     ]);
 
@@ -8335,6 +8371,100 @@ app.delete('/api/memory/personal/cards/:id', requireAuth, async (req, res) => {
   }
 });
 
+// Bulk delete cards (both personal and revision queue items)
+app.post('/api/memory/personal/cards/bulk-delete', requireAuth, async (req, res) => {
+  const { cardIds } = req.body;
+  if (!cardIds || !Array.isArray(cardIds) || cardIds.length === 0) {
+    return res.status(400).json({ error: 'Array of cardIds is required.' });
+  }
+  const db = getDbClient();
+  try {
+    await db.connect();
+    // 1. Delete matching personal cards
+    await db.query(
+      "DELETE FROM public.revision_queue WHERE (personal_card_id = ANY($1) OR id = ANY($1)) AND user_id = $2",
+      [cardIds, req.user.id]
+    );
+    await db.query(
+      "DELETE FROM public.personal_memory_cards WHERE id = ANY($1) AND user_id = $2",
+      [cardIds, req.user.id]
+    );
+    await db.query(
+      "DELETE FROM public.wrong_questions WHERE id = ANY($1) AND user_id = $2",
+      [cardIds, req.user.id]
+    ).catch(() => {});
+    await db.end();
+    res.json({ success: true, message: `Successfully deleted ${cardIds.length} card(s).` });
+  } catch (err) {
+    console.error(err);
+    try { await db.end(); } catch (_) {}
+    res.status(500).json({ error: 'Bulk card delete failed: ' + err.message });
+  }
+});
+
+// Delete single platform revision item from revision_queue
+app.delete('/api/memory/revision/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const db = getDbClient();
+  try {
+    await db.connect();
+    const { rows } = await db.query(
+      "DELETE FROM public.revision_queue WHERE id = $1 AND user_id = $2 RETURNING *",
+      [id, req.user.id]
+    );
+    if (rows.length > 0 && rows[0].wrong_question_id) {
+      await db.query(
+        "DELETE FROM public.wrong_questions WHERE id = $1 AND user_id = $2",
+        [rows[0].wrong_question_id, req.user.id]
+      ).catch(() => {});
+    }
+    await db.end();
+    if (rows.length === 0) return res.status(404).json({ error: 'Revision item not found.' });
+    res.json({ success: true, message: 'Revision card permanently deleted.' });
+  } catch (err) {
+    console.error(err);
+    try { await db.end(); } catch (_) {}
+    res.status(500).json({ error: 'Failed to delete revision item: ' + err.message });
+  }
+});
+
+// Update single platform revision item
+app.put('/api/memory/revision/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { question, answer, subject, explanation } = req.body;
+  const db = getDbClient();
+  try {
+    await db.connect();
+    const { rows } = await db.query(`
+      UPDATE public.revision_queue
+      SET question_text = COALESCE($1, question_text),
+          correct_answer = COALESCE($2, correct_answer),
+          subject = COALESCE($3, subject)
+      WHERE id = $4 AND user_id = $5
+      RETURNING *
+    `, [question, answer, subject, id, req.user.id]);
+    if (rows.length === 0) {
+      await db.end();
+      return res.status(404).json({ error: 'Revision item not found.' });
+    }
+    if (rows[0].wrong_question_id) {
+      await db.query(`
+        UPDATE public.wrong_questions
+        SET question_text = COALESCE($1, question_text),
+            correct_answer = COALESCE($2, correct_answer),
+            explanation = COALESCE($3, explanation)
+        WHERE id = $4 AND user_id = $5
+      `, [question, answer, explanation, rows[0].wrong_question_id, req.user.id]).catch(() => {});
+    }
+    await db.end();
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    try { await db.end(); } catch (_) {}
+    res.status(500).json({ error: 'Failed to update revision item: ' + err.message });
+  }
+});
+
 app.post('/api/memory/personal/cards/:id/duplicate', requireAuth, async (req, res) => {
   const { id } = req.params;
   const db = getDbClient();
@@ -8714,6 +8844,8 @@ app.delete('/api/memory/personal/folders/:id', requireAuth, async (req, res) => 
   const db = getDbClient();
   try {
     await db.connect();
+    // Move cards in this folder to unsorted
+    await db.query("UPDATE public.personal_memory_cards SET folder_id = NULL WHERE folder_id = $1 AND user_id = $2", [id, req.user.id]);
     const { rowCount } = await db.query("DELETE FROM public.memory_folders WHERE id = $1 AND user_id = $2", [id, req.user.id]);
     await db.end();
     if (rowCount === 0) return res.status(404).json({ error: 'Folder not found.' });
@@ -8722,6 +8854,67 @@ app.delete('/api/memory/personal/folders/:id', requireAuth, async (req, res) => 
     console.error(err);
     try { await db.end(); } catch (_) {}
     res.status(500).json({ error: 'Failed to delete folder: ' + err.message });
+  }
+});
+
+// Bulk delete folders
+app.post('/api/memory/personal/folders/bulk-delete', requireAuth, async (req, res) => {
+  const { folderIds, deleteCards } = req.body;
+  if (!folderIds || !Array.isArray(folderIds) || folderIds.length === 0) {
+    return res.status(400).json({ error: 'Array of folderIds is required.' });
+  }
+  const db = getDbClient();
+  try {
+    await db.connect();
+    if (deleteCards) {
+      const { rows: cards } = await db.query(
+        "SELECT id FROM public.personal_memory_cards WHERE folder_id = ANY($1) AND user_id = $2",
+        [folderIds, req.user.id]
+      );
+      const cIds = cards.map(c => c.id);
+      if (cIds.length > 0) {
+        await db.query("DELETE FROM public.revision_queue WHERE personal_card_id = ANY($1) AND user_id = $2", [cIds, req.user.id]);
+        await db.query("DELETE FROM public.personal_memory_cards WHERE id = ANY($1) AND user_id = $2", [cIds, req.user.id]);
+      }
+    } else {
+      await db.query(
+        "UPDATE public.personal_memory_cards SET folder_id = NULL WHERE folder_id = ANY($1) AND user_id = $2",
+        [folderIds, req.user.id]
+      );
+    }
+    await db.query(
+      "DELETE FROM public.memory_folders WHERE id = ANY($1) AND user_id = $2",
+      [folderIds, req.user.id]
+    );
+    await db.end();
+    res.json({ success: true, message: `Successfully deleted ${folderIds.length} deck folder(s).` });
+  } catch (err) {
+    console.error(err);
+    try { await db.end(); } catch (_) {}
+    res.status(500).json({ error: 'Bulk folder delete failed: ' + err.message });
+  }
+});
+
+// Clear / Delete Platform Revisions (Smart Deck)
+app.delete('/api/memory/platform-deck', requireAuth, async (req, res) => {
+  const db = getDbClient();
+  try {
+    await db.connect();
+    // Delete all platform/AI revision cards for this user
+    await db.query(
+      "DELETE FROM public.revision_queue WHERE user_id = $1 AND personal_card_id IS NULL",
+      [req.user.id]
+    );
+    await db.query(
+      "DELETE FROM public.wrong_questions WHERE user_id = $1",
+      [req.user.id]
+    ).catch(() => {});
+    await db.end();
+    res.json({ success: true, message: 'Platform revisions / Smart deck successfully cleared.' });
+  } catch (err) {
+    console.error(err);
+    try { await db.end(); } catch (_) {}
+    res.status(500).json({ error: 'Failed to clear platform deck: ' + err.message });
   }
 });
 
@@ -12749,7 +12942,65 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'features/student/index.html'));
 });
 
+// Auto-heal legacy single-letter answers in revision_queue and wrong_questions
+async function autoHealRevisionAnswers() {
+  const db = getDbClient();
+  try {
+    await db.connect();
+    // 1. Heal revision_queue via linked wrong_questions -> questions
+    await db.query(`
+      UPDATE public.revision_queue rq
+      SET correct_answer = CASE
+        WHEN UPPER(TRIM(rq.correct_answer)) = 'A' THEN q.option_a
+        WHEN UPPER(TRIM(rq.correct_answer)) = 'B' THEN q.option_b
+        WHEN UPPER(TRIM(rq.correct_answer)) = 'C' THEN q.option_c
+        WHEN UPPER(TRIM(rq.correct_answer)) = 'D' THEN q.option_d
+        ELSE rq.correct_answer
+      END
+      FROM public.wrong_questions wq
+      JOIN public.questions q ON wq.question_id = q.id
+      WHERE rq.wrong_question_id = wq.id
+        AND LENGTH(TRIM(rq.correct_answer)) = 1
+    `).catch(() => {});
+
+    // 2. Heal revision_queue by matching question_text
+    await db.query(`
+      UPDATE public.revision_queue rq
+      SET correct_answer = CASE
+        WHEN UPPER(TRIM(rq.correct_answer)) = 'A' THEN q.option_a
+        WHEN UPPER(TRIM(rq.correct_answer)) = 'B' THEN q.option_b
+        WHEN UPPER(TRIM(rq.correct_answer)) = 'C' THEN q.option_c
+        WHEN UPPER(TRIM(rq.correct_answer)) = 'D' THEN q.option_d
+        ELSE rq.correct_answer
+      END
+      FROM public.questions q
+      WHERE TRIM(LOWER(rq.question_text)) = TRIM(LOWER(q.question_text))
+        AND LENGTH(TRIM(rq.correct_answer)) = 1
+    `).catch(() => {});
+
+    // 3. Heal wrong_questions table
+    await db.query(`
+      UPDATE public.wrong_questions wq
+      SET correct_answer = CASE
+        WHEN UPPER(TRIM(wq.correct_answer)) = 'A' THEN q.option_a
+        WHEN UPPER(TRIM(wq.correct_answer)) = 'B' THEN q.option_b
+        WHEN UPPER(TRIM(wq.correct_answer)) = 'C' THEN q.option_c
+        WHEN UPPER(TRIM(wq.correct_answer)) = 'D' THEN q.option_d
+        ELSE wq.correct_answer
+      END
+      FROM public.questions q
+      WHERE (wq.question_id = q.id OR TRIM(LOWER(wq.question_text)) = TRIM(LOWER(q.question_text)))
+        AND LENGTH(TRIM(wq.correct_answer)) = 1
+    `).catch(() => {});
+
+    await db.end();
+  } catch (err) {
+    try { await db.end(); } catch (_) {}
+  }
+}
+
 // Start Express Listener
 app.listen(PORT, () => {
   console.log(`[FUTRIX SERVER] Unified server running on http://localhost:${PORT}`);
+  autoHealRevisionAnswers();
 });
