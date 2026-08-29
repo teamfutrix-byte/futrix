@@ -1750,14 +1750,22 @@ async function submitExam(disqualified = false, disqualifyReason = '') {
       correct++;
     } else {
       wrong++;
+      let resolvedAnswerText = q.correct;
+      const cUpper = String(q.correct || '').trim().toUpperCase();
+      if (cUpper === 'A' && (q.optionA || q.option_a)) resolvedAnswerText = q.optionA || q.option_a;
+      else if (cUpper === 'B' && (q.optionB || q.option_b)) resolvedAnswerText = q.optionB || q.option_b;
+      else if (cUpper === 'C' && (q.optionC || q.option_c)) resolvedAnswerText = q.optionC || q.option_c;
+      else if (cUpper === 'D' && (q.optionD || q.option_d)) resolvedAnswerText = q.optionD || q.option_d;
+
       incorrectQuestions.push({
         question_id: q.id || null,
         question_text: q.question,
-        correct_answer: q.correct,
-        option_a: q.optionA,
-        option_b: q.optionB,
-        option_c: q.optionC,
-        option_d: q.optionD,
+        correct_answer: resolvedAnswerText,
+        option_a: q.optionA || q.option_a,
+        option_b: q.optionB || q.option_b,
+        option_c: q.optionC || q.option_c,
+        option_d: q.optionD || q.option_d,
+        explanation: q.explanation || `Correct Answer: ${resolvedAnswerText}`,
         subject: q.subject || EXAM_CONFIG.subject || 'General',
         chapter: q.chapter || EXAM_CONFIG.chapter || 'General',
         topic: q.topic || 'General'
