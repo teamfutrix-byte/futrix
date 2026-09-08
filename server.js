@@ -504,19 +504,52 @@ app.post('/api/admin/update-credentials', requireAdmin, async (req, res) => {
   }
 });
 
-// GET /api/exam-categories - Get all exam categories from database
+// Exam categories memory store fallback
+let serverCachedCategories = [
+  { id: 'cat-neet', name: 'NEET', display_name: 'NEET' },
+  { id: 'cat-jee', name: 'JEE', display_name: 'JEE' }
+];
+
+// GET /api/exam-categories - Get all exam categories from database with resilient fallback
 app.get('/api/exam-categories', async (req, res) => {
   const db = getDbClient();
   try {
     await db.connect();
     const { rows } = await db.query("SELECT id, name, display_name FROM public.exam_categories ORDER BY created_at ASC");
     await db.end();
-    res.json(rows);
+    if (Array.isArray(rows) && rows.length > 0) {
+      serverCachedCategories = rows;
+      return res.json(rows);
+    }
+    return res.json(serverCachedCategories);
   } catch (err) {
-    console.error('[API] Error fetching exam_categories:', err.message);
+    console.warn('[API] Warning fetching exam_categories from DB, serving fallback cache:', err.message);
     try { await db.end(); } catch (_) {}
-    res.status(500).json({ error: err.message });
+    res.json(serverCachedCategories);
   }
+});
+
+// POST /api/exam-categories - Sync or add category from Superadmin
+app.post('/api/exam-categories', (req, res) => {
+  const { name, display_name } = req.body;
+  if (name) {
+    const existing = serverCachedCategories.find(c => c.name.toUpperCase() === name.toUpperCase());
+    if (!existing) {
+      serverCachedCategories.push({
+        id: 'cat-' + Date.now(),
+        name: name.trim().toUpperCase(),
+        display_name: (display_name || name).trim()
+      });
+    }
+  }
+  res.json({ success: true, categories: serverCachedCategories });
+});
+
+// DELETE /api/exam-categories/:id - Delete category from Superadmin
+app.delete('/api/exam-categories/:id', (req, res) => {
+  const { id } = req.params;
+  serverCachedCategories = serverCachedCategories.filter(c => c.id !== id && c.name !== id);
+  res.json({ success: true, categories: serverCachedCategories });
 });
 
 // POST /api/auth/login - Universal authentication endpoint for Admin, Teacher, and Student

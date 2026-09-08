@@ -7,8 +7,8 @@
   <link rel="icon" type="image/png" href="favicon.png" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/supabase-client.js"></script>
-  <script src="/floating-ai-mentor.js"></script>
+  <script src="../../supabase-client.js"></script>
+  <script src="../../floating-ai-mentor.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1006,7 +1006,7 @@
       </div>
     </div>
 
-    <button class="btn-home" onclick="window.location.href='/features/tests/instruction.html'">Back to Dashboard</button>
+    <button class="btn-home" onclick="window.location.href='instruction.html'">Back to Dashboard</button>
   </div>
 </div>
 
@@ -1017,7 +1017,7 @@
     <div class="logo">Fut<span>rix</span> Review</div>
     <div class="review-header-title">Detailed Performance Analysis & Memory Lab</div>
     <div style="display:flex; align-items:center; gap:1.5rem;">
-      <button class="review-exit-btn" onclick="window.location.href='/features/tests/instruction.html'">Exit to Dashboard</button>
+      <button class="review-exit-btn" onclick="window.location.href='instruction.html'">Exit to Dashboard</button>
       <button class="review-close-btn" onclick="closeReviewOverlay()">✕ Close</button>
     </div>
   </div>
@@ -1233,7 +1233,7 @@ const user = JSON.parse(sessionStorage.getItem('futrix_user') || '{}');
    AUTH GUARD
 ═══════════════════════════════════════════════ */
 if (!user.name || user.role !== 'student') {
-  window.location.href = '/features/auth/login.html';
+  window.location.href = '../auth/login.html';
 }
 
 /* ═══════════════════════════════════════════════

@@ -1294,9 +1294,9 @@
     </div>
   </div>
 
-  <script src="/supabase-js.js"></script>
-  <script src="/supabase-client.js?v=2"></script>
-  <script src="/features/student/onboarding-client.js"></script>
+  <script src="../../supabase-js.js"></script>
+  <script src="../../supabase-client.js?v=2"></script>
+  <script src="../student/onboarding-client.js"></script>
   <script>
     let activeUser = null;
     let rawProfiles = [];
@@ -1308,12 +1308,12 @@
     window.addEventListener('load', async () => {
       const u = sessionStorage.getItem('futrix_user');
       if (!u) {
-        window.location.href = '/features/auth/admin-login.html';
+        window.location.href = '../auth/admin-login.html';
         return;
       }
       activeUser = JSON.parse(u);
       if (activeUser.role !== 'teacher') {
-        window.location.href = '/features/auth/admin-login.html';
+        window.location.href = '../auth/admin-login.html';
         return;
       }
 
@@ -1352,7 +1352,7 @@
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await signOutUser();
-      window.location.href = '/features/auth/admin-login.html';
+      window.location.href = '../auth/admin-login.html';
     });
 
     // Switch View Panel

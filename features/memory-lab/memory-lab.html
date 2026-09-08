@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   
   <!-- Design System Tokens -->
-  <link rel="stylesheet" href="/features/memory-lab/design-system.css" />
+  <link rel="stylesheet" href="design-system.css" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -674,13 +674,13 @@
         <div id="leagueName" style="font-size: 0.72rem; color: var(--primary-color); font-weight: 700;">Bronze League</div>
       </div>
       <ul class="nav-list">
-        <li class="nav-item"><a href="/features/tests/instruction.html">Dashboard</a></li>
-        <li class="nav-item"><a href="/features/tests/active-exams.html">Active Exams</a></li>
-        <li class="nav-item"><a href="/features/student/performance.html">Performance</a></li>
-        <li class="nav-item"><a href="/features/leaderboard/leaderboard.html">Leaderboard</a></li>
-        <li class="nav-item"><a href="/features/leaderboard/arena.html">PvP Arena</a></li>
-        <li class="nav-item"><a href="/features/memory-lab/memory-lab.html" class="active">Memory Lab</a></li>
-        <li class="nav-item"><a href="/features/student/roadmap.html">Roadmap</a></li>
+        <li class="nav-item"><a href="../tests/instruction.html">Dashboard</a></li>
+        <li class="nav-item"><a href="../tests/active-exams.html">Active Exams</a></li>
+        <li class="nav-item"><a href="../student/performance.html">Performance</a></li>
+        <li class="nav-item"><a href="../leaderboard/leaderboard.html">Leaderboard</a></li>
+        <li class="nav-item"><a href="../leaderboard/arena.html">PvP Arena</a></li>
+        <li class="nav-item"><a href="memory-lab.html" class="active">Memory Lab</a></li>
+        <li class="nav-item"><a href="../student/roadmap.html">Roadmap</a></li>
       </ul>
       <div class="sidebar-bottom">
         <!-- Theme switcher block -->
@@ -689,7 +689,7 @@
           <button class="btn-theme" onclick="setTheme('light')" style="padding:0.3rem 0.5rem; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:var(--text-color); cursor:pointer;">Light</button>
           <button class="btn-theme" onclick="setTheme('premium')" style="padding:0.3rem 0.5rem; font-size:0.7rem; border-radius:4px; border:1px solid var(--border-color); background:rgba(255,255,255,0.05); color:var(--text-color); cursor:pointer;">Neon</button>
         </div>
-        <button class="btn-upgrade" onclick="window.location.href='/features/tests/pricing.html'">Upgrade to Pro</button>
+        <button class="btn-upgrade" onclick="window.location.href='../tests/pricing.html'">Upgrade to Pro</button>
       </div>
     </aside>
 
@@ -1040,12 +1040,12 @@
   </div>
 
   <!-- Supabase Scripts -->
-  <script src="/supabase-js.js"></script>
-  <script src="/supabase-client.js"></script>
-  <script src="/config/appConfig.js"></script>
-  <script src="/utils/helpers.js"></script>
-  <script src="/services/api.js"></script>
-  <script src="/floating-ai-mentor.js"></script>
+  <script src="../../supabase-js.js"></script>
+  <script src="../../supabase-client.js"></script>
+  <script src="../../config/appConfig.js"></script>
+  <script src="../../utils/helpers.js"></script>
+  <script src="../../services/api.js"></script>
+  <script src="../../floating-ai-mentor.js"></script>
 
   <script>
     // Theme Engine sync
@@ -1169,7 +1169,7 @@
     // Local Session Check
     const user = JSON.parse(sessionStorage.getItem('futrix_user') || '{}');
     if (!user.name || user.role !== 'student') {
-      window.location.href = '/features/auth/login.html';
+      window.location.href = '../auth/login.html';
     }
 
     document.getElementById('profileName').textContent = user.name || 'Futrix Competitor';

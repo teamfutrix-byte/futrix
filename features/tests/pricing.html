@@ -1112,8 +1112,8 @@
     </div>
   </div>
 
-  <script src="/supabase-js.js"></script>
-  <script src="/supabase-client.js?v=3"></script>
+  <script src="../../supabase-js.js"></script>
+  <script src="../../supabase-client.js?v=3"></script>
   <script>
     let activePlanKey = '';
     let pricingSettings = {};
@@ -1366,7 +1366,7 @@
 
         // Update local session flag
         sessionStorage.setItem('futrix_is_pro', 'true');
-        window.location.href = '/features/tests/active-exams.html';
+        window.location.href = 'active-exams.html';
 
       } catch (err) {
         alert('Payment verification failed: ' + err.message);

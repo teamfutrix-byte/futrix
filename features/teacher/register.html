@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="favicon.png" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/supabase-client.js"></script>
+  <script src="../../supabase-client.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -226,6 +226,8 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../../supabase-client.js"></script>
 </head>
 <body>
 
@@ -237,7 +239,7 @@
 
     <!-- Role Switcher Toggle -->
     <div class="role-switcher">
-      <button type="button" class="role-btn" onclick="window.location.href='/features/student/index.html'">Student Portal</button>
+      <button type="button" class="role-btn" onclick="window.location.href='../student/index.html'">Student Portal</button>
       <button type="button" class="role-btn active">Teacher Portal</button>
     </div>
 
@@ -488,15 +490,15 @@
                 <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1.2rem; text-align: left;">
                   <div style="font-size: 0.8rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">📥 Download Teacher Welcome Kit</div>
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
-                    <a href="/api/onboarding/download?file=welcome-letter.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.4rem; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); border-radius:6px;">📄 Welcome Letter</a>
-                    <a href="/api/onboarding/download?file=user-manual.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.4rem; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); border-radius:6px;">📄 Educator Manual</a>
-                    <a href="/api/onboarding/download?file=quick-start.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.4rem; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); border-radius:6px;">📄 Quick Start</a>
-                    <a href="/api/onboarding/download?file=teacher-presentation.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.4rem; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); border-radius:6px;">📄 Slide Deck (PPT)</a>
+                    <a href="${getApiUrl('/api/onboarding/download')}?file=welcome-letter.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.4rem; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); border-radius:6px;">📄 Welcome Letter</a>
+                    <a href="${getApiUrl('/api/onboarding/download')}?file=user-manual.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.4rem; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); border-radius:6px;">📄 Educator Manual</a>
+                    <a href="${getApiUrl('/api/onboarding/download')}?file=quick-start.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.4rem; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); border-radius:6px;">📄 Quick Start</a>
+                    <a href="${getApiUrl('/api/onboarding/download')}?file=teacher-presentation.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:#38bdf8; text-decoration:none; padding:0.4rem; background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.15); border-radius:6px;">📄 Slide Deck (PPT)</a>
                   </div>
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-                  <a href="/features/teacher/teacher-dashboard.html" style="display: block; padding: 0.8rem; background: linear-gradient(135deg, #38bdf8, #818cf8); color: #fff; font-weight: 700; border-radius: 10px; text-decoration: none;">🚀 Go to Teacher Dashboard</a>
+                  <a href="teacher-dashboard.html" style="display: block; padding: 0.8rem; background: linear-gradient(135deg, #38bdf8, #818cf8); color: #fff; font-weight: 700; border-radius: 10px; text-decoration: none;">🚀 Go to Teacher Dashboard</a>
                   <a href="https://chat.whatsapp.com/EuQwlgresyD4fYxrxXJAjc" target="_blank" style="display: block; padding: 0.7rem; background: #25d366; color: #fff; font-weight: 700; border-radius: 10px; text-decoration: none;">💬 Join WhatsApp Educator Network</a>
                 </div>
               </div>

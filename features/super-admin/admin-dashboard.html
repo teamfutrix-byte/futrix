@@ -5798,8 +5798,8 @@
     </div>
   </div>
 
-  <script src="/supabase-js.js"></script>
-  <script src="/supabase-client.js?v=2"></script>
+  <script src="../../supabase-js.js"></script>
+  <script src="../../supabase-client.js?v=2"></script>
   <script>
     let activeUser = null;
     let profilesList = [];
@@ -5847,7 +5847,7 @@
 
       // If no valid session or user is not an admin, redirect immediately to Admin Login Page
       if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
-        window.location.href = '/features/auth/admin-login.html';
+        window.location.href = '../auth/admin-login.html';
         return;
       }
 
@@ -5919,7 +5919,7 @@
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await signOutUser();
-      window.location.href = '/features/auth/admin-login.html';
+      window.location.href = '../auth/admin-login.html';
     });
 
     // ── SUPER ADMIN ACCESS & PREFERENCES LOGIC ──
@@ -10232,6 +10232,18 @@
         
         resetCategoryForm();
         await loadCategoriesData();
+        try {
+          if (categoriesList && categoriesList.length > 0) {
+            localStorage.setItem('futrix_exam_categories', JSON.stringify(categoriesList));
+          }
+          if (typeof getApiUrl === 'function') {
+            fetch(getApiUrl('/api/exam-categories'), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, display_name: displayName })
+            }).catch(() => {});
+          }
+        } catch (_) {}
         await logAuditEvent('ManageExamCategory', { action: id ? 'edit' : 'add', category: name });
         window.location.reload();
       } catch (err) {
@@ -10256,6 +10268,16 @@
         if (error) throw error;
         alert(`Exam category "${name}" deleted successfully.`);
         await loadCategoriesData();
+        try {
+          if (categoriesList) {
+            localStorage.setItem('futrix_exam_categories', JSON.stringify(categoriesList));
+          }
+          if (typeof getApiUrl === 'function') {
+            fetch(getApiUrl(`/api/exam-categories/${encodeURIComponent(id)}`), {
+              method: 'DELETE'
+            }).catch(() => {});
+          }
+        } catch (_) {}
         await logAuditEvent('ManageExamCategory', { action: 'delete', category: name });
         window.location.reload();
       } catch (err) {
@@ -15759,7 +15781,7 @@
         try { await signOutUser(); } catch (_) {}
 
         alert(data.message || 'Credentials updated successfully! Please log in again with your new credentials.');
-        window.location.href = '/features/auth/admin-login.html';
+        window.location.href = '../auth/admin-login.html';
       } catch (err) {
         alert('Error: ' + err.message);
       }

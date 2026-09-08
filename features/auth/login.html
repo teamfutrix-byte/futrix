@@ -649,7 +649,7 @@
     <hr class="divider" />
 
     <p class="card-footer">
-      Don't have an account? <a href="/features/student/index.html">Request Access</a>
+      Don't have an account? <a href="../student/index.html">Request Access</a>
     </p>
 
     <!-- Security badges -->
@@ -704,8 +704,8 @@
     </div>
   </div>
 
-  <script src="/supabase-js.js"></script>
-  <script src="/supabase-client.js?v=3"></script>
+  <script src="../../supabase-js.js"></script>
+  <script src="../../supabase-client.js?v=3"></script>
   <script>
     // ── Eye Toggle
     const eyeBtn = document.getElementById('eyeBtn');
@@ -811,7 +811,7 @@
           localStorage.removeItem('futrix_remember_me');
         }
 
-        window.location.href = '/features/tests/instruction.html';
+        window.location.href = '../tests/instruction.html';
       } catch (err) {
         console.error('Supabase login error:', err.message);
         setLoading(false);
@@ -1341,7 +1341,7 @@
             closeOtpModal();
             setLoading(true);
             const userObj = await signInUser(verifyEmailVal, verifyPhoneVal);
-            window.location.href = '/features/tests/instruction.html';
+            window.location.href = '../tests/instruction.html';
           } else {
             alert('Invalid OTP code. Please try again.');
           }

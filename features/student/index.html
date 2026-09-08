@@ -1542,30 +1542,6 @@
 
 <body>
 
-  <!-- Search Streams Modal -->
-  <div id="searchStreamsModal" class="otp-modal-overlay" style="display:none; z-index:100000; align-items:center; justify-content:center; backdrop-filter:blur(10px); background:rgba(0,0,0,0.8);">
-    <div style="background:#0f111a; border:1px solid rgba(255,255,255,0.08); box-shadow:0 15px 40px rgba(0,0,0,0.5); border-radius:18px; max-width:420px; width:100%; padding:2rem; position:relative; animation:scaleUpShake 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-      <button type="button" onclick="closeSearchStreamsModal()" style="position:absolute; top:1rem; right:1.2rem; background:none; border:none; font-size:1.5rem; color:#9ca3af; cursor:pointer;" onmouseover="playSynthSound('hover')">&times;</button>
-      
-      <div style="text-align:center; margin-bottom:1.5rem;">
-        <div style="font-size:2.4rem; margin-bottom:0.5rem;">🔍</div>
-        <h2 style="font-family:'Sora',sans-serif; font-size:1.3rem; font-weight:800; color:#fff; margin-bottom:0.4rem;">Select Exam Stream</h2>
-        <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.4;">Search and select your targeted exam stream from the list below.</p>
-      </div>
-
-      <!-- Search box -->
-      <div class="field" style="margin-bottom:1.2rem;">
-        <input type="text" id="streamSearchInput" placeholder="Search streams (e.g. CAT, UPSC)..." oninput="filterStreamsList()" style="width:100%;" />
-        <label for="streamSearchInput">Search streams</label>
-        <div class="field-line"></div>
-      </div>
-
-      <!-- Streams List -->
-      <div id="modalStreamsList" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:0.4rem; padding-right:0.25rem;">
-        <!-- Dynamically filled list -->
-      </div>
-    </div>
-  </div>
 
   <!-- BG Orbs -->
   <div class="orb orb-1" aria-hidden="true"></div>
@@ -1733,7 +1709,7 @@
             </button>
           </form>
 
-          <p class="form-footer">Already have an account? <a href="/features/auth/login.html">Login Competitor</a></p>
+          <p class="form-footer">Already have an account? <a href="../auth/login.html">Login Competitor</a></p>
         </div>
 
         <!-- Success State -->
@@ -1769,10 +1745,10 @@
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
-            <a href="/features/tests/active-exams.html" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.85rem; border-radius: 12px; text-decoration: none; background: linear-gradient(135deg,#38bdf8,#818cf8); color: #fff; font-family: 'Sora',sans-serif; font-size: 0.95rem; font-weight: 800; box-shadow: 0 4px 20px rgba(56,189,248,0.4);">
+            <a href="../tests/active-exams.html" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.85rem; border-radius: 12px; text-decoration: none; background: linear-gradient(135deg,#38bdf8,#818cf8); color: #fff; font-family: 'Sora',sans-serif; font-size: 0.95rem; font-weight: 800; box-shadow: 0 4px 20px rgba(56,189,248,0.4);">
               🚀 Start Your First Test
             </a>
-            <a href="/features/tests/active-exams.html" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; text-decoration: none; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-family: 'Sora',sans-serif; font-size: 0.85rem; font-weight: 600;">
+            <a href="../tests/active-exams.html" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border-radius: 12px; text-decoration: none; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-family: 'Sora',sans-serif; font-size: 0.85rem; font-weight: 600;">
               Explore Portal Dashboard
             </a>
           </div>
@@ -1902,8 +1878,8 @@
   <!-- Toast -->
   <div id="toast" role="alert" aria-live="polite"></div>
 
-  <script src="/supabase-js.js"></script>
-  <script src="/supabase-client.js?v=3"></script>
+  <script src="../../supabase-js.js"></script>
+  <script src="../../supabase-client.js?v=3"></script>
   <script>
     // Asynchronously wake up the Render backend immediately in the background
     fetch('https://futrix-backend-7ly8.onrender.com/login.html', { mode: 'no-cors' }).catch(() => {});
@@ -1965,40 +1941,14 @@
         prepGrid.addEventListener('click', (e) => {
           const btn = e.target.closest('.prep-btn');
           if (!btn) return;
-          
-          if (btn.id === 'moreStreamsBtn') return;
 
           document.querySelectorAll('.prep-btn').forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
-
-          const moreBtn = document.getElementById('moreStreamsBtn');
-          if (moreBtn) {
-            moreBtn.innerHTML = 'More... 🔍';
-          }
 
           selectedExam = btn.dataset.exam || btn.textContent.trim();
           const hiddenInput = document.getElementById('selectedExam');
           if (hiddenInput) hiddenInput.value = selectedExam;
 
-          const otherWrap = document.getElementById('otherExamInputWrap');
-          if (selectedExam === 'Other') {
-            if (otherWrap) otherWrap.classList.add('show');
-            const otherInput = document.getElementById('otherExamInput');
-            if (otherInput) {
-              otherInput.focus();
-              otherInput.required = true;
-            }
-          } else {
-            if (otherWrap) {
-              otherWrap.classList.remove('show');
-              const otherInput = document.getElementById('otherExamInput');
-              if (otherInput) {
-                otherInput.value = '';
-                otherInput.required = false;
-              }
-            }
-          }
-          
           console.log('[REGISTRATION] Selected exam stream:', selectedExam);
         });
       }
@@ -2317,45 +2267,69 @@
       try {
         let categories = [];
 
-        // 1. Try backend API endpoint first (with 2.5s timeout)
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 2500);
-          const apiRes = await fetch(getApiUrl('/api/exam-categories'), {
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-          if (apiRes.ok) {
-            const apiData = await apiRes.json();
-            if (Array.isArray(apiData) && apiData.length > 0) {
-              categories = apiData;
+        // 1. Try Supabase directly (Superadmin's live database table exam_categories)
+        if (typeof getExamCategories === 'function') {
+          try {
+            const data = await getExamCategories();
+            if (Array.isArray(data) && data.length > 0) {
+              categories = data;
             }
+          } catch (e) {
+            console.warn('[CATEGORIES] Supabase fetch error:', e);
           }
-        } catch (apiErr) {
-          console.warn('[CATEGORIES API] Fetch notice or timeout:', apiErr);
         }
 
-        // 2. Fallback to Supabase client helper if API returned empty
-        if (categories.length === 0 && typeof getExamCategories === 'function') {
-          categories = await getExamCategories();
+        // 2. Try backend API endpoint (synced with Superadmin)
+        if (categories.length === 0) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+            const apiRes = await fetch(getApiUrl('/api/exam-categories'), {
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (apiRes.ok) {
+              const apiData = await apiRes.json();
+              if (Array.isArray(apiData) && apiData.length > 0) {
+                categories = apiData;
+              }
+            }
+          } catch (apiErr) {
+            console.warn('[CATEGORIES API] Fetch notice:', apiErr);
+          }
         }
 
-        // 3. Fallback defaults if DB is unreachable
+        // 3. Try LocalStorage cached categories (saved when Superadmin adds/edits streams)
+        if (categories.length === 0) {
+          try {
+            const cached = localStorage.getItem('futrix_exam_categories');
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                categories = parsed;
+              }
+            }
+          } catch (_) {}
+        }
+
+        // 4. Fallback defaults: strictly Superadmin's default streams (NEET and JEE)
         if (!categories || categories.length === 0) {
           categories = [
             { name: 'NEET', display_name: 'NEET' },
-            { name: 'JEE', display_name: 'JEE' },
-            { name: 'GATE', display_name: 'GATE' },
-            { name: 'Foundation', display_name: 'Foundation' }
+            { name: 'JEE', display_name: 'JEE' }
           ];
         }
+
+        // Save active categories to local cache
+        try {
+          localStorage.setItem('futrix_exam_categories', JSON.stringify(categories));
+        } catch (_) {}
 
         fetchedCategories = categories;
         grid.innerHTML = '';
 
-        // Render top 3 flat stream buttons
-        const top3 = categories.slice(0, 3);
-        top3.forEach((cat, index) => {
+        // Render ALL streams created by Superadmin
+        categories.forEach((cat, index) => {
           const catName = cat.name;
           const dispName = cat.display_name || catName;
           const btn = document.createElement('button');
@@ -2365,30 +2339,6 @@
           btn.textContent = dispName;
           grid.appendChild(btn);
         });
-
-        // If total categories > 3, render "More... 🔍" button
-        if (categories.length > 3) {
-          const moreBtn = document.createElement('button');
-          moreBtn.type = 'button';
-          moreBtn.className = 'prep-btn';
-          moreBtn.id = 'moreStreamsBtn';
-          moreBtn.innerHTML = 'More... 🔍';
-          moreBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openSearchStreamsModal();
-          };
-          grid.appendChild(moreBtn);
-        }
-
-        // Append "Other" button
-        const otherBtn = document.createElement('button');
-        otherBtn.type = 'button';
-        otherBtn.className = 'prep-btn';
-        otherBtn.id = 'otherStreamBtn';
-        otherBtn.dataset.exam = 'Other';
-        otherBtn.textContent = 'Other';
-        grid.appendChild(otherBtn);
 
         // Set initial selected value
         const firstBtn = grid.querySelector('.prep-btn.selected') || grid.querySelector('.prep-btn');
@@ -2411,84 +2361,6 @@
       } catch (err) {
         console.error('Failed to load categories:', err);
       }
-    }
-
-    // ── Search Streams Modal Controller
-    function openSearchStreamsModal() {
-      const modal = document.getElementById('searchStreamsModal');
-      if (!modal) return;
-      modal.style.display = 'flex';
-      document.getElementById('streamSearchInput').value = '';
-      document.getElementById('streamSearchInput').focus();
-      filterStreamsList();
-      playSynthSound('click');
-    }
-
-    function closeSearchStreamsModal() {
-      const modal = document.getElementById('searchStreamsModal');
-      if (modal) modal.style.display = 'none';
-      playSynthSound('click');
-    }
-
-    function filterStreamsList() {
-      const query = document.getElementById('streamSearchInput').value.trim().toLowerCase();
-      const listContainer = document.getElementById('modalStreamsList');
-      if (!listContainer) return;
-
-      listContainer.innerHTML = '';
-      
-      const filtered = fetchedCategories.filter(cat => {
-        const name = (cat.name || '').toLowerCase();
-        const disp = (cat.display_name || '').toLowerCase();
-        return name.includes(query) || disp.includes(query);
-      });
-
-      if (filtered.length === 0) {
-        listContainer.innerHTML = `<div style="text-align:center; padding:1rem; color:var(--text-muted); font-size:0.85rem;">No matching exam streams found.</div>`;
-        return;
-      }
-
-      filtered.forEach(cat => {
-        const item = document.createElement('div');
-        item.style.cssText = 'padding: 0.75rem 1rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size:0.9rem; color:#fff; font-weight:600; text-align: left;';
-        item.textContent = cat.display_name || cat.name;
-        
-        item.onmouseover = () => {
-          item.style.background = 'rgba(56, 189, 248, 0.1)';
-          item.style.borderColor = '#38bdf8';
-          playSynthSound('hover');
-        };
-        item.onmouseout = () => {
-          item.style.background = 'rgba(255,255,255,0.02)';
-          item.style.borderColor = 'rgba(255,255,255,0.06)';
-        };
-
-        item.onclick = () => {
-          selectStreamFromModal(cat.name, cat.display_name || cat.name);
-        };
-
-        listContainer.appendChild(item);
-      });
-    }
-
-    function selectStreamFromModal(streamName, streamDisplay) {
-      selectedExam = streamName;
-      const hiddenInput = document.getElementById('selectedExam');
-      if (hiddenInput) hiddenInput.value = selectedExam;
-
-      document.querySelectorAll('.prep-btn').forEach(b => b.classList.remove('selected'));
-
-      const moreBtn = document.getElementById('moreStreamsBtn');
-      if (moreBtn) {
-        moreBtn.classList.add('selected');
-        moreBtn.innerHTML = `More: ${streamDisplay} 🔍`;
-      }
-
-      const otherWrap = document.getElementById('otherExamInputWrap');
-      if (otherWrap) otherWrap.classList.remove('show');
-
-      closeSearchStreamsModal();
-      playSynthSound('success');
     }
 
     // ── Toast
@@ -3018,16 +2890,16 @@
         const trackingParams = `role=candidate&email=${encodeURIComponent(email)}`;
         downloadsDiv.innerHTML = `
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-            <a href="/api/onboarding/download?file=welcome-letter.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.8rem; font-weight:700; color:#f0f9ff; text-decoration:none; padding:0.6rem 0.5rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; transition:all 0.2s;">
+            <a href="${getApiUrl('/api/onboarding/download')}?file=welcome-letter.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.8rem; font-weight:700; color:#f0f9ff; text-decoration:none; padding:0.6rem 0.5rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; transition:all 0.2s;">
               📄 Welcome Letter
             </a>
-            <a href="/api/onboarding/download?file=user-manual.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.8rem; font-weight:700; color:#f0f9ff; text-decoration:none; padding:0.6rem 0.5rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; transition:all 0.2s;">
+            <a href="${getApiUrl('/api/onboarding/download')}?file=user-manual.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.8rem; font-weight:700; color:#f0f9ff; text-decoration:none; padding:0.6rem 0.5rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; transition:all 0.2s;">
               📄 User Manual
             </a>
-            <a href="/api/onboarding/download?file=quick-start.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.8rem; font-weight:700; color:#f0f9ff; text-decoration:none; padding:0.6rem 0.5rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; transition:all 0.2s;">
+            <a href="${getApiUrl('/api/onboarding/download')}?file=quick-start.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.8rem; font-weight:700; color:#f0f9ff; text-decoration:none; padding:0.6rem 0.5rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; transition:all 0.2s;">
               📄 Quick Start
             </a>
-            <a href="/api/onboarding/download?file=candidate-presentation.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.8rem; font-weight:700; color:#f0f9ff; text-decoration:none; padding:0.6rem 0.5rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; transition:all 0.2s;">
+            <a href="${getApiUrl('/api/onboarding/download')}?file=candidate-presentation.pdf&${trackingParams}" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:0.4rem; font-size:0.8rem; font-weight:700; color:#f0f9ff; text-decoration:none; padding:0.6rem 0.5rem; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); border-radius:8px; transition:all 0.2s;">
               📄 Slide Deck (PPT)
             </a>
           </div>
@@ -3294,7 +3166,7 @@
           <p style="font-size:0.9rem; color:#9ca3af; line-height:1.6; margin-bottom:1.8rem; font-weight:450;">${msg}</p>
           
           <div style="display:flex; flex-direction:column; gap:0.75rem;">
-            <button onclick="playSynthSound('click'); window.location.href='/features/auth/login.html'" style="
+            <button onclick="playSynthSound('click'); window.location.href='../auth/login.html'" style="
               background: linear-gradient(135deg, #4d8eff, #6fa3ff);
               color: #fff;
               border: none;
