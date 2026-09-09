@@ -2566,7 +2566,13 @@
         const user = session ? session.user : null;
         if (user && user.id) {
           userId = user.id;
-        } else {
+        }
+        if (!userId) {
+          const pendingId = sessionStorage.getItem('futrix_pending_signup_id');
+          if (pendingId) userId = pendingId;
+        }
+
+        if (!userId) {
           // Query existing profile by email
           const { data: profByEmail } = await supabase
             .from('profiles')
@@ -2576,9 +2582,25 @@
 
           if (profByEmail && profByEmail.id) {
             userId = profByEmail.id;
-          } else {
-            userId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('usr-' + Date.now());
           }
+        }
+
+        if (!userId) {
+          try {
+            const { data: saData } = await supabase.auth.signUp({
+              email: email.trim().toLowerCase(),
+              password: phone.trim()
+            });
+            if (saData && saData.user && saData.user.id) {
+              userId = saData.user.id;
+            }
+          } catch (e) {
+            console.warn('Supabase signUp fallback:', e);
+          }
+        }
+
+        if (!userId) {
+          userId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('usr-' + Date.now());
         }
         console.log(`[TEST DIAGNOSTIC] submitRegistration: Resolved target user ID: ${userId}`);
 
@@ -2811,6 +2833,10 @@
             otpData = await otpRes.json();
           } catch (fetchErr) {
             console.warn('OTP send fetch error:', fetchErr);
+          }
+
+          if (otpData && otpData.userId) {
+            sessionStorage.setItem('futrix_pending_signup_id', otpData.userId);
           }
 
           if ((otpRes && otpRes.ok && (otpData.success || otpData.otpSent)) || cleanEmail === 'teamfutrix@gmail.com') {

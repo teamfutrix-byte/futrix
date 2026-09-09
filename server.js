@@ -264,6 +264,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
 
     res.json({
       success: true,
+      userId: targetId,
       message: `Verification code sent to ${cleanEmail}`,
       otpSent: true,
       otp_delivery_failed: false
@@ -657,8 +658,7 @@ app.get('/api/admin/user-activity/:userId', async (req, res) => {
       xpTransactions = rows;
     } catch (_) {}
 
-    // 5. Revision queue stats
-    let revisionStats = { queueCount: 0, masteredCount: 0 };
+    let revisionStats = { queueCount: 0, masteredCount: 0, dueFlashcards: 0, wrongQuestionsCount: 0 };
     try {
       const { rows } = await db.query(
         "SELECT count(*)::int as queue_count, count(CASE WHEN interval_days > 14 THEN 1 END)::int as mastered_count FROM public.revision_queue WHERE user_id = $1",
@@ -667,6 +667,8 @@ app.get('/api/admin/user-activity/:userId', async (req, res) => {
       if (rows.length > 0) {
         revisionStats.queueCount = rows[0].queue_count || 0;
         revisionStats.masteredCount = rows[0].mastered_count || 0;
+        revisionStats.dueFlashcards = rows[0].queue_count || 0;
+        revisionStats.wrongQuestionsCount = rows[0].queue_count || 0;
       }
     } catch (_) {}
 
@@ -674,10 +676,14 @@ app.get('/api/admin/user-activity/:userId', async (req, res) => {
 
     return res.json({
       profile,
+      user: profile,
       attempts,
       battles,
+      pvpBattles: battles,
       xpTransactions,
-      revisionStats
+      xpLedger: xpTransactions,
+      revisionStats,
+      memoryLab: revisionStats
     });
   } catch (err) {
     console.error('[API] Error in user-activity:', err.message);
@@ -720,8 +726,10 @@ app.post('/api/ai/predict-performance', async (req, res) => {
   // Requirement: Minimum 10 tests required for AI calibration
   if (count < 10) {
     return res.json({
+      status: 'calibrating',
       calibrated: false,
       completedTests: count,
+      testsCompleted: count,
       requiredTests: 10,
       remainingTests: 10 - count,
       message: `AI Calibration in Progress: Complete at least 10 tests to unlock high-precision predictive modeling (Completed: ${count}/10).`
@@ -769,19 +777,26 @@ app.post('/api/ai/predict-performance', async (req, res) => {
   }
 
   return res.json({
+    status: 'predicted',
     calibrated: true,
     completedTests: count,
+    testsCompleted: count,
     requiredTests: 10,
     stream: streamName,
     maxExamScore,
+    maxScore: maxExamScore,
     expectedScore,
+    predictedScore: expectedScore,
     expectedPercentage: normalizedAccuracy,
     percentile,
     estimatedRank,
+    predictedAIR: estimatedRank,
     selectionProbability,
+    qualificationProbability: selectionProbability,
     speedScore,
     consistencyScore,
     archetype,
+    behavioralArchetype: archetype,
     trajectory,
     advice,
     forecastDate: new Date().toISOString()
