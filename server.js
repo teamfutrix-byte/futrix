@@ -692,7 +692,7 @@ app.get('/api/admin/user-activity/:userId', async (req, res) => {
   }
 });
 
-// POST /api/ai/predict-performance - Gemini AI Future Exam & Behavioral Readiness Prediction
+// POST /api/ai/predict-performance - Futrix NeuroCast™ AI Future Exam & Behavioral Readiness Prediction
 app.post('/api/ai/predict-performance', async (req, res) => {
   let { userId, stream, attemptsCount, avgScore, avgAccuracy, avgSpeedSec, attempts } = req.body;
   let count = parseInt(attemptsCount || (Array.isArray(attempts) ? attempts.length : 0));
@@ -732,7 +732,7 @@ app.post('/api/ai/predict-performance', async (req, res) => {
       testsCompleted: count,
       requiredTests: 10,
       remainingTests: 10 - count,
-      message: `AI Calibration in Progress: Complete at least 10 tests to unlock high-precision predictive modeling (Completed: ${count}/10).`
+      message: `Futrix NeuroCast™ Calibration in Progress: Complete at least 10 tests to unlock high-precision predictive modeling (Completed: ${count}/10).`
     });
   }
 
