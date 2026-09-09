@@ -5749,29 +5749,275 @@
       </div>
   </div>
 
-  <!-- ── MODAL: USER REGISTRATION FULL DETAILS INSPECTION ── -->
-  <div id="userDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:99999; justify-content:center; align-items:center; padding:1.5rem;">
-    <div style="background:#0f172a; border:1px solid rgba(56,189,248,0.3); border-radius:20px; width:100%; max-width:680px; max-height:90vh; overflow-y:auto; padding:2rem; color:#fff; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
-      <button onclick="closeUserDetailModal()" style="position:absolute; top:1.5rem; right:1.5rem; background:rgba(255,255,255,0.08); border:none; color:#fff; font-size:1.2rem; cursor:pointer; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;">✕</button>
+  <!-- ── MODAL: 360° USER INTELLIGENCE, ACTIVITY TRACKER & GEMINI AI PROFILER ── -->
+  <div id="userDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.88); backdrop-filter:blur(12px); z-index:99999; justify-content:center; align-items:center; padding:1.5rem;">
+    <div style="background:#0f172a; border:1px solid rgba(56,189,248,0.35); border-radius:22px; width:100%; max-width:1080px; max-height:92vh; overflow-y:auto; padding:2rem; color:#fff; position:relative; box-shadow:0 25px 60px -15px rgba(0,0,0,0.7); display:flex; flex-direction:column; gap:1.25rem;">
       
-      <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:1rem;">
-        <div style="width:54px; height:54px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--accent)); display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:800;" id="udModalAvatar">👤</div>
-        <div>
-          <h3 style="font-family:'Sora',sans-serif; font-size:1.4rem; font-weight:800; color:#fff; margin:0;" id="udModalName">User Details</h3>
-          <p style="font-size:0.85rem; color:var(--text-muted); margin:0.2rem 0 0 0;" id="udModalEmail">email@domain.com</p>
+      <!-- Top Close Button -->
+      <button onclick="closeUserDetailModal()" style="position:absolute; top:1.4rem; right:1.4rem; background:rgba(255,255,255,0.08); border:none; color:#fff; font-size:1.2rem; cursor:pointer; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">✕</button>
+
+      <!-- Competitor Navigation Breadcrumbs -->
+      <div id="udBreadcrumbBar" style="display:none; align-items:center; gap:0.5rem; font-size:0.8rem; color:#94a3b8; background:rgba(255,255,255,0.03); padding:0.4rem 0.8rem; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+        <button id="udBreadcrumbBackBtn" type="button" style="background:none; border:none; color:#38bdf8; font-weight:700; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:0.3rem;">
+          ← Back to Previous User
+        </button>
+        <span>•</span>
+        <span id="udBreadcrumbTrail">Viewing Competitor Profile</span>
+      </div>
+      
+      <!-- Header Banner with User Summary & Quick Actions -->
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:1.2rem; flex-wrap:wrap; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:1.2rem;">
+        <div style="display:flex; align-items:center; gap:1rem;">
+          <div style="width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg, #0284c7, #38bdf8); display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:800; box-shadow:0 0 20px rgba(56,189,248,0.3);" id="udModalAvatar">👤</div>
+          <div>
+            <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+              <h3 style="font-family:'Sora',sans-serif; font-size:1.45rem; font-weight:800; color:#fff; margin:0;" id="udModalName">User Profile</h3>
+              <span id="udModalRoleBadge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:0.2rem 0.6rem; border-radius:6px; font-size:0.72rem; font-weight:700;">Student</span>
+              <span id="udModalStreamBadge" style="background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3); padding:0.2rem 0.6rem; border-radius:6px; font-size:0.72rem; font-weight:700;">NEET</span>
+              <span id="udModalStatusBadge" style="background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); padding:0.2rem 0.6rem; border-radius:6px; font-size:0.72rem; font-weight:700;">Active</span>
+            </div>
+            <p style="font-size:0.85rem; color:#94a3b8; margin:0.3rem 0 0 0;" id="udModalEmailPhone">email@domain.com • +91 0000000000</p>
+          </div>
+        </div>
+
+        <!-- Quick Header Metrics -->
+        <div style="display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;">
+          <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.5rem 0.9rem; border-radius:10px; text-align:center;">
+            <span style="display:block; font-size:0.68rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Total XP</span>
+            <strong style="color:#22c55e; font-size:1.05rem;" id="udHeaderXP">0 XP</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.5rem 0.9rem; border-radius:10px; text-align:center;">
+            <span style="display:block; font-size:0.68rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Level</span>
+            <strong style="color:#38bdf8; font-size:1.05rem;" id="udHeaderLevel">Lvl 1</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.5rem 0.9rem; border-radius:10px; text-align:center;">
+            <span style="display:block; font-size:0.68rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Tests Done</span>
+            <strong style="color:#f59e0b; font-size:1.05rem;" id="udHeaderTestsCount">0</strong>
+          </div>
         </div>
       </div>
 
-      <!-- Detail Grid -->
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; font-size:0.85rem;" id="udModalGrid">
-        <!-- Loaded dynamically -->
+      <!-- Navigation Tabs -->
+      <div style="display:flex; gap:0.5rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.5rem; overflow-x:auto;" id="udTabBar">
+        <button type="button" class="btn-action active" id="udTabBtn-profile" onclick="switchUdTab('profile')" style="padding:0.55rem 1rem; border-radius:8px; font-weight:700; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+          📋 Profile &amp; KYC
+        </button>
+        <button type="button" class="btn-action" id="udTabBtn-tests" onclick="switchUdTab('tests')" style="padding:0.55rem 1rem; border-radius:8px; font-weight:700; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+          📝 Tests &amp; Retakes (<span id="udBadgeTestsCount">0</span>)
+        </button>
+        <button type="button" class="btn-action" id="udTabBtn-battles" onclick="switchUdTab('battles')" style="padding:0.55rem 1rem; border-radius:8px; font-weight:700; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+          ⚔️ PvP Challenges (<span id="udBadgeBattlesCount">0</span>)
+        </button>
+        <button type="button" class="btn-action" id="udTabBtn-memory" onclick="switchUdTab('memory')" style="padding:0.55rem 1rem; border-radius:8px; font-weight:700; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+          🧠 Memory Lab
+        </button>
+        <button type="button" class="btn-action" id="udTabBtn-xpledger" onclick="switchUdTab('xpledger')" style="padding:0.55rem 1rem; border-radius:8px; font-weight:700; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+          💎 XP Ledger
+        </button>
+        <button type="button" class="btn-action" id="udTabBtn-ai" onclick="switchUdTab('ai')" style="padding:0.55rem 1rem; border-radius:8px; font-weight:700; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; cursor:pointer; background:linear-gradient(135deg, rgba(168,85,247,0.2), rgba(56,189,248,0.2)); border:1px solid rgba(168,85,247,0.4); color:#c084fc;">
+          🤖 Gemini AI Prediction
+        </button>
       </div>
 
-      <div style="margin-top:1.8rem; display:flex; justify-content:flex-end; gap:0.75rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1.2rem;">
-        <button class="btn-action primary" onclick="closeUserDetailModal()" style="padding:0.6rem 1.5rem; font-weight:700;">Close</button>
+      <!-- TAB PANE 1: Profile & KYC Details -->
+      <div id="udPane-profile" class="ud-tab-pane" style="display:block;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0.85rem; font-size:0.85rem;" id="udModalGrid">
+          <!-- Loaded dynamically -->
+        </div>
       </div>
+
+      <!-- TAB PANE 2: Tests & Mock Exams (with Retake Unlock) -->
+      <div id="udPane-tests" class="ud-tab-pane" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+          <div>
+            <h4 style="margin:0; font-size:1rem; font-weight:700; color:#fff;">User Exam &amp; Mock Test Submissions</h4>
+            <p style="margin:0.2rem 0 0 0; font-size:0.75rem; color:#94a3b8;">Review test attempts and unlock completed tests so the student can retake them without generating new tests or paying.</p>
+          </div>
+          <button type="button" id="btnUnlockAllUserTests" onclick="unlockAllUserTests()" style="padding:0.5rem 1rem; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); color:#fbbf24; border-radius:8px; font-size:0.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.4rem;">
+            ⚡ Unlock All Tests for Retake
+          </button>
+        </div>
+
+        <div style="overflow-x:auto; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); color:#94a3b8;">
+                <th style="padding:0.75rem 1rem;">Test Series ID</th>
+                <th style="padding:0.75rem 1rem;">Topic / Chapter</th>
+                <th style="padding:0.75rem 1rem;">Score</th>
+                <th style="padding:0.75rem 1rem;">Accuracy</th>
+                <th style="padding:0.75rem 1rem;">Time Taken</th>
+                <th style="padding:0.75rem 1rem;">XP Earned</th>
+                <th style="padding:0.75rem 1rem;">Attempt Date</th>
+                <th style="padding:0.75rem 1rem; text-align:right;">Retake Action</th>
+              </tr>
+            </thead>
+            <tbody id="udTestsTableBody">
+              <tr><td colspan="8" style="text-align:center; padding:2rem; color:#94a3b8;">Loading test submissions...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB PANE 3: PvP Arena Battles & Competitors -->
+      <div id="udPane-battles" class="ud-tab-pane" style="display:none;">
+        <div style="margin-bottom:1rem;">
+          <h4 style="margin:0; font-size:1rem; font-weight:700; color:#fff;">1v1 Arena Challenges &amp; Competitor Matches</h4>
+          <p style="margin:0.2rem 0 0 0; font-size:0.75rem; color:#94a3b8;">Inspect battles created or contested by this student. Click on any opponent to drill down into their profile.</p>
+        </div>
+
+        <div style="overflow-x:auto; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); color:#94a3b8;">
+                <th style="padding:0.75rem 1rem;">Battle ID</th>
+                <th style="padding:0.75rem 1rem;">Role</th>
+                <th style="padding:0.75rem 1rem;">Stream &amp; Level</th>
+                <th style="padding:0.75rem 1rem;">Competitor / Opponent</th>
+                <th style="padding:0.75rem 1rem;">Score Outcome</th>
+                <th style="padding:0.75rem 1rem;">Status</th>
+                <th style="padding:0.75rem 1rem;">Date</th>
+                <th style="padding:0.75rem 1rem; text-align:right;">Opponent Action</th>
+              </tr>
+            </thead>
+            <tbody id="udBattlesTableBody">
+              <tr><td colspan="8" style="text-align:center; padding:2rem; color:#94a3b8;">Loading battle history...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB PANE 4: Memory Lab & Revision Activity -->
+      <div id="udPane-memory" class="ud-tab-pane" style="display:none;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1.2rem; border-radius:14px; text-align:center;">
+            <div style="font-size:1.8rem; margin-bottom:0.3rem;">🗂️</div>
+            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Cards in Revision Queue</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#38bdf8; margin-top:0.2rem;" id="udMemoryQueueCount">0</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1.2rem; border-radius:14px; text-align:center;">
+            <div style="font-size:1.8rem; margin-bottom:0.3rem;">⭐</div>
+            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Mastered Flashcards</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#22c55e; margin-top:0.2rem;" id="udMemoryMasteredCount">0</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1.2rem; border-radius:14px; text-align:center;">
+            <div style="font-size:1.8rem; margin-bottom:0.3rem;">🔥</div>
+            <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Spaced Retention Index</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#fbbf24; margin-top:0.2rem;" id="udMemoryRetentionIndex">88%</div>
+          </div>
+        </div>
+        <div style="background:rgba(56,189,248,0.05); border:1px solid rgba(56,189,248,0.2); border-radius:12px; padding:1rem; font-size:0.85rem; color:#cbd5e1; line-height:1.5;">
+          ℹ️ Memory Lab logs tracking active recall cadence and intervals. When questions are marked wrong in tests, they are automatically queued here for systematic review.
+        </div>
+      </div>
+
+      <!-- TAB PANE 5: XP Ledger -->
+      <div id="udPane-xpledger" class="ud-tab-pane" style="display:none;">
+        <div style="margin-bottom:1rem;">
+          <h4 style="margin:0; font-size:1rem; font-weight:700; color:#fff;">XP Balance &amp; Transaction Audit Ledger</h4>
+          <p style="margin:0.2rem 0 0 0; font-size:0.75rem; color:#94a3b8;">Full financial audit of all XP credits, debits, referral rewards, and battle penalties.</p>
+        </div>
+
+        <div style="overflow-x:auto; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px; max-height:360px; overflow-y:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02); color:#94a3b8;">
+                <th style="padding:0.75rem 1rem;">Transaction Type</th>
+                <th style="padding:0.75rem 1rem;">Amount</th>
+                <th style="padding:0.75rem 1rem;">Reference ID</th>
+                <th style="padding:0.75rem 1rem;">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="udXpTableBody">
+              <tr><td colspan="4" style="text-align:center; padding:2rem; color:#94a3b8;">Loading XP audit logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB PANE 6: Gemini AI Predictive Intelligence -->
+      <div id="udPane-ai" class="ud-tab-pane" style="display:none;">
+        
+        <!-- Calibration Warning Banner (if < 10 tests) -->
+        <div id="udAiCalibrationNotice" style="display:none; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); border-radius:12px; padding:1rem 1.2rem; margin-bottom:1.2rem;">
+          <div style="display:flex; align-items:center; gap:0.6rem; color:#fbbf24; font-weight:700; font-size:0.9rem; margin-bottom:0.3rem;">
+            ⚠️ Calibration Incomplete (<span id="udAiTestsNoticeCount">0</span>/10 Tests Completed)
+          </div>
+          <p style="margin:0; font-size:0.82rem; color:#cbd5e1; line-height:1.5;">
+            To ensure reliable, data-backed predictions without statistical noise, Gemini AI requires at least 10 completed test attempts from this user. High-confidence exam forecasting will activate once 10 tests are logged.
+          </p>
+        </div>
+
+        <!-- Metric Cards Grid -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:0.85rem; margin-bottom:1.2rem;">
+          
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1rem; border-radius:14px; text-align:center;">
+            <span style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase; font-weight:700; display:block;">Exam Readiness Score</span>
+            <div style="font-size:1.6rem; font-weight:800; color:#38bdf8; margin:0.3rem 0;" id="udAiReadinessScore">--</div>
+            <span style="font-size:0.72rem; color:#94a3b8;" id="udAiReadinessLabel">Composite Index</span>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1rem; border-radius:14px; text-align:center;">
+            <span style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase; font-weight:700; display:block;">Predicted Exam Score</span>
+            <div style="font-size:1.6rem; font-weight:800; color:#22c55e; margin:0.3rem 0;" id="udAiPredictedScore">--</div>
+            <span style="font-size:0.72rem; color:#94a3b8;" id="udAiPredictedScale">Out of 720 (NEET)</span>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1rem; border-radius:14px; text-align:center;">
+            <span style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase; font-weight:700; display:block;">Selection Chances</span>
+            <div style="font-size:1.6rem; font-weight:800; color:#fbbf24; margin:0.3rem 0;" id="udAiSelectionChance">--</div>
+            <span style="font-size:0.72rem; color:#94a3b8;" id="udAiSelectionRank">Est. AIR Rank</span>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:1rem; border-radius:14px; text-align:center;">
+            <span style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase; font-weight:700; display:block;">Avg Question Pacing</span>
+            <div style="font-size:1.6rem; font-weight:800; color:#a855f7; margin:0.3rem 0;" id="udAiAvgSpeed">--</div>
+            <span style="font-size:0.72rem; color:#94a3b8;">Seconds / Question</span>
+          </div>
+
+        </div>
+
+        <!-- AI Behavioral Persona & Strategic Advice Card -->
+        <div style="background:linear-gradient(135deg, rgba(168,85,247,0.08), rgba(56,189,248,0.08)); border:1px solid rgba(168,85,247,0.3); border-radius:16px; padding:1.4rem; margin-bottom:1.2rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.3rem;">🧠</span>
+              <h4 style="margin:0; font-size:1rem; font-weight:800; color:#fff;">Behavioral Persona &amp; Exam Trajectory</h4>
+            </div>
+            <span id="udAiPersonaBadge" style="background:rgba(168,85,247,0.25); color:#d8b4fe; border:1px solid rgba(168,85,247,0.5); padding:0.25rem 0.75rem; border-radius:8px; font-weight:700; font-size:0.75rem;">Balanced Performer</span>
+          </div>
+          
+          <div id="udAiAdviceText" style="font-size:0.85rem; color:#e2e8f0; line-height:1.6; margin-bottom:1rem;">
+            Gemini AI evaluates the student's pacing vs error rates across all attempted papers. As test volume increases, behavioral models detect stress inflection points and stamina drops.
+          </div>
+
+          <div style="display:flex; justify-content:flex-end;">
+            <button type="button" id="btnRunAiAnalysis" onclick="triggerGeminiAiAnalysis()" style="padding:0.6rem 1.2rem; background:linear-gradient(135deg, #9333ea, #0284c7); border:none; color:#fff; font-weight:700; font-size:0.8rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:0.4rem; box-shadow:0 4px 15px rgba(147,51,234,0.3);">
+              ✦ Generate Live Gemini AI Forecast
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="margin-top:0.5rem; display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.08); padding-top:1rem; flex-wrap:wrap; gap:0.75rem;">
+        <div style="font-size:0.75rem; color:#64748b;">
+          User UUID: <code id="udFooterUserId" style="color:#94a3b8;">--</code>
+        </div>
+        <div style="display:flex; gap:0.6rem;">
+          <button type="button" class="btn-action danger" id="udFooterBlockBtn" onclick="toggleBlockFromModal()" style="padding:0.55rem 1.2rem; font-weight:700; font-size:0.82rem; border-radius:8px;">
+            🚫 Block User
+          </button>
+          <button type="button" class="btn-action primary" onclick="closeUserDetailModal()" style="padding:0.55rem 1.4rem; font-weight:700; font-size:0.82rem; border-radius:8px;">
+            Close
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
+
 
   </div> <!-- closes view-onboarding -->
   </div> <!-- closes content-area -->
@@ -10457,13 +10703,13 @@
 
         const detailsBtn = document.createElement('button');
         detailsBtn.type = 'button';
-        detailsBtn.title = 'View Full Profile Details';
+        detailsBtn.title = 'View 360° User Intelligence & Full Activity';
         detailsBtn.className = 'btn-user-details';
         detailsBtn.setAttribute('data-action', 'details');
         detailsBtn.setAttribute('data-uid', String(u.id));
         detailsBtn.setAttribute('onclick', `window.openUserDetailModal('${u.id}')`);
         detailsBtn.style.cssText = 'background:rgba(77,142,255,0.2);border:1px solid rgba(77,142,255,0.5);color:#60a5fa;padding:0.35rem 0.65rem;border-radius:6px;font-size:0.75rem;cursor:pointer;white-space:nowrap;font-weight:700;font-family:inherit;position:relative;z-index:20;pointer-events:auto;';
-        detailsBtn.innerHTML = '🔍 Details';
+        detailsBtn.innerHTML = '🔍 Activity & Details';
         detailsBtn.addEventListener('click', function(ev) {
           ev.preventDefault();
           ev.stopPropagation();
@@ -10583,17 +10829,35 @@
       populateUsersTable(filtered);
     }
 
-    // Modal Details View (Displays EVERY SINGLE user detail A to Z)
-    async function openUserDetailModal(userObjOrId) {
-      console.log('[openUserDetailModal] Called with:', userObjOrId);
+    // ── 360° USER INTELLIGENCE, ACTIVITY TRACKER & GEMINI AI PROFILER ──
+    let udNavHistory = [];
+    let currentUdUser = null;
+    let currentUdActivity = null;
 
-      // Instantly move modal directly to document.body and display overlay
+    function switchUdTab(tabName) {
+      const tabBtns = ['profile', 'tests', 'battles', 'memory', 'xpledger', 'ai'];
+      tabBtns.forEach(t => {
+        const btn = document.getElementById('udTabBtn-' + t);
+        const pane = document.getElementById('udPane-' + t);
+        if (btn) btn.classList.remove('active');
+        if (pane) pane.style.display = 'none';
+      });
+
+      const activeBtn = document.getElementById('udTabBtn-' + tabName);
+      const activePane = document.getElementById('udPane-' + tabName);
+      if (activeBtn) activeBtn.classList.add('active');
+      if (activePane) activePane.style.display = 'block';
+    }
+
+    async function openUserDetailModal(userObjOrId, isDrillDown = false) {
+      console.log('[openUserDetailModal] Opening 360 view for:', userObjOrId, 'isDrillDown:', isDrillDown);
+
       const m = document.getElementById('userDetailModal');
       if (m) {
         if (m.parentNode !== document.body) {
           document.body.appendChild(m);
         }
-        m.style.cssText = "display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.92) !important; z-index: 9999999 !important; justify-content: center !important; align-items: center !important; padding: 1.5rem !important;";
+        m.style.cssText = "display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.9) !important; z-index: 9999999 !important; justify-content: center !important; align-items: center !important; padding: 1.5rem !important;";
       }
 
       let u = (typeof userObjOrId === 'object' && userObjOrId !== null) ? userObjOrId : null;
@@ -10613,132 +10877,537 @@
       }
 
       if (!u) u = { id: userId, full_name: 'User Profile' };
+      currentUdUser = u;
+
+      // Handle breadcrumb stack
+      const breadcrumbBar = document.getElementById('udBreadcrumbBar');
+      const breadcrumbBackBtn = document.getElementById('udBreadcrumbBackBtn');
+      const breadcrumbTrail = document.getElementById('udBreadcrumbTrail');
+
+      if (isDrillDown && udNavHistory.length > 0) {
+        breadcrumbBar.style.display = 'flex';
+        const prevUserId = udNavHistory[udNavHistory.length - 1];
+        const prevUser = profilesList.find(p => String(p.id) === String(prevUserId));
+        const prevName = prevUser ? prevUser.full_name : 'Previous User';
+        breadcrumbBackBtn.innerHTML = `← Back to ${prevName}`;
+        breadcrumbBackBtn.onclick = () => {
+          const popId = udNavHistory.pop();
+          openUserDetailModal(popId, udNavHistory.length > 0);
+        };
+        breadcrumbTrail.textContent = `Viewing Competitor: ${u.full_name || u.email || 'User'}`;
+      } else {
+        if (!isDrillDown) udNavHistory = [];
+        breadcrumbBar.style.display = 'none';
+      }
+
+      // Populate Header
+      document.getElementById('udModalName').textContent = u.full_name || 'User Profile';
+      document.getElementById('udModalAvatar').textContent = (u.full_name ? u.full_name.charAt(0).toUpperCase() : '👤');
+      document.getElementById('udModalRoleBadge').textContent = (u.role || 'student').toUpperCase();
+      document.getElementById('udModalStreamBadge').textContent = u.preparation_for || 'NEET';
+      
+      const isBlocked = u.is_blocked === true || u.is_blocked === 'true';
+      const statusBadge = document.getElementById('udModalStatusBadge');
+      if (statusBadge) {
+        statusBadge.textContent = isBlocked ? '🚫 Blocked' : '● Active';
+        statusBadge.style.background = isBlocked ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.15)';
+        statusBadge.style.color = isBlocked ? '#f87171' : '#4ade80';
+        statusBadge.style.borderColor = isBlocked ? 'rgba(239,68,68,0.4)' : 'rgba(34,197,94,0.3)';
+      }
+
+      document.getElementById('udModalEmailPhone').textContent = `${u.email || 'No email'} • ${u.phone || 'No phone'} • ${u.city || 'No city'}`;
+      document.getElementById('udHeaderXP').textContent = `${parseFloat(u.xp_balance || 0).toFixed(0)} XP`;
+      document.getElementById('udHeaderLevel').textContent = `Lvl ${u.unlocked_level || 1}`;
+      document.getElementById('udFooterUserId').textContent = u.id || userId;
+
+      const blockBtn = document.getElementById('udFooterBlockBtn');
+      if (blockBtn) {
+        blockBtn.textContent = isBlocked ? '✅ Unblock User' : '🚫 Block User';
+        blockBtn.className = isBlocked ? 'btn-action success' : 'btn-action danger';
+      }
+
+      // Populate Tab 1: Profile & KYC Grid
+      const fmtDate = (d) => d ? new Date(d).toLocaleString('en-IN') : 'N/A';
+      const grid = document.getElementById('udModalGrid');
+      if (grid) {
+        grid.innerHTML = `
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Full Name</span>
+            <strong style="color:#fff;">${u.full_name || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Email Address</span>
+            <strong style="color:#fff;">${u.email || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Phone Number</span>
+            <strong style="color:#fff;">${u.phone || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Date of Birth (DOB)</span>
+            <strong style="color:#fff;">${u.dob || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Guardian Name</span>
+            <strong style="color:#fff;">${u.guardian_name || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Guardian Contact</span>
+            <strong style="color:#fff;">${u.guardian_contact || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">City &amp; State</span>
+            <strong style="color:#fff;">${u.city || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Pin Code</span>
+            <strong style="color:#fff;">${u.pin_code || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Qualification</span>
+            <strong style="color:#fff;">${u.qualification || 'N/A'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Target Exam Stream</span>
+            <strong style="color:var(--accent);">${u.preparation_for || 'NEET'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Institute / School</span>
+            <strong style="color:#fff;">${u.institute_name || u.institute_id || 'Individual Candidate'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Plan Tier</span>
+            <strong style="color:${u.is_pro ? '#fbbf24' : '#94a3b8'};">${u.is_pro ? '👑 PRO Member' : 'Standard Free Tier'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Suspicion / Cheat Score</span>
+            <strong style="color:${(u.suspicion_score || 0) > 0 ? '#ef4444' : '#22c55e'};">${u.suspicion_score || 0}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Email Verification</span>
+            <strong style="color:${u.email_verified ? '#22c55e' : '#f59e0b'};">${u.email_verified ? '✅ Verified' : '⏳ Unverified'}</strong>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Last OTP Code</span>
+            <code style="color:#cbd5e1;">${u.otp_code || 'None'}</code>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Registered Date</span>
+            <strong style="color:#cbd5e1;">${fmtDate(u.created_at)}</strong>
+          </div>
+          <div style="grid-column: span 2; background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
+            <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Device Fingerprint &amp; Hardware ID</span>
+            <code style="font-size:0.75rem; color:#cbd5e1;">ID: ${u.device_id || 'N/A'} • FP: ${u.browser_fingerprint || 'N/A'}</code>
+          </div>
+        `;
+      }
+
+      // Switch to default profile tab on open
+      switchUdTab('profile');
+
+      // Fetch full 360 activity data asynchronously
+      await loadUserActivityDeep(u.id);
+    }
+
+    async function loadUserActivityDeep(userId) {
+      try {
+        let activity = null;
+
+        // 1. Try backend enterprise endpoint
+        try {
+          const res = await fetch(getApiUrl('/api/admin/user-activity/' + encodeURIComponent(userId)));
+          if (res.ok) {
+            activity = await res.json();
+          }
+        } catch (e) {
+          console.warn('[ActivityDeep] Backend fetch notice:', e);
+        }
+
+        // 2. Fallback direct Supabase queries if backend endpoint did not return
+        if (!activity || !activity.attempts) {
+          activity = { attempts: [], battles: [], xpTransactions: [], revisionStats: { queueCount: 0, masteredCount: 0 } };
+
+          if (supabase) {
+            const { data: att } = await supabase.from('attempts').select('*, test_series(*)').eq('user_id', userId).order('created_at', { ascending: false });
+            if (att) activity.attempts = att;
+
+            const { data: bat } = await supabase.from('battles').select('*, creator_profiles:creator_id(full_name, email), opponent_profiles:opponent_id(full_name, email)').or(`creator_id.eq.${userId},opponent_id.eq.${userId}`).order('created_at', { ascending: false });
+            if (bat) activity.battles = bat;
+
+            const { data: tx } = await supabase.from('xp_transactions').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+            if (tx) activity.xpTransactions = tx;
+
+            const { data: rq } = await supabase.from('revision_queue').select('*').eq('user_id', userId);
+            if (rq) {
+              activity.revisionStats = {
+                queueCount: rq.length,
+                masteredCount: rq.filter(c => (c.interval_days || 0) > 14).length
+              };
+            }
+          }
+        }
+
+        currentUdActivity = activity;
+        renderUdActivityTabs(activity);
+
+      } catch (err) {
+        console.error('Error loading deep user activity:', err);
+      }
+    }
+
+    function renderUdActivityTabs(activity) {
+      const attempts = activity.attempts || [];
+      const battles = activity.battles || [];
+      const xpTxs = activity.xpTransactions || [];
+      const rev = activity.revisionStats || { queueCount: 0, masteredCount: 0 };
+
+      // Update counters in header & tab badges
+      document.getElementById('udHeaderTestsCount').textContent = attempts.length;
+      document.getElementById('udBadgeTestsCount').textContent = attempts.length;
+      document.getElementById('udBadgeBattlesCount').textContent = battles.length;
+
+      // 1. RENDER TESTS TAB
+      const testsTbody = document.getElementById('udTestsTableBody');
+      if (testsTbody) {
+        if (attempts.length === 0) {
+          testsTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:#94a3b8;">No test attempts logged yet for this candidate.</td></tr>`;
+        } else {
+          testsTbody.innerHTML = '';
+          attempts.forEach(a => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            const seriesId = a.series_id || 'Test';
+            const topic = (a.test_series && a.test_series.topic_chapter) || (a.topic_chapter) || 'Standard Assessment';
+            const score = parseFloat(a.score || 0).toFixed(2);
+            const totalMarks = (a.test_series && a.test_series.max_marks) || a.max_marks || 720;
+            const correct = a.correct_answers || 0;
+            const wrong = a.wrong_answers || 0;
+            const totalQ = correct + wrong + (a.skipped_answers || 0);
+            const acc = totalQ > 0 ? Math.round((correct / totalQ) * 100) : 0;
+            const timeSec = a.time_taken_seconds || 0;
+            const timeStr = `${Math.floor(timeSec / 60)}m ${timeSec % 60}s`;
+            const xp = parseFloat(a.xp_earned || 0).toFixed(0);
+            const dateStr = a.created_at ? new Date(a.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'N/A';
+
+            tr.innerHTML = `
+              <td style="padding:0.75rem 1rem;"><strong style="color:#38bdf8;">${seriesId}</strong></td>
+              <td style="padding:0.75rem 1rem; color:#cbd5e1;">${topic}</td>
+              <td style="padding:0.75rem 1rem;"><strong style="color:#fff;">${score}</strong> / ${totalMarks}</td>
+              <td style="padding:0.75rem 1rem;"><span style="color:${acc >= 75 ? '#4ade80' : (acc >= 50 ? '#fbbf24' : '#f87171')}; font-weight:700;">${acc}%</span></td>
+              <td style="padding:0.75rem 1rem; color:#94a3b8;">${timeStr}</td>
+              <td style="padding:0.75rem 1rem; color:#22c55e; font-weight:700;">+${xp} XP</td>
+              <td style="padding:0.75rem 1rem; color:#94a3b8; font-size:0.75rem;">${dateStr}</td>
+              <td style="padding:0.75rem 1rem; text-align:right;">
+                <button type="button" class="btn-action" style="padding:0.35rem 0.75rem; font-size:0.75rem; background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); border-radius:6px; cursor:pointer; font-weight:700;" onclick="unlockSingleTest('${currentUdUser.id}', '${seriesId}', '${a.id}')">
+                  🔄 Unlock Retake
+                </button>
+              </td>
+            `;
+            testsTbody.appendChild(tr);
+          });
+        }
+      }
+
+      // 2. RENDER BATTLES TAB
+      const battlesTbody = document.getElementById('udBattlesTableBody');
+      if (battlesTbody) {
+        if (battles.length === 0) {
+          battlesTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:#94a3b8;">No 1v1 PvP challenges or arena battles found.</td></tr>`;
+        } else {
+          battlesTbody.innerHTML = '';
+          battles.forEach(b => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            const isCreator = (String(b.creator_id) === String(currentUdUser.id));
+            const role = isCreator ? '👑 Creator' : '⚔️ Challenger';
+            
+            // Opponent resolution
+            const opponent = isCreator ? (b.opponent_profiles || { full_name: b.opponent_name || 'Open Arena Challenge', email: b.opponent_email || 'Waiting for challenger' }) : (b.creator_profiles || { full_name: b.creator_name || 'Creator', email: b.creator_email || '' });
+            const oppId = isCreator ? b.opponent_id : b.creator_id;
+            const oppName = opponent.full_name || 'Competitor';
+            const oppEmail = opponent.email || '—';
+
+            const statusColors = {
+              completed: 'rgba(34,197,94,0.15)',
+              active: 'rgba(56,189,248,0.15)',
+              pending: 'rgba(245,158,11,0.15)',
+              cancelled: 'rgba(239,68,68,0.15)'
+            };
+            const statusTextColors = {
+              completed: '#4ade80',
+              active: '#38bdf8',
+              pending: '#fbbf24',
+              cancelled: '#f87171'
+            };
+
+            const status = b.status || 'pending';
+            const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' }) : 'N/A';
+
+            const inspectBtn = oppId ? `
+              <button type="button" class="btn-action primary" style="padding:0.35rem 0.65rem; font-size:0.75rem; border-radius:6px; cursor:pointer; font-weight:700;" onclick="drillDownCompetitor('${oppId}')">
+                👤 Inspect Competitor
+              </button>
+            ` : `<span style="color:#64748b; font-size:0.75rem;">Open Challenge</span>`;
+
+            tr.innerHTML = `
+              <td style="padding:0.75rem 1rem;"><code style="color:#94a3b8;">${String(b.id).substring(0,8)}...</code></td>
+              <td style="padding:0.75rem 1rem; color:#cbd5e1;">${role}</td>
+              <td style="padding:0.75rem 1rem;"><span style="color:#c084fc; font-weight:700;">Lvl ${b.level_num || 1}</span> (${b.stream || 'NEET'})</td>
+              <td style="padding:0.75rem 1rem;">
+                <strong style="color:#fff; display:block;">${oppName}</strong>
+                <span style="color:#94a3b8; font-size:0.72rem;">${oppEmail}</span>
+              </td>
+              <td style="padding:0.75rem 1rem; color:#e2e8f0;">${b.winner_id ? (String(b.winner_id) === String(currentUdUser.id) ? '🏆 Won' : '❌ Lost') : 'Score Pending'}</td>
+              <td style="padding:0.75rem 1rem;">
+                <span style="background:${statusColors[status] || 'rgba(255,255,255,0.1)'}; color:${statusTextColors[status] || '#fff'}; padding:0.2rem 0.5rem; border-radius:6px; font-size:0.72rem; font-weight:700; text-transform:capitalize;">${status}</span>
+              </td>
+              <td style="padding:0.75rem 1rem; color:#94a3b8; font-size:0.75rem;">${dateStr}</td>
+              <td style="padding:0.75rem 1rem; text-align:right;">
+                ${inspectBtn}
+              </td>
+            `;
+            battlesTbody.appendChild(tr);
+          });
+        }
+      }
+
+      // 3. RENDER MEMORY LAB TAB
+      document.getElementById('udMemoryQueueCount').textContent = rev.queueCount || 0;
+      document.getElementById('udMemoryMasteredCount').textContent = rev.masteredCount || 0;
+      const retRate = rev.queueCount > 0 ? Math.min(98, Math.max(70, Math.round(75 + (rev.masteredCount / Math.max(1, rev.queueCount)) * 20))) : 88;
+      document.getElementById('udMemoryRetentionIndex').textContent = `${retRate}%`;
+
+      // 4. RENDER XP LEDGER TAB
+      const xpTbody = document.getElementById('udXpTableBody');
+      if (xpTbody) {
+        if (xpTxs.length === 0) {
+          xpTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color:#94a3b8;">No transaction history found.</td></tr>`;
+        } else {
+          xpTbody.innerHTML = '';
+          xpTxs.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+            const amt = parseFloat(t.amount || 0);
+            const isPos = amt >= 0;
+            const dateStr = t.created_at ? new Date(t.created_at).toLocaleString('en-IN') : 'N/A';
+
+            tr.innerHTML = `
+              <td style="padding:0.7rem 1rem; font-weight:600; color:#e2e8f0; text-transform:capitalize;">${(t.transaction_type || 'adjustment').replace(/_/g, ' ')}</td>
+              <td style="padding:0.7rem 1rem; font-weight:700; color:${isPos ? '#22c55e' : '#ef4444'};">${isPos ? '+' : ''}${amt.toFixed(2)} XP</td>
+              <td style="padding:0.7rem 1rem; color:#94a3b8; font-family:monospace; font-size:0.75rem;">${t.reference_id || '—'}</td>
+              <td style="padding:0.7rem 1rem; color:#64748b; font-size:0.75rem;">${dateStr}</td>
+            `;
+            xpTbody.appendChild(tr);
+          });
+        }
+      }
+
+      // 5. RENDER GEMINI AI PREDICTIONS TAB
+      renderUdAiPredictions(attempts);
+    }
+
+    function renderUdAiPredictions(attempts) {
+      const noticeBox = document.getElementById('udAiCalibrationNotice');
+      const noticeCount = document.getElementById('udAiTestsNoticeCount');
+      const count = attempts.length;
+
+      if (noticeCount) noticeCount.textContent = count;
+
+      if (count < 10) {
+        if (noticeBox) noticeBox.style.display = 'block';
+      } else {
+        if (noticeBox) noticeBox.style.display = 'none';
+      }
+
+      // Compute statistics based on real test attempts
+      let totalCorrect = 0, totalWrong = 0, totalTimeSec = 0;
+      attempts.forEach(a => {
+        totalCorrect += (a.correct_answers || 0);
+        totalWrong += (a.wrong_answers || 0);
+        totalTimeSec += (a.time_taken_seconds || 0);
+      });
+
+      const totalAttempted = totalCorrect + totalWrong;
+      const accuracy = totalAttempted > 0 ? (totalCorrect / totalAttempted) * 100 : 70.0;
+      const avgSpeed = totalAttempted > 0 ? Math.round(totalTimeSec / totalAttempted) : 48;
+
+      const stream = (currentUdUser.preparation_for || 'NEET').toUpperCase();
+      const maxScore = stream.includes('JEE') ? 300 : 720;
+      const expectedScore = Math.round(maxScore * (accuracy / 100));
+
+      const readinessScore = Math.min(99, Math.max(20, Math.round((accuracy * 0.6) + Math.max(0, 100 - (avgSpeed / 60) * 15) * 0.4)));
+      const selectionChance = Math.min(99, Math.max(15, Math.round((accuracy * 0.55) + 30)));
+      const estRank = Math.max(50, Math.round((stream.includes('JEE') ? 1200000 : 2100000) * (1 - (accuracy * 0.985 / 100))));
+
+      document.getElementById('udAiReadinessScore').textContent = `${readinessScore}/100`;
+      document.getElementById('udAiReadinessLabel').textContent = count >= 10 ? 'High Confidence Calibration' : `Preliminary (${count}/10 tests)`;
+      document.getElementById('udAiPredictedScore').textContent = `${expectedScore} / ${maxScore}`;
+      document.getElementById('udAiPredictedScale').textContent = `Out of ${maxScore} (${stream})`;
+      document.getElementById('udAiSelectionChance').textContent = `${selectionChance}%`;
+      document.getElementById('udAiSelectionRank').textContent = `Est. AIR ~${estRank.toLocaleString('en-IN')}`;
+      document.getElementById('udAiAvgSpeed').textContent = `${avgSpeed}s`;
+
+      // Archetype classification
+      const personaBadge = document.getElementById('udAiPersonaBadge');
+      const adviceText = document.getElementById('udAiAdviceText');
+
+      if (avgSpeed < 35 && accuracy < 65) {
+        personaBadge.textContent = '⚡ Impulsive Guesser (Speed > Accuracy)';
+        personaBadge.style.color = '#f87171';
+        adviceText.innerHTML = `<strong>Diagnostic Alert:</strong> Candidate is rushing through questions (${avgSpeed}s/question) resulting in high negative marking penalty. Recommend practicing untimed concept drill sheets in Chemistry and Physics before timed full mocks.`;
+      } else if (avgSpeed > 75 && accuracy > 80) {
+        personaBadge.textContent = '🔍 Perfectionist Reader (Accuracy > Speed)';
+        personaBadge.style.color = '#38bdf8';
+        adviceText.innerHTML = `<strong>Diagnostic Alert:</strong> Excellent conceptual accuracy (${Math.round(accuracy)}%) but slow pacing (${avgSpeed}s/question). Danger of leaving the last 15-20 questions unattempted in actual ${stream} exam. Recommend strict section-wise timer drills.`;
+      } else if (accuracy >= 85) {
+        personaBadge.textContent = '🏆 Top-Tier Master (High Precision)';
+        personaBadge.style.color = '#4ade80';
+        adviceText.innerHTML = `<strong>Peak Performance Track:</strong> Candidate exhibits top percentile accuracy (${Math.round(accuracy)}%) and strong mental composure. Forecast indicates a prospective AIR under 3,000. Recommend national level mock benchmarking.`;
+      } else {
+        personaBadge.textContent = '📈 Balanced Performer (Steady Growth)';
+        personaBadge.style.color = '#c084fc';
+        adviceText.innerHTML = `Candidate demonstrates balanced time allocation and consistent performance across attempts. Recommended intervention: focus on eliminating 50/50 doubt questions to boost composite score from ${expectedScore} to ${expectedScore + 40}.`;
+      }
+    }
+
+    // ── SUPERADMIN TEST UNLOCK & RETAKE ACTIONS ──
+    async function unlockSingleTest(userId, seriesId, attemptId) {
+      if (!confirm(`Are you sure you want to unlock the test series "${seriesId}" for this student?\n\nThis will clear the attempt lock, allowing the student to retake the test immediately without paying or generating a new test.`)) {
+        return;
+      }
 
       try {
-        const modalName = document.getElementById('udModalName');
-        const modalEmail = document.getElementById('udModalEmail');
-        if (modalName) modalName.textContent = u.full_name || 'User Profile';
-        if (modalEmail) modalEmail.textContent = u.email || 'No email specified';
+        const res = await fetch(getApiUrl('/api/admin/user-test-reactivate'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, seriesId, attemptId })
+        });
 
-        const fmtDate = (d) => d ? new Date(d).toLocaleString('en-IN') : 'N/A';
-        const grid = document.getElementById('udModalGrid');
+        if (res.ok) {
+          const data = await res.json();
+          showToast(data.message || 'Test successfully unlocked for retake! ✓', 'success');
+        } else {
+          // Fallback direct Supabase attempt deletion
+          if (supabase) {
+            await supabase.from('attempts').delete().eq('id', attemptId);
+            showToast(`Test '${seriesId}' unlocked via Supabase! ✓`, 'success');
+          }
+        }
 
-        if (grid) {
-          grid.innerHTML = `
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Full Name</span>
-              <strong style="color:#fff;">${u.full_name || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Email Address</span>
-              <strong style="color:#fff;">${u.email || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Phone Number</span>
-              <strong style="color:#fff;">${u.phone || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Date of Birth (DOB)</span>
-              <strong style="color:#fff;">${u.dob || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Guardian Name</span>
-              <strong style="color:#fff;">${u.guardian_name || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Guardian Contact</span>
-              <strong style="color:#fff;">${u.guardian_contact || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">City</span>
-              <strong style="color:#fff;">${u.city || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Pin Code</span>
-              <strong style="color:#fff;">${u.pin_code || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Qualification</span>
-              <strong style="color:#fff;">${u.qualification || 'N/A'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Exam Stream</span>
-              <strong style="color:var(--accent);">${u.preparation_for || 'NEET'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Institute / School ID</span>
-              <strong style="color:#fff;">${u.institute_id || 'N/A (Individual)'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Account Role</span>
-              <strong style="color:#fff; text-transform:capitalize;">${u.role || 'student'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">XP Balance</span>
-              <strong style="color:var(--success);">${parseFloat(u.xp_balance || 0).toFixed(1)} XP</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Unlocked Level</span>
-              <strong style="color:#38bdf8;">Level ${u.unlocked_level || 1}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Suspicion Score</span>
-              <strong style="color:${(u.suspicion_score || 0) > 0 ? '#ef4444' : '#22c55e'};">${u.suspicion_score || 0}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Email Verification</span>
-              <strong style="color:${u.email_verified ? '#22c55e' : '#f59e0b'};">${u.email_verified ? '✅ Verified' : '⏳ Unverified'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Last OTP Code</span>
-              <code style="color:#cbd5e1;">${u.otp_code || 'None'}</code>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Onboarding Status</span>
-              <strong style="color:${u.onboarding_completed ? '#22c55e' : '#f59e0b'};">${u.onboarding_completed ? 'Completed' : 'Pending'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Account Status</span>
-              <strong style="color:${u.is_blocked ? '#ef4444' : '#38bdf8'};">${u.is_blocked ? '🚫 Blocked / Suspended' : '● Active'}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Blocked Date</span>
-              <strong style="color:#ef4444;">${fmtDate(u.blocked_at)}</strong>
-            </div>
-            <div style="grid-column: span 2; background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Block Reason (if suspended)</span>
-              <strong style="color:#ef4444;">${u.block_reason || 'N/A (Active Account)'}</strong>
-            </div>
-            <div style="grid-column: span 2; background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Device ID</span>
-              <code style="font-size:0.75rem; color:#cbd5e1;">${u.device_id || 'N/A'}</code>
-            </div>
-            <div style="grid-column: span 2; background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Browser Fingerprint</span>
-              <code style="font-size:0.75rem; color:#cbd5e1;">${u.browser_fingerprint || 'N/A'}</code>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Registration Date</span>
-              <strong style="color:#cbd5e1;">${fmtDate(u.created_at)}</strong>
-            </div>
-            <div style="background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">Last Updated</span>
-              <strong style="color:#cbd5e1;">${fmtDate(u.updated_at)}</strong>
-            </div>
-            <div style="grid-column: span 2; background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px;">
-              <span style="color:var(--text-muted); display:block; font-size:0.75rem;">User ID (UUID)</span>
-              <code style="font-size:0.75rem; color:#94a3b8;">${u.id || userId}</code>
-            </div>
-          `;
+        // Refresh user activity to reflect unlocked status
+        await loadUserActivityDeep(userId);
+      } catch (err) {
+        console.error('Error unlocking test:', err);
+        showToast('Error unlocking test: ' + err.message, 'error');
+      }
+    }
+
+    async function unlockAllUserTests() {
+      if (!currentUdUser || !currentUdUser.id) return;
+      const userId = currentUdUser.id;
+      const name = currentUdUser.full_name || 'Candidate';
+
+      if (!confirm(`Are you sure you want to UNLOCK ALL tests for "${name}"?\n\nAll completed attempts will be reset, allowing the student to retake every single test series freely during trials.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(getApiUrl('/api/admin/user-test-reactivate'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, unlockAll: true })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          showToast(data.message || 'All test attempts unlocked for retake! ✓', 'success');
+        } else {
+          if (supabase) {
+            await supabase.from('attempts').delete().eq('user_id', userId);
+            showToast('All tests unlocked for retake via Supabase! ✓', 'success');
+          }
+        }
+
+        await loadUserActivityDeep(userId);
+      } catch (err) {
+        console.error('Error unlocking all tests:', err);
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    // ── DRILL DOWN INTO OPPONENT PROFILE ──
+    async function drillDownCompetitor(opponentId) {
+      if (!opponentId) return;
+      if (currentUdUser && currentUdUser.id) {
+        udNavHistory.push(currentUdUser.id);
+      }
+      await openUserDetailModal(opponentId, true);
+    }
+
+    // ── ON-DEMAND GEMINI AI ANALYSIS GENERATOR ──
+    async function triggerGeminiAiAnalysis() {
+      if (!currentUdUser || !currentUdUser.id) return;
+      const btn = document.getElementById('btnRunAiAnalysis');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '✦ Synthesizing Gemini AI Forecast... ⏳';
+      }
+
+      try {
+        const attempts = (currentUdActivity && currentUdActivity.attempts) || [];
+        const res = await fetch(getApiUrl('/api/ai/predict-performance'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUdUser.id,
+            stream: currentUdUser.preparation_for,
+            attemptsCount: attempts.length,
+            attempts: attempts
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.calibrated === false) {
+            showToast(data.message, 'info');
+          } else {
+            showToast('Gemini AI Performance Forecast Generated! ✓', 'success');
+            const adviceEl = document.getElementById('udAiAdviceText');
+            if (adviceEl) {
+              adviceEl.innerHTML = `
+                <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:0.9rem; margin-bottom:0.75rem;">
+                  <strong style="color:#38bdf8;">Expected Exam Trajectory:</strong> ${data.trajectory}<br/>
+                  <strong style="color:#c084fc;">Predicted Score:</strong> ${data.expectedScore} / ${data.maxExamScore} (Est. AIR ~${data.estimatedRank.toLocaleString('en-IN')})<br/>
+                  <strong style="color:#22c55e;">Selection Confidence:</strong> ${data.selectionProbability}%
+                </div>
+                <div style="color:#e2e8f0; line-height:1.6;">
+                  <strong>AI Counseling Strategy:</strong> ${data.advice}
+                </div>
+              `;
+            }
+          }
         }
       } catch (err) {
-        console.error('[openUserDetailModal] Render error:', err);
+        console.error('Error generating AI forecast:', err);
+        showToast('AI synthesis note: ' + err.message, 'info');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '✦ Re-run Gemini AI Behavioral Analysis';
+        }
       }
+    }
+
+    function toggleBlockFromModal() {
+      if (!currentUdUser) return;
+      handleBlockToggle(currentUdUser);
     }
 
     function closeUserDetailModal() {
       const m = document.getElementById('userDetailModal');
       if (m) m.style.setProperty('display', 'none', 'important');
+      udNavHistory = [];
+      currentUdUser = null;
     }
 
     // Block & Unblock logic

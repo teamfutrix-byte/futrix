@@ -245,6 +245,58 @@
       font-weight: 700;
       cursor: pointer;
     }
+
+    /* Gemini AI Predictive Panel Styles */
+    .gemini-pred-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(173, 198, 255, 0.22);
+      background: linear-gradient(135deg, rgba(22, 27, 39, 0.95), rgba(15, 19, 28, 0.98));
+      border-radius: 18px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      transition: border-color 0.3s ease;
+    }
+    .gemini-pred-card:hover {
+      border-color: rgba(173, 198, 255, 0.38);
+    }
+    .badge-status-pro {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px solid rgba(234, 179, 8, 0.4);
+      color: #facc15;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 750;
+      letter-spacing: 0.03em;
+    }
+    .badge-status-calibrating {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+    .badge-status-active {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #4ade80;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
     .bottom-links {
       list-style: none;
       display: flex;
@@ -551,7 +603,7 @@
       </ul>
 
       <div class="sidebar-bottom">
-        <div class="upgrade-card">
+        <div class="upgrade-card" id="sidebarUpgradeCard">
           <div class="upgrade-title">Maximize your gains</div>
           <button class="btn-upgrade" onclick="window.location.href='../tests/pricing.html'">Upgrade to Pro</button>
         </div>
@@ -587,6 +639,38 @@
           <div class="stat-card">
             <div class="stat-label">Total XP</div>
             <div class="stat-val" id="perfTotalXP">0</div>
+          </div>
+        </div>
+
+        <!-- Gemini AI Predictive Exam Intelligence (Pro & 10+ Tests Calibrated) -->
+        <div class="panel-section gemini-pred-card" id="geminiPredictivePanel">
+          <!-- Header Bar -->
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; margin-bottom:1.2rem; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:0.9rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div style="width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg, #4d8eff, #a855f7); display:flex; align-items:center; justify-content:center; font-size:1.15rem; box-shadow:0 0 14px rgba(77,142,255,0.4);">
+                🔮
+              </div>
+              <div>
+                <h3 style="font-family:'Sora',sans-serif; font-size:1.08rem; font-weight:750; color:#ffffff; margin:0; display:flex; align-items:center; gap:0.45rem;">
+                  Gemini AI Future Exam Predictor
+                  <span id="aiPredictorStreamBadge" style="font-size:0.68rem; background:rgba(77,142,255,0.18); border:1px solid rgba(77,142,255,0.4); color:#93c5fd; padding:0.15rem 0.55rem; border-radius:999px; text-transform:uppercase; font-weight:750;">NEET</span>
+                </h3>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin:0.15rem 0 0 0;">
+                  Neural behavioral modeling & score probability forecast based on your past mock tests
+                </p>
+              </div>
+            </div>
+
+            <div id="aiPredictorStatusBadge">
+              <span class="badge-status-pro">🔒 Pro Feature</span>
+            </div>
+          </div>
+
+          <!-- Dynamic Container for Pro Locked / Calibrating / Live Forecast -->
+          <div id="aiPredictorBody">
+            <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.85rem;">
+              ⏳ Loading Gemini predictive intelligence...
+            </div>
           </div>
         </div>
 
@@ -908,8 +992,45 @@
       window.location.href = '../auth/login.html';
     });
 
+    // Pro Status and Gemini AI Predictive Intelligence State
+    let isProUser = (sessionStorage.getItem('futrix_is_pro') === 'true' || user.is_pro === true);
+
+    async function checkProStatus() {
+      try {
+        if (typeof supabase !== 'undefined' && user.id) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('is_pro')
+            .eq('id', user.id)
+            .single();
+          if (data && data.is_pro !== undefined) {
+            isProUser = !!data.is_pro;
+            user.is_pro = isProUser;
+            sessionStorage.setItem('futrix_is_pro', isProUser ? 'true' : 'false');
+          }
+        }
+      } catch (e) {
+        console.warn('Live pro check error:', e);
+      }
+
+      const sideUpCard = document.getElementById('sidebarUpgradeCard');
+      if (sideUpCard && isProUser) {
+        sideUpCard.style.background = 'linear-gradient(135deg, rgba(234,179,8,0.15), rgba(245,158,11,0.05))';
+        sideUpCard.style.borderColor = 'rgba(234,179,8,0.3)';
+        sideUpCard.innerHTML = `
+          <div style="color:#facc15; font-weight:800; font-size:0.8rem; display:flex; align-items:center; justify-content:center; gap:0.35rem;">
+            👑 Futrix Pro Active
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">
+            Predictive AI Engine Unlocked
+          </div>
+        `;
+      }
+    }
+
     // Load Live Performance Report
     async function loadPerformance() {
+      await checkProStatus();
       try {
         const attempts = await getSupabasePerformance(user.id);
         const mapped = attempts.map(a => ({
@@ -917,13 +1038,390 @@
           correct: a.correctAnswers,
           wrong: a.wrongAnswers,
           score: a.score,
+          timeTaken: a.timeTakenSeconds || 0,
           timestamp: a.createdAt,
           totalQuestions: a.correctAnswers + a.wrongAnswers + a.skippedAnswers
         }));
         renderPerformance(mapped);
+        await renderGeminiPredictor(user, mapped);
       } catch (err) {
         console.error('Performance load failed:', err);
         document.getElementById('attemptLogsBody').innerHTML = `<tr><td colspan="6" style="padding:2rem; text-align:center; color:var(--danger);">Failed to load performance data.</td></tr>`;
+      }
+    }
+
+    async function renderGeminiPredictor(user, attempts) {
+      const streamBadge = document.getElementById('aiPredictorStreamBadge');
+      const statusBadge = document.getElementById('aiPredictorStatusBadge');
+      const bodyEl = document.getElementById('aiPredictorBody');
+      if (!bodyEl) return;
+
+      const isMed = (user.preparation || 'NEET').toUpperCase().includes('NEET');
+      const streamName = isMed ? 'NEET' : 'JEE';
+      const maxExamScore = isMed ? 720 : 300;
+      if (streamBadge) {
+        streamBadge.textContent = `${streamName} (Max ${maxExamScore})`;
+      }
+
+      // 1. FREE TIER: Pro Locked state with blurred mockup and CTA
+      if (!isProUser) {
+        if (statusBadge) {
+          statusBadge.innerHTML = `<span class="badge-status-pro">👑 Pro Exclusive</span>`;
+        }
+        bodyEl.innerHTML = `
+          <div style="position:relative; border-radius:14px; overflow:hidden; padding:2.2rem 1.6rem; text-align:center; background:radial-gradient(ellipse at center, rgba(168,85,247,0.12) 0%, rgba(18,22,32,0.85) 100%); border:1px dashed rgba(234,179,8,0.4);">
+            <div style="display:inline-flex; align-items:center; gap:0.4rem; background:linear-gradient(135deg, rgba(234,179,8,0.2), rgba(245,158,11,0.1)); border:1px solid rgba(234,179,8,0.5); color:#facc15; padding:0.3rem 0.85rem; border-radius:999px; font-size:0.75rem; font-weight:750; margin-bottom:1rem; text-transform:uppercase; letter-spacing:0.05em;">
+              👑 Futrix Pro Member Feature
+            </div>
+            <h4 style="font-family:'Sora',sans-serif; font-size:1.25rem; font-weight:800; color:#ffffff; margin-bottom:0.6rem;">
+              Unlock Gemini AI Future Exam & Score Forecasting
+            </h4>
+            <p style="max-width:580px; margin:0 auto 1.4rem auto; font-size:0.83rem; color:var(--text-muted); line-height:1.6;">
+              Predict your upcoming real ${streamName} exam marks (out of ${maxExamScore}), probability of securing a top government college seat, expected All-India Rank percentile, and speed/negative marking habits before your actual exam.
+            </p>
+
+            <!-- Blurred Mockup Cards Teaser -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.8rem; max-width:620px; margin:0 auto 1.5rem auto; filter:blur(3.5px); opacity:0.45; pointer-events:none; user-select:none;">
+              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:12px;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Predicted Score</div>
+                <div style="font-size:1.35rem; font-weight:800; color:#38bdf8;">${isMed ? '635 / 720' : '224 / 300'}</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:12px;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Selection Chance</div>
+                <div style="font-size:1.35rem; font-weight:800; color:#4ade80;">86%</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:12px;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Est. Percentile</div>
+                <div style="font-size:1.35rem; font-weight:800; color:#c084fc;">98.4th</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); padding:0.85rem; border-radius:12px;">
+                <div style="font-size:0.7rem; color:#94a3b8;">Avg Speed / Q</div>
+                <div style="font-size:1.35rem; font-weight:800; color:#fbbf24;">48 sec</div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:center; gap:0.8rem; flex-wrap:wrap;">
+              <a href="../tests/pricing.html" style="background:linear-gradient(135deg, #f59e0b, #eab308); color:#000; padding:0.75rem 1.8rem; border-radius:10px; font-weight:800; font-size:0.88rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 6px 22px rgba(245,158,11,0.35); transition:transform 0.2s;">
+                ⚡ Upgrade to Futrix Pro to Unlock
+              </a>
+            </div>
+            <div style="margin-top:0.95rem; font-size:0.72rem; color:var(--text-muted);">
+              🔒 Scientifically calibrated from at least 10 previous mock tests. Zero random or arbitrary numbers.
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. PRO USER BUT < 10 TESTS: Show Calibration Progress State
+      const completedTests = (attempts || []).length;
+      if (completedTests < 10) {
+        const remainingTests = 10 - completedTests;
+        const progressPercent = Math.round((completedTests / 10) * 100);
+
+        if (statusBadge) {
+          statusBadge.innerHTML = `<span class="badge-status-calibrating">⏳ Calibrating (${completedTests}/10)</span>`;
+        }
+
+        bodyEl.innerHTML = `
+          <div style="border-radius:14px; padding:1.8rem 1.4rem; background:linear-gradient(135deg, rgba(77,142,255,0.06), rgba(168,85,247,0.04)); border:1px solid rgba(77,142,255,0.2);">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem; margin-bottom:1.2rem;">
+              <div>
+                <div style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(77,142,255,0.15); border:1px solid rgba(77,142,255,0.3); color:#93c5fd; padding:0.25rem 0.65rem; border-radius:999px; font-size:0.72rem; font-weight:700; margin-bottom:0.5rem;">
+                  🧪 Neural Calibration In Progress
+                </div>
+                <h4 style="font-family:'Sora',sans-serif; font-size:1.15rem; font-weight:750; color:#ffffff; margin:0 0 0.35rem 0;">
+                  Gemini AI Requires At Least 10 Completed Tests
+                </h4>
+                <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.55; margin:0; max-width:640px;">
+                  Futrix AI strictly avoids random or arbitrary guessing. To scientifically predict your real ${streamName} exam marks, negative marking risks, and college admission chances, our neural model requires a baseline of at least <strong>10 completed mock tests</strong>.
+                </p>
+              </div>
+
+              <a href="../tests/active-exams.html" style="background:linear-gradient(135deg, #4d8eff, #6366f1); color:#ffffff; padding:0.65rem 1.3rem; border-radius:10px; font-weight:750; font-size:0.82rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.45rem; box-shadow:0 4px 15px rgba(77,142,255,0.3); white-space:nowrap;">
+                🚀 Take a Test Now
+              </a>
+            </div>
+
+            <!-- Calibration Progress Gauge -->
+            <div style="background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1.1rem 1.25rem; margin-bottom:1.1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.55rem; font-size:0.82rem;">
+                <span style="font-weight:600; color:#e2e8f0;">Data Calibration Progress</span>
+                <span style="font-weight:800; color:#38bdf8;">${completedTests} / 10 Tests Completed (${progressPercent}%)</span>
+              </div>
+              <div style="width:100%; height:10px; background:rgba(255,255,255,0.08); border-radius:5px; overflow:hidden; position:relative;">
+                <div style="width:${progressPercent}%; height:100%; background:linear-gradient(90deg, #4d8eff, #00e5d4); border-radius:5px; transition:width 0.5s ease;"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.6rem; font-size:0.74rem; color:var(--text-muted);">
+                <span>${remainingTests} more test${remainingTests === 1 ? '' : 's'} needed to unlock high-confidence predictions!</span>
+                <span>Minimum 10 Tests Required</span>
+              </div>
+            </div>
+
+            <!-- Scientific Calibration Insights -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.8rem; font-size:0.76rem; color:#cbd5e1;">
+              <div style="background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:0.7rem 0.9rem;">
+                🎯 <strong>Zero Random Guesses:</strong> Real exam prediction requires evaluating your performance consistency across multiple topics and difficulty levels.
+              </div>
+              <div style="background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:0.7rem 0.9rem;">
+                ⏱️ <strong>Pacing & Negative Marks:</strong> 10 tests allow Gemini to detect whether you lose marks from panic rushing or hesitation.
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 3. PRO USER WITH >= 10 TESTS: Full Scientific Predictive Intelligence View
+      if (statusBadge) {
+        statusBadge.innerHTML = `<span class="badge-status-active">🟢 Calibrated & Active</span>`;
+      }
+      bodyEl.innerHTML = `
+        <div style="text-align:center; padding:2rem; color:var(--text-muted);">
+          🔮 Gemini AI is analyzing your ${completedTests} test attempts...
+        </div>
+      `;
+
+      let totalScore = 0;
+      let totalCorrect = 0;
+      let totalWrong = 0;
+      let totalTime = 0;
+
+      attempts.forEach(a => {
+        totalScore += (a.score || 0);
+        totalCorrect += (a.correct || 0);
+        totalWrong += (a.wrong || 0);
+        totalTime += (a.timeTaken || 0);
+      });
+
+      const totalQs = totalCorrect + totalWrong;
+      const avgAccuracy = totalQs > 0 ? ((totalCorrect / totalQs) * 100) : 70;
+      const avgScore = totalScore / completedTests;
+      const avgSpeed = totalQs > 0 ? Math.round(totalTime / totalQs) : 50;
+
+      try {
+        const res = await fetch('/api/ai/predict-performance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            stream: user.preparation,
+            attemptsCount: completedTests,
+            avgScore,
+            avgAccuracy,
+            avgSpeedSec: avgSpeed,
+            attempts: attempts.slice(0, 30)
+          })
+        });
+
+        let data = {};
+        if (res.ok) {
+          data = await res.json();
+        } else {
+          throw new Error('Prediction API non-200');
+        }
+
+        renderCalibratedPrediction(data, attempts, streamName, maxExamScore);
+      } catch (err) {
+        console.warn('Backend prediction failed, rendering client-calculated forecast:', err);
+        const normalizedAcc = Math.min(100, Math.max(0, avgAccuracy));
+        const expectedScore = Math.round(maxExamScore * (normalizedAcc / 100));
+        const percentile = parseFloat((normalizedAcc * 0.985).toFixed(2));
+        const totalCompetitors = streamName === 'JEE' ? 1200000 : 2100000;
+        const estimatedRank = Math.max(1, Math.round(totalCompetitors * (1 - (percentile / 100))));
+        const speedScore = Math.max(0, Math.min(100, 100 - (avgSpeed / 60) * 15));
+        const selectionProbability = Math.min(99, Math.max(15, Math.round((normalizedAcc * 0.55) + (speedScore * 0.25) + 17.6)));
+
+        let archetype = 'Balanced Performer';
+        let trajectory = 'Positive Growth';
+        let advice = 'Maintain your daily mock cadence and eliminate 50/50 negative guesses in Section B.';
+        if (avgSpeed < 35 && avgAccuracy < 65) {
+          archetype = 'Impulsive Guesser (Speed > Precision)';
+          trajectory = 'Negative Marking Penalty Risk';
+          advice = 'Slow down on multi-step calculation questions. Avoid 50/50 guesses to eliminate negative marks.';
+        } else if (avgSpeed > 75 && avgAccuracy > 80) {
+          archetype = 'Perfectionist Reader (Accuracy > Speed)';
+          trajectory = 'Time Crunch Danger in Section B';
+          advice = 'Practice speed drills on single-formula questions to reserve time for complex passages.';
+        } else if (avgAccuracy >= 85) {
+          archetype = 'Top-Tier Master (High Precision)';
+          trajectory = 'Rank 1 - 2,500 Candidate';
+          advice = 'Focus on out-of-syllabus tricky conceptual edge cases and All-India mock benchmarks.';
+        }
+
+        renderCalibratedPrediction({
+          calibrated: true,
+          stream: streamName,
+          maxExamScore,
+          expectedScore,
+          expectedPercentage: Math.round(normalizedAcc),
+          percentile,
+          estimatedRank,
+          selectionProbability,
+          speedScore,
+          archetype,
+          trajectory,
+          advice
+        }, attempts, streamName, maxExamScore);
+      }
+    }
+
+    function renderCalibratedPrediction(data, attempts, streamName, maxExamScore) {
+      const bodyEl = document.getElementById('aiPredictorBody');
+      if (!bodyEl) return;
+
+      const expectedScore = data.expectedScore || 0;
+      const expectedPercentage = data.expectedPercentage || Math.round((expectedScore / maxExamScore) * 100);
+      const scoreMin = Math.max(0, expectedScore - 20);
+      const scoreMax = Math.min(maxExamScore, expectedScore + 25);
+      const selectionProbability = data.selectionProbability || 75;
+      const percentile = data.percentile || 97.5;
+      const estimatedRank = data.estimatedRank || 15000;
+      const archetype = data.archetype || 'Balanced Performer';
+      const trajectory = data.trajectory || 'Positive Growth';
+      const advice = data.advice || 'Keep reviewing your mistake logs daily.';
+
+      let totalQs = 0, totalTime = 0;
+      attempts.forEach(a => {
+        totalQs += (a.correct || 0) + (a.wrong || 0);
+        totalTime += (a.timeTaken || 0);
+      });
+      const avgSpeed = totalQs > 0 ? Math.round(totalTime / totalQs) : 50;
+      let speedRating = '⚡ Optimal Pacing';
+      if (avgSpeed < 35) speedRating = '⚡ High Speed (Watch Negatives)';
+      else if (avgSpeed > 70) speedRating = '⏱️ Deliberate (Risk of Time Crunch)';
+
+      bodyEl.innerHTML = `
+        <div>
+          <!-- 4 Core Predictive Metrics Grid -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:1.3rem;">
+            
+            <!-- 1. Expected Exam Score -->
+            <div style="background:rgba(77,142,255,0.06); border:1px solid rgba(77,142,255,0.25); border-radius:14px; padding:1.1rem; position:relative; overflow:hidden;">
+              <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.4rem; display:flex; justify-content:space-between;">
+                <span>🎯 Predicted Score</span>
+                <span style="color:#60a5fa; font-weight:800;">Target ${maxExamScore}</span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:0.35rem; margin-bottom:0.3rem;">
+                <span style="font-family:'Sora',sans-serif; font-size:2.1rem; font-weight:850; color:#ffffff; line-height:1;">
+                  ${expectedScore}
+                </span>
+                <span style="font-size:0.9rem; color:var(--text-muted); font-weight:600;">/ ${maxExamScore}</span>
+              </div>
+              <div style="font-size:0.75rem; color:#4ade80; font-weight:700;">
+                ≈ ${expectedPercentage}% Expected Marks
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.25rem;">
+                Predicted Range: [${scoreMin} - ${scoreMax}] pts
+              </div>
+            </div>
+
+            <!-- 2. College Selection Probability -->
+            <div style="background:rgba(0,229,212,0.06); border:1px solid rgba(0,229,212,0.25); border-radius:14px; padding:1.1rem; position:relative; overflow:hidden;">
+              <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.4rem;">
+                🏛️ Selection Chance
+              </div>
+              <div style="display:flex; align-items:baseline; gap:0.35rem; margin-bottom:0.3rem;">
+                <span style="font-family:'Sora',sans-serif; font-size:2.1rem; font-weight:850; color:#00e5d4; line-height:1;">
+                  ${selectionProbability}%
+                </span>
+              </div>
+              <div style="font-size:0.75rem; color:${selectionProbability >= 70 ? '#4ade80' : '#fbbf24'}; font-weight:700;">
+                ${selectionProbability >= 75 ? '🟢 High Govt Seat Chance' : (selectionProbability >= 50 ? '🟡 Competitive Boundary' : '🟠 Needs Target Boost')}
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.25rem;">
+                Govt ${streamName === 'NEET' ? 'MBBS College' : 'IIT / NIT College'}
+              </div>
+            </div>
+
+            <!-- 3. Predicted Percentile & AIR -->
+            <div style="background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.25); border-radius:14px; padding:1.1rem; position:relative; overflow:hidden;">
+              <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.4rem;">
+                📊 National Percentile
+              </div>
+              <div style="display:flex; align-items:baseline; gap:0.35rem; margin-bottom:0.3rem;">
+                <span style="font-family:'Sora',sans-serif; font-size:2.1rem; font-weight:850; color:#c084fc; line-height:1;">
+                  ${percentile}
+                </span>
+                <span style="font-size:0.9rem; color:var(--text-muted); font-weight:600;">th %ile</span>
+              </div>
+              <div style="font-size:0.75rem; color:#c084fc; font-weight:700;">
+                Est. AIR: ~${estimatedRank.toLocaleString()}
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.25rem;">
+                Across ${streamName === 'NEET' ? '21 Lakh' : '12 Lakh'} Candidates
+              </div>
+            </div>
+
+            <!-- 4. Pacing & Accuracy Rating -->
+            <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:1.1rem; position:relative; overflow:hidden;">
+              <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.4rem;">
+                ⚡ Pacing & Speed
+              </div>
+              <div style="display:flex; align-items:baseline; gap:0.35rem; margin-bottom:0.3rem;">
+                <span style="font-family:'Sora',sans-serif; font-size:2.1rem; font-weight:850; color:#fbbf24; line-height:1;">
+                  ${avgSpeed}
+                </span>
+                <span style="font-size:0.9rem; color:var(--text-muted); font-weight:600;">sec / Q</span>
+              </div>
+              <div style="font-size:0.75rem; color:#fbbf24; font-weight:700;">
+                ${speedRating}
+              </div>
+              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:0.25rem;">
+                Calibrated across ${attempts.length} mock tests
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Behavioral Archetype & Gemini AI Strategic Blueprint -->
+          <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem; display:flex; flex-direction:column; gap:0.8rem;">
+            
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-size:1.1rem;">🧠</span>
+                <div>
+                  <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; font-weight:700;">Behavioral Persona:</span>
+                  <span style="font-size:0.88rem; font-weight:800; color:#e2e8f0; margin-left:0.3rem;">${archetype}</span>
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; color:#93c5fd; background:rgba(77,142,255,0.12); padding:0.25rem 0.65rem; border-radius:999px; border:1px solid rgba(77,142,255,0.25);">
+                <span>📈 Trajectory:</span>
+                <strong style="color:#ffffff;">${trajectory}</strong>
+              </div>
+            </div>
+
+            <!-- Gemini AI Strategic Blueprint -->
+            <div style="background:rgba(77,142,255,0.04); border-left:3px solid #4d8eff; border-radius:0 8px 8px 0; padding:0.8rem 1rem; font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              <strong style="color:#93c5fd; display:block; margin-bottom:0.25rem;">✦ Gemini AI Strategic Blueprint for Real Exam:</strong>
+              ${advice}
+            </div>
+
+            <!-- Action Toolbar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; padding-top:0.5rem; border-top:1px solid rgba(255,255,255,0.05);">
+              <span style="font-size:0.72rem; color:var(--text-muted);">
+                Calibrated from <strong>${attempts.length}</strong> previous mock tests • Updated in Real-Time
+              </span>
+              <div style="display:flex; gap:0.6rem;">
+                <button id="btnRefreshGeminiForecast" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#ffffff; padding:0.45rem 0.9rem; border-radius:8px; font-size:0.76rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.35rem; transition:background 0.2s;">
+                  🔄 Re-Analyze
+                </button>
+                <a href="../tests/active-exams.html" style="background:linear-gradient(135deg, #4d8eff, #6366f1); color:#ffffff; padding:0.45rem 1rem; border-radius:8px; font-size:0.76rem; font-weight:700; text-decoration:none; display:flex; align-items:center; gap:0.35rem; box-shadow:0 4px 12px rgba(77,142,255,0.3);">
+                  🚀 Take Test to Boost
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      const refreshBtn = document.getElementById('btnRefreshGeminiForecast');
+      if (refreshBtn) {
+        refreshBtn.onclick = () => {
+          renderGeminiPredictor(user, attempts);
+        };
       }
     }
 

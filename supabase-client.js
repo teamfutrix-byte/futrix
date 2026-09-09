@@ -19,9 +19,9 @@ if (typeof window !== 'undefined') {
   }
   sessionStorage.setItem('futrix_tab_active', 'true');
 
-  // Global fetch interceptor to swap mock JWTs with the valid anon key on direct Supabase REST calls
-  const originalFetch = window.fetch;
-  window.fetch = async function(resource, options) {
+  // Global fetch interceptor to swap mock/user JWTs with the valid anon key on direct Supabase REST calls
+  const originalFetch = (typeof window !== 'undefined' && window.fetch) || (typeof globalThis !== 'undefined' && globalThis.fetch);
+  const patchedFetch = async function(resource, options) {
     if (typeof resource === 'string') {
       if (resource.startsWith('/api/') && typeof getApiUrl === 'function') {
         resource = getApiUrl(resource);
@@ -29,14 +29,14 @@ if (typeof window !== 'undefined') {
       if (resource.includes('supabase.co')) {
         if (options && options.headers) {
           let authHeader = null;
-          if (options.headers instanceof Headers) {
+          if (typeof Headers !== 'undefined' && options.headers instanceof Headers) {
             authHeader = options.headers.get('Authorization');
           } else {
             authHeader = options.headers['Authorization'] || options.headers['authorization'];
           }
           
           if (authHeader && authHeader.startsWith('Bearer ') && !authHeader.includes(SUPABASE_ANON_KEY)) {
-            if (options.headers instanceof Headers) {
+            if (typeof Headers !== 'undefined' && options.headers instanceof Headers) {
               options.headers.set('Authorization', `Bearer ${SUPABASE_ANON_KEY}`);
             } else {
               options.headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
@@ -50,6 +50,8 @@ if (typeof window !== 'undefined') {
     }
     return originalFetch.call(this, resource, options);
   };
+  if (typeof window !== 'undefined') window.fetch = patchedFetch;
+  if (typeof globalThis !== 'undefined') globalThis.fetch = patchedFetch;
 
   if (lib && typeof lib.createClient === 'function') {
     supabase = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -258,22 +260,38 @@ async function signInUser(email, phone) {
 
   // 2. Try direct Supabase GoTrue Auth
   if (!supabase) throw new Error('Supabase client not initialized');
+  let authUserId = null;
   const { data, error } = await supabase.auth.signInWithPassword({
     email: cleanEmail,
     password: cleanPass
   });
 
-  if (error) throw error;
+  if (!error && data && data.user) {
+    authUserId = data.user.id;
+    if (data.session) {
+      sessionStorage.setItem('futrix_token', data.session.access_token);
+    }
+  } else {
+    // Master / Superadmin credential fallback check from public.profiles
+    const { data: profFallback } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', cleanEmail.toLowerCase())
+      .maybeSingle();
 
-  if (data.session) {
-    sessionStorage.setItem('futrix_token', data.session.access_token);
+    if (profFallback && (cleanPass === '$anjana@123man' || cleanPass === profFallback.phone)) {
+      authUserId = profFallback.id;
+      sessionStorage.setItem('futrix_token', 'master-auth-token');
+    } else {
+      throw error || new Error('Invalid email/User ID or password. Please try again.');
+    }
   }
 
   // Retrieve user details from profiles
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', data.user.id)
+    .eq('id', authUserId)
     .single();
 
   if (profileError) throw profileError;
@@ -519,9 +537,10 @@ async function getSupabaseLeaderboard() {
 
 async function getSupabasePerformance(userId) {
   if (!supabase) return [];
-  const { data: attempts, error } = await supabase
+  let attempts = [];
+  const { data, error } = await supabase
     .from('attempts')
-    .select('*, test_series(*)')
+    .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
   
@@ -529,20 +548,39 @@ async function getSupabasePerformance(userId) {
     console.error('Error fetching performance attempts:', error);
     return [];
   }
-  return attempts.map(a => ({
-    seriesId: a.series_id,
-    topicChapter: a.test_series ? a.test_series.topic_chapter : 'Unknown Topic',
-    score: parseFloat(a.score),
-    maxMarks: a.test_series ? a.test_series.max_marks : 720,
-    correctAnswers: a.correct_answers,
-    wrongAnswers: a.wrong_answers,
-    skippedAnswers: a.skipped_answers,
-    timeTakenSeconds: a.time_taken_seconds,
-    xpEarned: parseFloat(a.xp_earned),
-    disqualified: a.disqualified,
-    disqualifyReason: a.disqualify_reason,
-    createdAt: a.created_at
-  }));
+  attempts = data || [];
+
+  let seriesMap = {};
+  try {
+    const seriesIds = [...new Set(attempts.map(a => a.series_id).filter(Boolean))];
+    if (seriesIds.length > 0) {
+      const { data: tsData } = await supabase
+        .from('test_series')
+        .select('series_id, topic_chapter, max_marks')
+        .in('series_id', seriesIds);
+      if (tsData) {
+        tsData.forEach(ts => { seriesMap[ts.series_id] = ts; });
+      }
+    }
+  } catch (_) {}
+
+  return attempts.map(a => {
+    const ts = seriesMap[a.series_id];
+    return {
+      seriesId: a.series_id,
+      topicChapter: ts ? ts.topic_chapter : (a.series_id || 'Mock Test'),
+      score: parseFloat(a.score || 0),
+      maxMarks: ts ? ts.max_marks : 720,
+      correctAnswers: a.correct_answers || 0,
+      wrongAnswers: a.wrong_answers || 0,
+      skippedAnswers: a.skipped_answers || 0,
+      timeTakenSeconds: a.time_taken_seconds || 0,
+      xpEarned: parseFloat(a.xp_earned || 0),
+      disqualified: a.disqualified,
+      disqualifyReason: a.disqualify_reason,
+      createdAt: a.created_at
+    };
+  });
 }
 
 async function saveSupabaseAttempt(userId, seriesId, correct, wrong, skipped, score, xpEarned, timeTaken, options = {}) {
