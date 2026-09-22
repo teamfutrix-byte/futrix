@@ -593,11 +593,21 @@
       .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
       .sidebar-overlay.open { display: block; }
-      .main-content { margin-left: 0; padding: 1.2rem; }
+      .main-content {
+        margin-left: 0;
+        padding: 1.2rem;
+        padding-bottom: 5.5rem;
+      }
       .sticky-rank-bar { left: 0; padding: 0.8rem 1.2rem; }
       .podium-container { grid-template-columns: 1fr; gap: 1.5rem; align-items: center; }
       .podium-card { height: auto !important; padding: 1.2rem 1rem; }
       .podium-badge { position: relative; bottom: 0; margin-top: 0.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      .topbar { padding: 0 1rem; }
+      .main-content { padding: 0.85rem; padding-bottom: 5.5rem; }
+      .leaderboard-title { font-size: 1.3rem !important; }
     }
   </style>
 </head>

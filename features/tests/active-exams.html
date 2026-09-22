@@ -1008,8 +1008,17 @@
       .sidebar.open {
         transform: translateX(0);
       }
-      .sidebar-overlay.open { display: block; }
-      .main-content { margin-left: 0; padding: 1.2rem; }
+      .main-content {
+        margin-left: 0;
+        padding: 1.2rem;
+        padding-bottom: 5.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topbar { padding: 0 1rem; }
+      .main-content { padding: 0.85rem; padding-bottom: 5.5rem; }
+      .exam-grid { grid-template-columns: 1fr !important; gap: 0.85rem !important; }
     }
     @keyframes slideDownFade {
       from { opacity: 0; transform: translateY(-12px); }

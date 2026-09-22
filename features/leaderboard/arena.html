@@ -560,7 +560,18 @@
       .sidebar { transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
       .sidebar-overlay.open { display: block; }
-      .main-content { margin-left: 0; padding: 1.2rem; }
+      .main-content {
+        margin-left: 0;
+        padding: 1.2rem;
+        padding-bottom: 5.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topbar { padding: 0 1rem; }
+      .main-content { padding: 0.85rem; padding-bottom: 5.5rem; gap: 1rem; }
+      .arena-hero { padding: 1.25rem 1rem !important; }
+      .arena-title { font-size: 1.35rem !important; }
     }
   </style>
 </head>

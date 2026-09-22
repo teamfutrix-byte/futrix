@@ -247,10 +247,18 @@
         padding: 1.5rem 0.5rem;
       }
       .header h1 {
-        font-size: 2.2rem;
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
       }
       .timeline-features {
         grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 480px) {
+      .header p {
+        font-size: 0.85rem;
+      }
+      .timeline-item {
+        padding: 1.25rem 1rem;
       }
     }
   </style>
